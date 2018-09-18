@@ -1,0 +1,16 @@
+
+         router
+  [] -- (X) -- F
+  internet    face
+
+public IP address: 199.241.160.68
+
+volumes:
+ - 500 GB raw
+ - 500 GB data
+
+instances:
+ - face
+     description: Internet facing web services and data drop
+     passwd: uen339%%62mrjj
+     customization script: face.sh
