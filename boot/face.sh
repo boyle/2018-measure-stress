@@ -17,12 +17,13 @@ ufw allow ssh
 ufw status
 
 echo "--- webpage install ---"
+apt -y install apache2
 chown -R root:www-data ${REPO_DIR}/www/*
 chmod -R go-w ${REPO_DIR}/www/*
 cp -r ${REPO_DIR}/www/* /var/www/html/
 
 echo "--- nextcloud install ---"
-apt -y install apache2 \
+apt -y install \
    mariadb-server \
    mariadb-client \
    libapache2-mod-php7.2 \
@@ -145,3 +146,5 @@ systemctl stop lightdm
 
 echo "TODO: store data and database to persistent storage!"
 echo "TODO: data and database snapshots (rsnapshot)"
+
+echo "launch completed: $(date)"
