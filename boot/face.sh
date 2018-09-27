@@ -10,7 +10,7 @@ apt -y install net-tools curl rsnapshot
 
 echo "--- firewall ---"
 uname -a
-ufw enable
+ufw --force enable
 ufw allow http
 ufw allow https
 ufw allow ssh
