@@ -1,4 +1,7 @@
 #! /bin/bash
+set -e
+set -x
+
 PUBLIC_IP=$(ec2metadata --public-ipv4)
 DOMAIN=localhost
 REPO_DIR=2018-measure-stress
@@ -14,9 +17,9 @@ ufw allow ssh
 ufw status
 
 echo "--- webpage install ---"
+chown -R root:www-data ${REPO_DIR}/www/*
+chmod -R go-w ${REPO_DIR}/www/*
 cp -r ${REPO_DIR}/www/* /var/www/html/
-chown -R www-data:www-data
-chmod -R o-w /var/www/html
 
 echo "--- nextcloud install ---"
 apt -y install apache2 \
@@ -33,7 +36,6 @@ apt -y install apache2 \
    php7.2-xml \
    php7.2-zip
 echo "TODO missing php7.2-mcrypt"
-cd /root
 VER=14.0.0
 wget https://download.nextcloud.com/server/releases/nextcloud-${VER}.tar.bz2
 wget https://download.nextcloud.com/server/releases/nextcloud-${VER}.tar.bz2.sha256

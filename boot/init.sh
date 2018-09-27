@@ -4,6 +4,7 @@ exec > $LOG
 exec 2>&1
 set -x
 set -e
+cd /root
 
 echo "$(date) $0"
 apt -y update
