@@ -3,6 +3,9 @@
   [] -- (X) -- F
   internet    face
 
+login for control at: https://cloud.soscip.org/
+using sharcnet credentials
+
 public IP address: 199.241.160.68
 
 volumes:
@@ -12,5 +15,3 @@ volumes:
 instances:
  - face
      description: Internet facing web services and data drop
-     passwd: uen339%%62mrjj
-     customization script: face.sh

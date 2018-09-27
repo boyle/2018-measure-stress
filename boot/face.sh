@@ -1,19 +1,9 @@
 #! /bin/bash
-LOG=/var/log/launch-$(date '+%Y%m%d-%H%M%S').log
-exec > $LOG
-exec 2>&1
-set -x
-set -e
-
-echo "$(date) $0"
-apt -y update
-apt list --upgradable
-apt -y full-upgrade
-apt -y install vim net-tools curl rsnapshot
-apt -y autoremove
-
-PUBLIC_IP=$(curl ipinfo.io/ip)
+PUBLIC_IP=$(ec2metadata --public-ipv4)
 DOMAIN=localhost
+REPO_DIR=2018-measure-stress
+
+apt -y install net-tools curl rsnapshot
 
 echo "--- firewall ---"
 uname -a
@@ -22,6 +12,11 @@ ufw allow http
 ufw allow https
 ufw allow ssh
 ufw status
+
+echo "--- webpage install ---"
+cp -r ${REPO_DIR}/www/* /var/www/html/
+chown -R www-data:www-data
+chmod -R o-w /var/www/html
 
 echo "--- nextcloud install ---"
 apt -y install apache2 \
