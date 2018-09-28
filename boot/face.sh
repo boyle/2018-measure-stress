@@ -17,7 +17,7 @@ ufw allow ssh
 ufw status
 
 echo "--- webpage install ---"
-apt -y install apache2
+apt -y install apache2  libapache2-mod-php7.2
 echo "enable apache2 mod_rewrite, mod_headers, mod_env, mod_dir, mod_mime"
 a2enmod rewrite
 a2enmod headers
@@ -44,7 +44,6 @@ systemctl start apache2
 #apt -y install \
 #   mariadb-server \
 #   mariadb-client \
-#   libapache2-mod-php7.2 \
 #   php7.2-gd \
 #   php7.2-json \
 #   php7.2-mysql \
