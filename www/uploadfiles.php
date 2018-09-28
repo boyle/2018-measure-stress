@@ -1,6 +1,6 @@
 <?php
 $uploaddir = '/var/www/uploads/';
-$file = preg_replace('/[^-0-9A-Za-z_\.]/', '_', basename($_FILES['userfile']['name']));
+$file = date('Ymd-His') . "-" . preg_replace('/[^-0-9A-Za-z_\.]/', '_', basename($_FILES['userfile']['name']));
 $uploadfile = $uploaddir . $file;
 
 function check_filename_length ($filename) {
