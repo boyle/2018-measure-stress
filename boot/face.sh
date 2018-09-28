@@ -35,6 +35,7 @@ chmod o-rwx /var/www/uploads
 
 sed -i 's/\(post_max_size =\) .*/\1 512M/' /etc/php/7.2/apache2/php.ini
 sed -i 's/\(upload_max_filesize =\) .*/\1 512M/' /etc/php/7.2/apache2/php.ini
+sed -i 's/\(memory_limit =\) .*/\1 512M/' /etc/php/7.2/apache2/php.ini
 
 systemctl start apache2
 #systemctl reload apache2
