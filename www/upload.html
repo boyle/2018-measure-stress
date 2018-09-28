@@ -23,6 +23,13 @@
     <!-- Custom styles for this template -->
     <link href="css/agency.min.css" rel="stylesheet">
 
+<!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+<link rel="stylesheet" href="css/jquery.fileupload.css">
+<link rel="stylesheet" href="css/jquery.fileupload-ui.css">
+<!-- CSS adjustments for browsers with JavaScript disabled -->
+<noscript><link rel="stylesheet" href="css/jquery.fileupload-noscript.css"></noscript>
+<noscript><link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css"></noscript>
+
   </head>
 
   <body id="page-top">
@@ -53,10 +60,9 @@
               <a class="nav-link js-scroll-trigger" href="#contact">Contact</a>
             </li> -->
             <li class="nav-item">
-              <a class="nav-link" href="/nextcloud/datadrop">Data Upload
+              <a class="nav-link" href="#">Data Upload
               <i class="fas fa-file-upload fa-inverse"></i>
               </a>
-
             </li>
           </ul>
         </div>
@@ -77,40 +83,22 @@ pain, and post-traumatic stress disorder.</div>
       </div>
     </header>
 
-    <!-- Services -->
     <section id="privacy">
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-lg-8">
-            <h2 class="section-heading text-uppercase">Privacy and Confidentiality</h2>
-            <h3 class="section-subheading text-muted">Data collected for this
-               study will be subject to the secure data protocols established
-               by the Ottawa Hospital Research Institute and the Ottawa Health
-               Sciences Network Research Ethics Board which utilize the
-               services of a staff Privacy Officer.</h3>
-             <p>
-             All
-information collected during a patients participation in this study will be identified with a
-unique study number (for example participant # AB01), and will not contain information
-that identifies the patient. Information leaving the hospital will only contain this unique
-study number.</p>
-             <p>
-A Master List will be created so that a link can be made between identifying information
-and the unique study number. This list will only be available to identified project staff
-and will not leave the hospital. It will be stored in a separate file on a separate computer
-that is password protected on the hospital network. Personal health information
-collected for the study will be released only if it is required by law. Original medical
-records and research records may be reviewed under the supervision of project staff by
-representatives from the Ottawa Health Science Network Research Ethics Board
-(OHSN-REB), the Ottawa Hospital Research Institute, and Carleton University Ethics
-Board.</p>
-             <p>
-De-identified data from the study will be shared with Carleton University and stored on
-SOSCIP servers. Participants will not be identified in any publications or presentations
-resulting from this study. Research records will be kept for 10 years, as required by the
-OHSN-REB. At the end of the storage time, all paper records will be shredded and all
-electronic records will be securely deleted.
-             </p>
+            <h2 class="section-heading text-uppercase">Data Upload</h2>
+            <h3 class="section-subheading text-muted">Research group only.</h3>
+
+<!-- The data encoding type, enctype, MUST be specified as below -->
+<form enctype="multipart/form-data" action="uploadfiles.php" method="POST">
+    <!-- MAX_FILE_SIZE must precede the file input field -->
+    <input type="hidden" name="MAX_FILE_SIZE" value="500000000" />
+    <!-- Name of input element determines name in $_FILES array -->
+    <input name="userfile" type="file"/>
+    <input type="submit" value="Send File" />
+</form>
+
           </div>
         </div>
       </div>
@@ -134,13 +122,7 @@ electronic records will be securely deleted.
     <!-- Plugin JavaScript -->
     <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
 
-    <!-- Contact form JavaScript -->
-    <script src="js/jqBootstrapValidation.js"></script>
-    <script src="js/contact_me.js"></script>
-
     <!-- Custom scripts for this template -->
     <script src="js/agency.min.js"></script>
-
   </body>
-
 </html>
