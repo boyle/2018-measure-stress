@@ -17,9 +17,11 @@ ufw allow ssh
 ufw status
 
 echo "--- webserver install ---"
-apt-get -y install lighttpd php7.2-cgi
+apt-get -y install lighttpd php7.2-cgi python3-flask
 lighty-enable-mod fastcgi
 lighty-enable-mod fastcgi-php
+lighty-enable-mod rewrite
+lighty-enable-mod accesslog
 
 systemctl start lighttpd
 service lighttpd force-reload
