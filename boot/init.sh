@@ -7,6 +7,20 @@ set -e
 cd /root
 
 echo "$(date) $0"
+echo "don't bother updating what we don't use: remove it!"
+apt-get -y remove wpasupplicant wireless-tools vino usb-creator-gtk \
+  usb-creator-common transmission-gtk transmission-common totem-plugins \
+  totem-common totem thunderbird-locale-en-us thunderbird-locale-en \
+  thunderbird-gnome-support thunderbird rhythmbox \
+  sound-icons sound-theme-freedesktop speech-dispatcher \
+  speech-dispatcher-audio-plugins speech-dispatcher-espeak-ng spice-vdagent \
+  ubuntu-wallpapers ubuntu-wallpapers-bionic ubuntu-sounds rhythmbox-data \
+  mobile-broadband-provider-info media-player-info
+apt-get -y purge printer-driver-* libx11.* libqt.* xfonts-* libwacom* \
+  libvorbis* libtotem* libspeex* libreoffice* gnome* xserver-* \
+apt-get -y autoremove
+
+echo "update ubuntu"
 apt -y update
 apt list --upgradable
 apt -y full-upgrade
