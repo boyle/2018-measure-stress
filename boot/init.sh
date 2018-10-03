@@ -17,7 +17,7 @@ apt-get -y remove wpasupplicant wireless-tools vino usb-creator-gtk \
   ubuntu-wallpapers ubuntu-wallpapers-bionic ubuntu-sounds rhythmbox-data \
   mobile-broadband-provider-info media-player-info
 apt-get -y purge printer-driver-* libx11.* libqt.* xfonts-* libwacom* \
-  libvorbis* libtotem* libspeex* libreoffice* gnome* xserver-* \
+  libvorbis* libtotem* libspeex* libreoffice* gnome* xserver-*
 apt-get -y autoremove
 
 echo "update ubuntu"
