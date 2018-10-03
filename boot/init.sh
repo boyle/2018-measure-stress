@@ -74,6 +74,8 @@ apt -y install git
 git clone --depth=1 git@github.com:boyle/2018-measure-stress.git
 D=2018-measure-stress/boot
 
+cp $D/boot/authorized_keys ~/.ssh/
+
 # do node specific build
 F=$D/default.sh
 # take instance name, trim off domain and any node numbering
