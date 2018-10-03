@@ -63,16 +63,39 @@ mkdir -p /var/www/uploads
 chown www-data:www-data /var/www/uploads
 chmod o-rwx /var/www/uploads
 
-echo "TODO LetsEncrypt SSL Certificate: https support <-- requires domain name"
-
-echo "--- self-signed SSL certificate ---"
-openssl req -x509 -nodes -days 365 \
-   -subj '/C=CA/O=Carleton University/OU=Org/CN=localhost' \
-   -newkey rsa:2048 -keyout /etc/ssl/private/my.key \
-   -out /etc/ssl/certs/my.crt
-cat /etc/ssl/private/my.key /etc/ssl/certs/my.crt > /etc/lighttpd/server.pem
+echo "--- LetsEncrypt SSL Certificate: https support"
+add-apt-repository -y ppa:certbot/certbot
+apt-get -y install certbot
+name="saans.ca"
+certbot certonly -n --webroot -w /var/www/html/ --agree-tos -m 'boyle@sce.carleton.ca' -d ${name} -d www.${name}
 lighty-enable-mod ssl
 service lighttpd force-reload
+
+cat > /etc/cron.daily/renew-ssl <<EOF
+#! /bin/bash
+/usr/bin/certbot renew --quiet
+cd /etc/letsencrypt/live
+for d in *; do
+   [ ! -d "\$d" ] && continue
+   pushd "\$d" > /dev/null
+   cat privkey.pem cert.pem > /etc/lighttpd/\$d.pem
+   cp fullchain.pem /etc/lighttpd/
+   popd > /dev/null
+done
+cd /etc/lighttpd/
+ln -sf \$d.pem server.pem
+service lighttpd force-reload
+EOF
+chmod +x /etc/cron.daily/renew-ssl
+/etc/cron.daily/renew-ssl
+
+#echo "--- self-signed SSL certificate ---"
+#openssl req -x509 -nodes -days 365 \
+#   -subj '/C=CA/O=Carleton University/OU=Org/CN=localhost' \
+#   -newkey rsa:2048 -keyout /etc/ssl/private/my.key \
+#   -out /etc/ssl/certs/my.crt
+#cat /etc/ssl/private/my.key /etc/ssl/certs/my.crt > /etc/lighttpd/server.pem
+#service lighttpd force-reload
 #a2enmod ssl
 #a2ensite default-ssl
 #systemctl reload apache2
