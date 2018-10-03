@@ -22,6 +22,7 @@ lighty-enable-mod fastcgi
 lighty-enable-mod fastcgi-php
 lighty-enable-mod rewrite
 lighty-enable-mod accesslog
+lighty-enable-mod no-www
 
 cat > /etc/lighttpd/conf-available/50-https-only.conf <<EOF
 \$HTTP["scheme"] == "http" {
