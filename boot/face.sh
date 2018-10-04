@@ -56,6 +56,13 @@ mkdir -p /var/www/html
 chown www-data:www-data /var/www/html
 cp -r ${REPO_DIR}/www/* /var/www/html/
 
+mkdir -p /var/www/uploads
+chown www-data:www-data /var/www/uploads
+chmod o-rwx /var/www/uploads
+
+echo "--- enable dynamic pages via python/flask/jinja2/... ---"
+apt-get -y install python3-flask
+
 echo "--- LetsEncrypt SSL Certificate: https support"
 add-apt-repository -y ppa:certbot/certbot
 apt-get -y install certbot
