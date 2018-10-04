@@ -35,6 +35,7 @@ Contributors and Partners
 - Andrew Smith *Post Doctoral Fellow*
 - Alistair Boyle *Post Doctoral Fellow*
 - Roger Selzler *Ph.D. Student*
+- Francois Charih *Intern*
 - Dr. Jen McDonald *The Ottawa Hospital Rehab Centre*
 - Janet Holly *The Ottawa Hospital Rehab Centre*
 - L.Col Dr. Markus Besemann *Canadian Forces, Health Services*
