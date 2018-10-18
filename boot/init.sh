@@ -74,7 +74,12 @@ apt -y install git
 git clone --depth=1 git@github.com:boyle/2018-measure-stress.git
 D=2018-measure-stress/boot
 
-cp $D/boot/authorized_keys ~/.ssh/
+echo "--- ssh ---"
+cp $D/authorized_keys ~/.ssh/
+uname -a
+ufw --force enable
+ufw allow ssh
+ufw status
 
 # do node specific build
 F=$D/default.sh

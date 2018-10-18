@@ -9,11 +9,8 @@ REPO_DIR=2018-measure-stress
 apt -y install net-tools curl rsnapshot
 
 echo "--- firewall ---"
-uname -a
-ufw --force enable
 ufw allow http
 ufw allow https
-ufw allow ssh
 ufw status
 
 echo "--- webserver install ---"
@@ -59,10 +56,6 @@ mkdir -p /var/www/html
 chown www-data:www-data /var/www/html
 cp -r ${REPO_DIR}/www/* /var/www/html/
 
-mkdir -p /var/www/uploads
-chown www-data:www-data /var/www/uploads
-chmod o-rwx /var/www/uploads
-
 echo "--- LetsEncrypt SSL Certificate: https support"
 add-apt-repository -y ppa:certbot/certbot
 apt-get -y install certbot
@@ -107,17 +100,20 @@ debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Si
 apt -y install postfix
 ufw allow Postfix
 
-echo "TODO: store data to persistent storage!"
-mkdir -p /var/www/data
-sed -i '/ \/var\/www\/data /d' /etc/fstab
-echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/data   ext4  errors=remount-ro,noexec 0 0" >> /etc/fstab
-mount /var/www/data
+echo "--- store raw data to persistent storage ---"
+mkdir -p /var/www/rawdata
+chown www-data:www-data /var/www/rawdata
+chmod o-rwx /var/www/rawdata
+touch badmount /var/www/rawdata # this will be hidden by the 'mount' if it is successful
+sed -i '/ \/var\/www\/rawdata /d' /etc/fstab
+echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/rawdata   ext4  errors=remount-ro,noexec 0 0" >> /etc/fstab
+[ ! -f /dev/vdc ] || mount /var/www/rawdata
 
 echo "TODO: data and database snapshots (rsnapshot)"
 
 IP_LOCAL="172.16.59.0/24"
-IP_HEAD="172.16.59.8"
-echo "port forward: 2200 -> head:22 (${IP_HEAD})"
+IP_HEAD="172.16.59.8" # this changes at each boot of 'head'... stupidness
+echo "port forward: 2200 -> head:22 (${IP_HEAD}) in the local LAN (${IP_LOCAL})"
 cd
 ufw allow 2200/tcp
 cat > rules.before.prepend << EOF
