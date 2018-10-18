@@ -100,14 +100,38 @@ chmod +x /etc/cron.daily/renew-ssl
 #a2ensite default-ssl
 #systemctl reload apache2
 
+
 echo "--- email out ---"
 debconf-set-selections <<< "postfix postfix/mailname string ${DOMAIN}"
 debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
 apt -y install postfix
 ufw allow Postfix
 
-echo "TODO: store data and database to persistent storage!"
+echo "TODO: store data to persistent storage!"
+mkdir -p /var/www/data
+sed -i '/ \/var\/www\/data /d' /etc/fstab
+echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/data   ext4  errors=remount-ro,noexec 0 0" >> /etc/fstab
+mount /var/www/data
 
 echo "TODO: data and database snapshots (rsnapshot)"
+
+IP_LOCAL="172.16.59.0/24"
+IP_HEAD="172.16.59.8"
+echo "port forward: 2200 -> head:22 (${IP_HEAD})"
+cd
+ufw allow 2200/tcp
+cat > rules.before.prepend << EOF
+*nat
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A PREROUTING -p tcp --dport 2200 -j DNAT --to-destination ${IP_HEAD}:22
+-A POSTROUTING -s ${IP_LOCAL} -o eth0 -j MASQUERADE
+COMMIT
+EOF
+[ -f rules.before ] || cp /etc/ufw/before.rules .
+cat rules.before.prepend before.rules > /etc/ufw/before.rules
+sed -i 's/.*\(\<net.ipv4.ip_forward\).*/\1=1/' /etc/ufw/sysctl.conf
+ufw default allow FORWARD
+ufw reload
 
 echo "launch completed: $(date)"
