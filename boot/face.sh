@@ -61,8 +61,6 @@ add-apt-repository -y ppa:certbot/certbot
 apt-get -y install certbot
 name="saans.ca"
 certbot certonly -n --webroot -w /var/www/html/ --agree-tos -m 'boyle@sce.carleton.ca' -d ${name} -d www.${name} -d api.${name}
-lighty-enable-mod ssl
-service lighttpd force-reload
 
 cat > /etc/cron.daily/renew-ssl <<EOF
 #! /bin/bash
@@ -84,6 +82,7 @@ chmod +x /etc/cron.daily/renew-ssl
 
 # now we have the SSL certificate, its safe to force https-only
 lighty-enable-mod https-only
+lighty-enable-mod ssl
 service lighttpd force-reload
 
 #echo "--- self-signed SSL certificate ---"
@@ -108,15 +107,15 @@ echo "--- store raw data to persistent storage ---"
 mkdir -p /var/www/rawdata
 chown www-data:www-data /var/www/rawdata
 chmod o-rwx /var/www/rawdata
-touch badmount /var/www/rawdata # this will be hidden by the 'mount' if it is successful
+touch /var/www/rawdata/badmount # this will be hidden by the 'mount' if it is successful
 sed -i '/ \/var\/www\/rawdata /d' /etc/fstab
 echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/rawdata   ext4  errors=remount-ro,noexec 0 0" >> /etc/fstab
-[ ! -f /dev/vdc ] || mount /var/www/rawdata
+[ ! -b /dev/vdc ] || mount /var/www/rawdata
 
 echo "TODO: data and database snapshots (rsnapshot)"
 
 IP_LOCAL="172.16.59.0/24"
-IP_HEAD="172.16.59.8" # this changes at each boot of 'head'... stupidness
+IP_HEAD="172.16.59.9" # this changes at each boot of 'head'... stupidness
 echo "port forward: 2200 -> head:22 (${IP_HEAD}) in the local LAN (${IP_LOCAL})"
 cd
 ufw allow 2200/tcp
