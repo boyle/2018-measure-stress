@@ -30,7 +30,7 @@ cat > /etc/lighttpd/conf-available/50-https-only.conf <<EOF
     }
 }
 EOF
-lighty-enable-mod https-only
+# can't enable this till we have the SSL certificate!
 
 systemctl start lighttpd
 service lighttpd force-reload
@@ -60,7 +60,7 @@ echo "--- LetsEncrypt SSL Certificate: https support"
 add-apt-repository -y ppa:certbot/certbot
 apt-get -y install certbot
 name="saans.ca"
-certbot certonly -n --webroot -w /var/www/html/ --agree-tos -m 'boyle@sce.carleton.ca' -d ${name} -d www.${name}
+certbot certonly -n --webroot -w /var/www/html/ --agree-tos -m 'boyle@sce.carleton.ca' -d ${name} -d www.${name} -d api.${name}
 lighty-enable-mod ssl
 service lighttpd force-reload
 
@@ -81,6 +81,10 @@ service lighttpd force-reload
 EOF
 chmod +x /etc/cron.daily/renew-ssl
 /etc/cron.daily/renew-ssl
+
+# now we have the SSL certificate, its safe to force https-only
+lighty-enable-mod https-only
+service lighttpd force-reload
 
 #echo "--- self-signed SSL certificate ---"
 #openssl req -x509 -nodes -days 365 \
