@@ -5,9 +5,12 @@ from flask import render_template
 from werkzeug import secure_filename
 import re
 
-UPLOAD_FOLDER = '/var/www/uploads'
-
 app = Flask(__name__)
+
+from werkzeug.contrib.fixers import LighttpdCGIRootFix
+app.wsgi_app = LighttpdCGIRootFix(app.wsgi_app)
+
+UPLOAD_FOLDER = '/var/www/rawdata/db/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024 # 500 MB
 

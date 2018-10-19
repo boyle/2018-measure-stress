@@ -1,0 +1,6 @@
+#! /bin/sh
+D=$(dirname $0)
+echo "$D"
+rsync -rav --delete --exclude '__pycache__' --exclude "/deploy" "$D/" root@saans.ca:/var/www/html
+ssh root@saans.ca 'chown -R www-data:www-data /var/www/html/'
+ssh root@saans.ca 'service lighttpd force-reload'

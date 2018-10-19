@@ -16,7 +16,6 @@ ufw status
 echo "--- webserver install ---"
 apt-get -y install lighttpd php7.2-cgi python3-flask
 lighty-enable-mod fastcgi
-lighty-enable-mod fastcgi-php
 lighty-enable-mod rewrite
 lighty-enable-mod accesslog
 lighty-enable-mod no-www
@@ -56,12 +55,31 @@ mkdir -p /var/www/html
 chown www-data:www-data /var/www/html
 cp -r ${REPO_DIR}/www/* /var/www/html/
 
-mkdir -p /var/www/uploads
-chown www-data:www-data /var/www/uploads
-chmod o-rwx /var/www/uploads
-
 echo "--- enable dynamic pages via python/flask/jinja2/... ---"
-apt-get -y install python3-flask
+apt-get -y install python3-flask python3-dev python3-pip
+python3 --version
+pip3 --version
+pip3 install --upgrade flipflop
+
+cat > /etc/lighttpd/conf-available/16-fastcgi-flask.conf << EOF
+fastcgi.server += ( "/app.fcgi" =>
+	((
+      "socket" => "/tmp/flaskapp.fastcgi.socket",
+		"bin-path" => "/var/www/html/app.fcgi",
+		"max-procs" => 1,
+      "check-local" => "disable",
+	))
+)
+alias.url = (
+    "/static" => "/var/www/html/static"
+)
+url.rewrite-once = (
+    "^(/static.*)$" => "\$1",
+    "^(/.*)$" => "/app.fcgi\$1"
+)
+EOF
+lighty-enable-mod fastcgi-flask
+service lighttpd force-reload
 
 echo "--- LetsEncrypt SSL Certificate: https support"
 add-apt-repository -y ppa:certbot/certbot
@@ -112,9 +130,9 @@ ufw allow Postfix
 
 echo "--- store raw data to persistent storage ---"
 mkdir -p /var/www/rawdata
-chown www-data:www-data /var/www/rawdata
-chmod o-rwx /var/www/rawdata
 touch /var/www/rawdata/badmount # this will be hidden by the 'mount' if it is successful
+chown -R www-data:www-data /var/www/rawdata
+chmod -R o-rwx /var/www/rawdata
 sed -i '/ \/var\/www\/rawdata /d' /etc/fstab
 echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/rawdata   ext4  errors=remount-ro,noexec 0 0" >> /etc/fstab
 [ ! -b /dev/vdc ] || mount /var/www/rawdata
