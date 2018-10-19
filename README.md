@@ -53,3 +53,26 @@ The 'www' directory contains the website which will be hosted on the
 public/internet facing side of the cloud environment. These pages will be
 publicly accessible. Pages should redirect to https for secure (SSL)
 connections. Private research group information should be password protected.
+
+Remote Access from a Linux Host
+-------------------------------
+
+From a linux host, you can get ssh access to the web server front-end using `ssh <user>@saans.ca`.
+To get to other servers in the system you can ssh via a "jump host" if you know the IP address of the local system
+`ssh -J <user>@saans.ca <user>@<ip>` for an internal `<ip>` address such as `172.16.59.9`.
+You must have an account as `<user>` on the web server.
+If your username on your local computer matches that on the remote system you
+can drop the `<user>@` portion of the command.
+
+For example, to get to one of the compute nodes: `ssh -J boyle@saans.ca boyle@172.16.59.9`
+
+Similarly, one can get a graphical VNC session, by connecting through a competent VNC client
+such as [TigerVNC](https://tigervnc.org/):
+`vncviewer -via boyle@saans.ca 172.16.59.9:10` where the `:10` is the VNC port
+number reported when you start a VNC server session `vncserver` from the
+command line.
+TigerVNC is available for windows machines as well: you will need to configure
+your SSH keys, but access will then work equally well from windows or linux.
+
+SSH password authentication is disabled on all systems. You need an authentication key to login.
+See `ssh-keygen` and provide the public key (`id_rsa.pub`) to whomever is administering the servers.

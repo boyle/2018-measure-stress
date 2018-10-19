@@ -114,23 +114,4 @@ echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/rawdata   ext4  errors=
 
 echo "TODO: data and database snapshots (rsnapshot)"
 
-IP_LOCAL="172.16.59.0/24"
-IP_HEAD="172.16.59.9" # this changes at each boot of 'head'... stupidness
-echo "port forward: 2200 -> head:22 (${IP_HEAD}) in the local LAN (${IP_LOCAL})"
-cd
-ufw allow 2200/tcp
-cat > rules.before.prepend << EOF
-*nat
-:PREROUTING ACCEPT [0:0]
-:POSTROUTING ACCEPT [0:0]
--A PREROUTING -p tcp --dport 2200 -j DNAT --to-destination ${IP_HEAD}:22
--A POSTROUTING -s ${IP_LOCAL} -o eth0 -j MASQUERADE
-COMMIT
-EOF
-[ -f rules.before ] || cp /etc/ufw/before.rules .
-cat rules.before.prepend before.rules > /etc/ufw/before.rules
-sed -i 's/.*\(\<net.ipv4.ip_forward\).*/\1=1/' /etc/ufw/sysctl.conf
-ufw default allow FORWARD
-ufw reload
-
 echo "launch completed: $(date)"
