@@ -73,18 +73,22 @@ def listsubdirs(base):
 def listfiles(base):
     return [ o for o in os.listdir(base) ]
 
-@app.route('/data')
+@app.route('/api')
+def apiversionlist():
+    return '<br/>'.join(['v1'])
+
+@app.route('/api/v1')
 def patientlist():
     base = app.config['UPLOAD_FOLDER']
     return '<br/>'.join(listsubdirs(base))
 
-@app.route('/data/<int:patient>')
+@app.route('/api/v1/<int:patient>')
 def sessionlist(patient):
     base = app.config['UPLOAD_FOLDER']
     path = os.path.join(base, str(patient))
     return '<br/>'.join(listsubdirs(path))
 
-@app.route('/data/<int:patient>/<int:session>')
+@app.route('/api/v1/<int:patient>/<int:session>')
 def datalist(patient,session):
     base = app.config['UPLOAD_FOLDER']
     files = listfiles(os.path.join(base,
@@ -94,7 +98,7 @@ def datalist(patient,session):
     files = filter(lambda i: not regex.search(i), files)
     return '<br/>'.join(files)
 
-@app.route('/data/<int:patient>/<int:session>/<string:measure>')
+@app.route('/api/v1/<int:patient>/<int:session>/<string:measure>')
 def returnfile(patient, session, measure):
     base = app.config['UPLOAD_FOLDER']
     return send_from_directory(os.path.join(base,

@@ -73,6 +73,12 @@ fastcgi.server += ( "/app.fcgi" =>
 alias.url = (
     "/static" => "/var/www/html/static"
 )
+\$HTTP["host"] =~ "^api\\.(.*)" {
+   url.rewrite-once = (
+       "^/$" => "/app.fcgi/api",
+       "^(/.*)$" => "/app.fcgi/api\$1",
+   )
+}
 url.rewrite-once = (
     "^(/static.*)$" => "\$1",
     "^(/.*)$" => "/app.fcgi\$1"
