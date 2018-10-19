@@ -81,9 +81,13 @@ ufw --force enable
 ufw allow ssh
 ufw status
 
+echo "--- create users ---"
+$D/create_users.sh $D/authorized_keys
+
 # do node specific build
 F=$D/default.sh
 # take instance name, trim off domain and any node numbering
 Fs="$D/$(ec2metadata --local-hostname | sed 's/\(-[0-9][0-9]*\)*\..*//').sh"
 [ ! -x "$Fs" ] || F=$Fs
+echo "$(basename $0) completed. Jumping to ${F}."
 exec ./${F}
