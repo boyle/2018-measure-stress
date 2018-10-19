@@ -14,28 +14,28 @@ import * as shape from 'd3-shape'
 
 
 export default class Activity extends React.Component {
-	render() {
-		const data = [ 50, 10, 40, 95, -4, -24, 85, 91, 35, 53, -53, 24, 50, -20, -80 ]
+  render() {
+    const data = [ 50, 10, 40, 95, -4, -24, 85, 91, 35, 53, -53, 24, 50, -20, -80 ]
         return (
  
-					<View style={styles.container}>
-						<View style={{ height:200, width: 600 }}>
-							<EventsGanttChart data={data}/>	
-						</View>
+          <View style={styles.container}>
+            <View style={{ height:200, width: 600 }}>
+              <EventsGanttChart data={data}/>  
+            </View>
                 </View>
         );
     }
 }
 
 const styles = StyleSheet.create({
-	  appTitle: {
-		    fontSize: 30,
-		    fontWeight: 'bold',
-	  },
+    appTitle: {
+        fontSize: 30,
+        fontWeight: 'bold',
+    },
     container: {
-		    flex: 1,
-		    padding: 30,
-		    flexDirection: 'column',
+        flex: 1,
+        padding: 30,
+        flexDirection: 'column',
         backgroundColor: '#fff',
         alignItems: 'center',
     },

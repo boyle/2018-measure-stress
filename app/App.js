@@ -1,3 +1,9 @@
+/*
+ * App.js
+ * Author: Francois Charih <francoischarih@sce.carleton.ca
+ *
+ * Description: App entry point.
+ */
 import React from 'react';
 import { StyleSheet, Text, View, Image, TextInput } from 'react-native';
 import { createStackNavigator } from 'react-navigation';
@@ -8,8 +14,8 @@ import Activity from './pages/Activity/Activity.js';
 
 const App = createStackNavigator({
     Login: { screen: Login },
-		Home: { screen: Home },
-	  Activity: { screen: Activity }
+    Home: { screen: Home },
+    Activity: { screen: Activity }
 });
 
 export default App;
