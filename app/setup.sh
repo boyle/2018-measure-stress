@@ -20,4 +20,4 @@ sudo npm install -g react-native-cli
 react-native link react-native-svg
 
 # Set the path to the SDK
-echo "sdk.dir=$1" >> android/local.properties
+echo "sdk.dir=$1" > android/local.properties
