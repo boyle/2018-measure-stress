@@ -1,12 +1,18 @@
+import React from 'react';
 /*
  * Login.js
  *
  * Author: Francois Charih <francoischarih@sce.carleton.ca>
  * Description: Login page used by the user to authenticate.
  */
-
-import React from 'react';
-import { StyleSheet, Text, View, Button, Image, TextInput } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  Image,
+  TextInput
+} from 'react-native';
 
 export default class Login extends React.Component {
   constructor(props) {
@@ -45,11 +51,11 @@ export default class Login extends React.Component {
           />
         </View>
         <View style={styles.buttonsContainer}>
-          <Button 
+          <Button
             title="Log in"
             onPress={() => {this.props.navigation.navigate('Home')}}
           />
-          <Button 
+          <Button
             title="Register"
             onPress={() => {console.log('Review Session clicked')}} // TODO hook up to registration modal
           />
@@ -65,7 +71,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   container: {
-    padding:20,
+    padding: 20,
     flex: 1,
     flexDirection: 'column',
     backgroundColor: '#fff',
@@ -76,7 +82,7 @@ const styles = StyleSheet.create({
     margin: 20,
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between', 
+    justifyContent: 'space-between',
     width: '100%',
   },
   buttonsContainer: {
