@@ -14,39 +14,13 @@ ufw allow https
 ufw status
 
 echo "--- webserver install ---"
-apt-get -y install lighttpd php7.2-cgi python3-flask
+apt-get -y install lighttpd python3-flask
 lighty-enable-mod fastcgi
 lighty-enable-mod rewrite
 lighty-enable-mod accesslog
-lighty-enable-mod no-www
-
-cat > /etc/lighttpd/conf-available/50-https-only.conf <<EOF
-\$HTTP["scheme"] == "http" {
-    # capture vhost name with regex conditiona -> %0 in redirect pattern
-    # must be the most inner block to the redirect rule
-    \$HTTP["host"] =~ ".*" {
-        url.redirect = (".*" => "https://%0\$0")
-    }
-}
-EOF
-# can't enable this till we have the SSL certificate!
 
 systemctl start lighttpd
 service lighttpd force-reload
-
-#apt -y install apache2  libapache2-mod-php7.2
-#echo "enable apache2 mod_rewrite, mod_headers, mod_env, mod_dir, mod_mime"
-#a2enmod rewrite
-#a2enmod headers
-#a2enmod env
-#a2enmod dir
-#a2enmod mime
-
-#sed -i 's/\(post_max_size =\) .*/\1 512M/' /etc/php/7.2/apache2/php.ini
-#sed -i 's/\(upload_max_filesize =\) .*/\1 512M/' /etc/php/7.2/apache2/php.ini
-#sed -i 's/\(memory_limit =\) .*/\1 512M/' /etc/php/7.2/apache2/php.ini
-
-#systemctl reload apache2
 
 echo "--- webpage install ---"
 chown -R root:www-data ${REPO_DIR}/www/*
@@ -61,30 +35,71 @@ python3 --version
 pip3 --version
 pip3 install --upgrade flipflop
 
-cat > /etc/lighttpd/conf-available/16-fastcgi-flask.conf << EOF
+cat > /etc/lighttpd/conf-available/15-saans-http.conf << EOF
 fastcgi.server += ( "/app.fcgi" =>
-	((
-      "socket" => "/tmp/flaskapp.fastcgi.socket",
-		"bin-path" => "/var/www/html/app.fcgi",
-		"max-procs" => 1,
-      "check-local" => "disable",
-	))
+    ((
+        "socket" => "/tmp/flaskapp.fastcgi.socket",
+        "bin-path" => "/var/www/html/app.fcgi",
+        "max-procs" => 1,
+        "check-local" => "disable",
+    ))
 )
 alias.url = (
     "/static" => "/var/www/html/static"
 )
-\$HTTP["host"] =~ "^api\\.(.*)" {
-   url.rewrite-once = (
-       "^/$" => "/app.fcgi/api",
-       "^(/.*)$" => "/app.fcgi/api\$1",
-   )
+\$HTTP["host"] =~ "^www\\.(saans\\.ca)$" {
+    url.redirect = ( "^/(.*)" => "http://%1/\$1" )
 }
-url.rewrite-once = (
-    "^(/static.*)$" => "\$1",
-    "^(/.*)$" => "/app.fcgi\$1"
-)
+\$HTTP["host"] =~ "^api\\.saans\\.ca$" {
+    url.rewrite-once = (
+        "^/$" => "/app.fcgi/api",
+        "^(/.*)$" => "/app.fcgi/api\$1",
+    )
+}
+\$HTTP["host"] =~ "^saans\\.ca$" {
+    url.rewrite-once = (
+        "^(/static.*)$" => "\$1",
+        "^(/.*)$" => "/app.fcgi\$1",
+    )
+}
 EOF
-lighty-enable-mod fastcgi-flask
+
+cat > /etc/lighttpd/conf-available/15-saans-https.conf << EOF
+fastcgi.server += ( "/app.fcgi" =>
+    ((
+        "socket" => "/tmp/flaskapp.fastcgi.socket",
+        "bin-path" => "/var/www/html/app.fcgi",
+        "max-procs" => 1,
+        "check-local" => "disable",
+    ))
+)
+alias.url = (
+    "/static" => "/var/www/html/static"
+)
+\$HTTP["scheme"] == "http" {
+    \$HTTP["host"] =~ ".*" {
+        url.redirect = (".*" => "https://%0\$0")
+    }
+}
+\$HTTP["scheme"] == "https" {
+    \$HTTP["host"] =~ "^www\\.(saans\\.ca)$" {
+        url.redirect = ( "^/(.*)" => "http://%1/\$1" )
+    }
+    \$HTTP["host"] =~ "^api\\.saans\\.ca$" {
+        url.rewrite-once = (
+            "^/$" => "/app.fcgi/api",
+            "^(/.*)$" => "/app.fcgi/api\$1",
+        )
+    }
+    \$HTTP["host"] =~ "^saans\\.ca$" {
+        url.rewrite-once = (
+            "^(/static.*)$" => "\$1",
+            "^(/.*)$" => "/app.fcgi\$1",
+        )
+    }
+}
+EOF
+lighty-enable-mod saans-http
 service lighttpd force-reload
 
 echo "--- LetsEncrypt SSL Certificate: https support"
@@ -112,9 +127,10 @@ chmod +x /etc/cron.daily/renew-ssl
 /etc/cron.daily/renew-ssl
 
 # now we have the SSL certificate, its safe to force https-only
-lighty-enable-mod https-only
-lighty-enable-mod ssl
-service lighttpd force-reload
+lighty-enable-mod  ssl
+lighty-disable-mod saans-http
+lighty-enable-mod  saans-https
+service lighttpd   force-reload
 
 #echo "--- self-signed SSL certificate ---"
 #openssl req -x509 -nodes -days 365 \
@@ -146,3 +162,4 @@ echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/rawdata   ext4  errors=
 echo "TODO: data and database snapshots (rsnapshot)"
 
 echo "launch completed: $(date)"
+
