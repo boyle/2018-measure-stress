@@ -6,12 +6,13 @@ import React from 'react';
  * Description: Home page show upon login.
  */
 import { StyleSheet, Text, View, Button, Image, TextInput } from 'react-native';
+import { connect } from 'react-redux';
 
-export default class Home extends React.Component {
+class Home extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text>Welcome, Francois</Text>
+        <Text>Welcome, {this.props.user.name}</Text>
         <Button
           onPress={() => this.props.navigation.navigate('Activity')}
           title="Launch a session"
@@ -43,3 +44,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
 });
+
+function mapStateToProps(state) {
+	return {
+		user: state.user,
+	}
+}
+
+export default connect(mapStateToProps, null)(Home);

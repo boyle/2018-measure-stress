@@ -14,7 +14,9 @@
     "react-native-pathjs-charts": "0.0.34",
     "react-native-svg": "^7.1.2",
     "react-native-svg-charts": "^5.2.0",
-    "react-navigation": "^2.18.0"
+    "react-navigation": "^2.18.0",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.1"
   },
   "devDependencies": {
     "babel-jest": "23.6.0",
