@@ -13,7 +13,7 @@ done < "$F" | sort | uniq | tee  users.txt
 [ $(grep -c '^\<data\>' /etc/group) -ge 1 ] || groupadd data
 while IFS='' read -r user; do
    [ -d /home/${user} ] && echo "${user}: already exists" && continue
-   useradd --groups data --create-home ${user} || continue
+   useradd --groups data --shell /bin/bash --create-home ${user} || continue
    mkdir -p /home/${user}/.ssh || continue
    grep ${user} $F > /home/${user}/.ssh/authorized_keys || continue
    chmod -R go-rw /home/${user}/.ssh || continue

@@ -30,7 +30,7 @@ chown www-data:www-data /var/www/html
 cp -r ${REPO_DIR}/www/* /var/www/html/
 
 echo "--- enable dynamic pages via python/flask/jinja2/... ---"
-apt-get -y install python3-flask python3-dev python3-pip
+apt-get -y install python3-dev python3-pip python-virtualenv
 python3 --version
 pip3 --version
 pip3 install --upgrade flipflop
@@ -132,18 +132,6 @@ lighty-disable-mod saans-http
 lighty-enable-mod  saans-https
 service lighttpd   force-reload
 
-#echo "--- self-signed SSL certificate ---"
-#openssl req -x509 -nodes -days 365 \
-#   -subj '/C=CA/O=Carleton University/OU=Org/CN=localhost' \
-#   -newkey rsa:2048 -keyout /etc/ssl/private/my.key \
-#   -out /etc/ssl/certs/my.crt
-#cat /etc/ssl/private/my.key /etc/ssl/certs/my.crt > /etc/lighttpd/server.pem
-#service lighttpd force-reload
-#a2enmod ssl
-#a2ensite default-ssl
-#systemctl reload apache2
-
-
 echo "--- email out ---"
 debconf-set-selections <<< "postfix postfix/mailname string ${DOMAIN}"
 debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
@@ -158,6 +146,22 @@ chmod -R o-rwx /var/www/rawdata
 sed -i '/ \/var\/www\/rawdata /d' /etc/fstab
 echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/rawdata   ext4  errors=remount-ro,noexec 0 0" >> /etc/fstab
 [ ! -b /dev/vdc ] || mount /var/www/rawdata
+
+echo "database snapshots setup"
+apt -y install postgresql postgresql-contrib postgresql-server-dev-all
+DBUSER=saansuser
+DB=saansdb
+DBPASSWD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w60 | head -n1)
+sudo -u postgres psql -c "create database ${DB}"
+sudo -u postgres psql -c "create database ${DB}_test"
+sudo -u postgres psql -c "create user ${DBUSER} WITH PASSWORD \'${DBPASSWD}\'"
+sudo -u postgres psql -c "grant all privileges on database ${DB} to ${DBUSER}"
+echo "$DBUSER $DBPASSWD $DB" > ~/dbpasswd.txt
+chmod 700 ~/dbpasswd.txt
+
+WEBAPP_SECRET_KEY=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w60 | head -n1)
+echo "$WEBAPP_SECRET_KEY" > ~/webapp-secret-key.txt
+chmod 700 ~/webapp-secret-key.txt
 
 echo "TODO: data and database snapshots (rsnapshot)"
 
