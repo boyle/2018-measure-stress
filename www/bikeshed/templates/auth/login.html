@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block contenttitle %}Log In{% endblock %}
+{% block content %}
+  <form method="post">
+    <label for="username">Username</label>
+    <input name="username" id="username" required>
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required>
+    <input type="submit" value="Log In">
+  </form>
+  <p><a href="{{ url_for('auth.register') }}">No username? Register as a new user.</a>
+{% endblock %}

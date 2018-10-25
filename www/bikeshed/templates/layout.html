@@ -8,20 +8,21 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SAANS during Treatment</title>
+    <title>{% block title %}{% endblock %} SAANS during Treatment</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="/static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 
     <!-- Custom fonts for this template -->
-    <link href="/static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('static', filename='vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
     <link href='https://fonts.googleapis.com/css?family=Kaushan+Script' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
 
     <!-- Custom styles for this template -->
-    <link href="/static/css/agency.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/agency.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 
   </head>
 
@@ -30,54 +31,31 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
       <div class="container">
-        <a class="navbar-brand js-scroll-trigger" href="/#page-top">Research</a>
+         <a class="navbar-brand js-scroll-trigger" href="{{ url_for('index') }}">Research</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           Menu
           <i class="fas fa-bars"></i>
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
           <ul class="navbar-nav text-uppercase ml-auto">
-            <li class="nav-item">
-              <a class="nav-link js-scroll-trigger" href="/#overview">Overview</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link js-scroll-trigger" href="/#news">News</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link js-scroll-trigger" href="/#team">Team</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link js-scroll-trigger" href="/#partners">Partners</a>
-            </li>
-            <li class="nav-item">
-                 <a class="nav-link" href="/upload#upload">
-                 <i class="fas fa-file-upload fa-inverse"/></i>
-              Data Upload
-                 </a>
-              </label>
-               </form>
-               </div>
-            </li>
+           {% block navbar %}{% endblock %}
+            {% if g.user %}
+              <li><span>{{ g.user['username'] }}</span>:
+              <a href="{{ url_for('auth.logout') }}">Log Out</a>
+            {% else %}
+<!--
+              <li><a href="{{ url_for('auth.register') }}">Register</a>
+              <li><a href="{{ url_for('auth.login') }}">Log In</a>
+-->
+              {% endif %}
           </ul>
         </div>
       </div>
     </nav>
 
-    <!-- Header -->
-    <header class="masthead">
-      <div class="container">
-        <div class="intro-text">
-          <div class="intro-lead-in">
-Using machine learning to investigate sympathetic activation of the autonomic
-nervous system (SAANS) during the treatment of mild traumatic brain injury, chronic
-pain, and post-traumatic stress disorder.</div>
-          <div class="intro-heading text-uppercase">SAANS during Treatment</div>
-          <a class="btn btn-primary btn-xl text-uppercase js-scroll-trigger" href="/#overview">Tell Me More</a>
-        </div>
-      </div>
-    </header>
+    {% block header %}{% endblock %}
 
-    {% block content %}{% endblock %}
+    {% block body %}{% endblock %}
 
     <!-- Footer -->
     <footer>
@@ -96,7 +74,7 @@ pain, and post-traumatic stress disorder.</div>
           <div class="col-md-4">
             <ul class="list-inline quicklinks">
               <li class="list-inline-item">
-                <a href="/privacy#privacy">Privacy and Confidentiality</a>
+                 <a href="{{ url_for('cover.privacy') }}">Privacy and Confidentiality</a>
               </li>
             </ul>
           </div>
@@ -105,18 +83,18 @@ pain, and post-traumatic stress disorder.</div>
     </footer>
 
     <!-- Bootstrap core JavaScript -->
-    <script src="/static/vendor/jquery/jquery.min.js"></script>
-    <script src="/static/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
     <!-- Plugin JavaScript -->
-    <script src="/static/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
     <!-- Contact form JavaScript -->
-    <script src="/static/js/jqBootstrapValidation.js"></script>
-    <script src="/static/js/contact_me.js"></script>
+<!--    <script src="{{ url_for('static', filename='js/jqBootstrapValidation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/contact_me.js') }}"></script> -->
 
     <!-- Custom scripts for this template -->
-    <script src="/static/js/agency.min.js"></script>
+    <script src="{{ url_for('static', filename='js/agency.min.js') }}"></script>
   </body>
 
 </html>

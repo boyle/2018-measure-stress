@@ -1,0 +1,15 @@
+#! /bin/bash
+[ -d venv ] || virtualenv venv
+source ./venv/bin/activate
+set -ex
+[ ! -f requirements.txt ] || pip install -r requirements.txt
+pip check
+
+source venv/bin/activate
+export FLASK_APP="bikeshed"
+export FLASK_ENV=development
+#export FLASK_DEBUG=true
+
+pip list --outdated
+
+exec flask ${1:-run}

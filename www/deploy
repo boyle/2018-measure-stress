@@ -1,6 +1,7 @@
 #! /bin/sh
 D=$(dirname $0)
 echo "$D"
-rsync -rav --delete --exclude '__pycache__' --exclude "/deploy" "$D/" root@saans.ca:/var/www/html
+rsync -rav --delete --exclude '__pycache__' --exclude "/deploy" --exclude "/instance" --exclude "/venv" "$D/" root@saans.ca:/var/www/html
 ssh root@saans.ca 'chown -R www-data:www-data /var/www/html/'
 ssh root@saans.ca 'service lighttpd force-reload'
+#ssh root@saans.ca 'pip3 install -r /var/www/html/requirements.txt'

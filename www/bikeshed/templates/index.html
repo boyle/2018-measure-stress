@@ -1,5 +1,40 @@
 {% extends "layout.html" %}
-{% block content %}
+{% block navbar %}
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#overview">Overview</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#news">News</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#team">Team</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#partners">Partners</a>
+            </li>
+            <li class="nav-item">
+                 <a class="nav-link" href="{{ url_for('upload.upload') }}">
+                 <i class="fas fa-file-upload fa-inverse"/></i>
+              Data Upload
+                 </a>
+            </li>
+{% endblock %}
+{% block header %}
+    <!-- Header -->
+    <header class="masthead">
+      <div class="container">
+        <div class="intro-text">
+          <div class="intro-lead-in">
+Using machine learning to investigate sympathetic activation of the autonomic
+nervous system (SAANS) during the treatment of mild traumatic brain injury, chronic
+pain, and post-traumatic stress disorder.</div>
+          <div class="intro-heading text-uppercase">SAANS during Treatment</div>
+          <a class="btn btn-primary btn-xl text-uppercase js-scroll-trigger" href="#overview">Tell Me More</a>
+        </div>
+      </div>
+    </header>
+{% endblock %}
+{% block body %}
     <!-- Services -->
     <section id="overview">
       <div class="container">
