@@ -1,7 +1,100 @@
-#! /bin/sh
-D=$(dirname $0)
-echo "$D"
-rsync -rav --delete --exclude '__pycache__' --exclude "/deploy" --exclude "/instance" --exclude "/venv" "$D/" root@saans.ca:/var/www/html
-ssh root@saans.ca 'chown -R www-data:www-data /var/www/html/'
-ssh root@saans.ca 'service lighttpd force-reload'
-#ssh root@saans.ca 'pip3 install -r /var/www/html/requirements.txt'
+#! /bin/bash
+S=$(dirname $0)
+D=/var/www/html
+R=root@saans.ca
+
+function help() {
+cat <<EOF
+usage: $(basename $0) <cmd>
+   <none>   do the following steps:
+   tx       transfer $S --> $R:$D
+   venv     update remote's virtualenv dependencies
+   migrate  migrate remote's database
+   restart  restart the webserver
+EOF
+}
+
+if [ $# -eq 1 ] && [ "$1" == "help" ]; then
+   help
+   exit 0
+fi
+
+if [ $# -gt 1 ]; then
+   help
+   exit 1
+fi
+
+if [ $# == 1 ]; then
+   case $1 in
+      tx) ;;
+      venv) ;;
+      migrate) ;;
+      restart) ;;
+      venv_remote) ;;
+      migrate_remote) ;;
+      restart_remote) ;;
+      *)
+         echo "error: $1: unrecognized cmd" 1>&2
+         help
+         exit 1;;
+   esac
+fi
+
+SSH="ssh -o 'ControlMaster=auto'"
+SCP="scp -o 'ControlMaster=auto'"
+RSYNC="rsync -e \"ssh -o 'ControlPath=auto'\""
+
+if [ $# == 0 ] || [ $1 == "tx" ]; then
+   echo "$S -> $R:$D"
+   eval ${RSYNC} -rav --delete --delete-excluded \
+      --exclude '__pycache__' --exclude "/deploy" --exclude "/instance" --exclude "/venv" \
+      --exclude '.pytest_cache' --exclude '/htmlcov' \
+      "$S/" $R:$D/
+fi
+
+if [ $# == 0 ] || [ $1 == "venv" ]; then
+   set -ex
+   eval $RSYNC $0 $R:~/
+   eval $SSH $R "./$(basename $0) venv_remote"
+   set +ex
+fi
+
+if [ $# == 0 ] || [ $1 == "migrate" ]; then
+   set -ex
+   eval $RSYNC $0 $R:~/
+   eval $SSH $R "./$(basename $0) migrate_remote"
+   set +ex
+fi
+
+if [ $# == 0 ] || [ $1 == "restart" ]; then
+   set -ex
+   eval $RSYNC $0 $R:~/
+   eval $SSH $R "./$(basename $0) restart_remote"
+   set +ex
+fi
+
+if [ $# == 1 ] && [ $1 == "venv_remote" ]; then
+   cd $D
+   [ -d venv ] || python3 -m venv venv
+   source venv/bin/activate
+   set -ex
+   pip install -r requirements.txt
+   set +ex
+fi
+
+if [ $# == 1 ] && [ $1 == "migrate_remote" ]; then
+   cd $D
+   source venv/bin/activate
+   set -ex
+   FLASK_APP=bikeshed flask init-db
+   chown www-data:www-data instance/bikeshed.db
+   chmod 750 instance/bikeshed.db
+   set +ex
+fi
+
+if [ $# == 1 ] && [ $1 == "restart_remote" ]; then
+   set -ex
+   chown -R www-data:www-data $D
+   service lighttpd force-reload
+   set +ex
+fi

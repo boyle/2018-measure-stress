@@ -30,7 +30,7 @@ chown www-data:www-data /var/www/html
 cp -r ${REPO_DIR}/www/* /var/www/html/
 
 echo "--- enable dynamic pages via python/flask/jinja2/... ---"
-apt-get -y install python3-dev python3-pip python-virtualenv
+apt-get -y install python3-dev python3-pip python-virtualenv python3-venv
 python3 --version
 pip3 --version
 pip3 install --upgrade flipflop
@@ -45,7 +45,7 @@ fastcgi.server += ( "/app.fcgi" =>
     ))
 )
 alias.url = (
-    "/static" => "/var/www/html/static"
+    "/static" => "/var/www/html/bikeshed/static"
 )
 \$HTTP["host"] =~ "^www\\.(saans\\.ca)$" {
     url.redirect = ( "^/(.*)" => "http://%1/\$1" )
@@ -74,7 +74,7 @@ fastcgi.server += ( "/app.fcgi" =>
     ))
 )
 alias.url = (
-    "/static" => "/var/www/html/static"
+    "/static" => "/var/www/html/bikeshed/static"
 )
 \$HTTP["scheme"] == "http" {
     \$HTTP["host"] =~ ".*" {
