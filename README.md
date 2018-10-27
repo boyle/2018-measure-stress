@@ -1,4 +1,4 @@
-Measure Stress
+Measure Stress [![Build Status](https://travis-ci.com/boyle/2018-measure-stress.svg?token=ppJxXrcSY7ZkfdM9JuFM&branch=master)](https://travis-ci.com/boyle/2018-measure-stress)
 ==============
 
 The project title is:
