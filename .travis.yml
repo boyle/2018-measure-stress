@@ -31,3 +31,6 @@ script:
 
 after_success:
    - coveralls
+
+notifications:
+    slack: cimvhr-saans:Sor7cjZ280ryRSYs2byWUYm6
