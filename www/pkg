@@ -1,0 +1,23 @@
+#! /bin/bash
+[ -d venv ] || virtualenv venv
+source venv/bin/activate
+set -ex
+pip install wheel
+python setup.py bdist_wheel
+pip uninstall wheel
+
+## deploy:
+## !! This doesn't do a migration; it blows away the old db if one exists. !!
+# scp dist/flaskr-1.0.0-py3-none-any.whl XXX
+## go to the remote and setup a new virtualenv:
+# virtualenv venv
+# source venv/bin/activate
+# pip install flaskr-1.0.0-py3-none-any.whl
+# FLASK_APP=flaskr flask init-db
+#
+# python -c 'import os; print(os.urandom(16))'
+## b'_5#y2L"F4Q8z\n\xec]/'
+## set the key in venv/var/flaskr-instance/config.py
+# echo "SECRET_KEY = b'_5#y2L"F4Q8z\n\xec]/'" > venv/var/flaskr-instance/config.py
+
+

@@ -1,0 +1,4 @@
+graft bikeshed/templates
+graft bikeshed/static
+include bikeshed/schema.sql
+global-exclude *.pyc
