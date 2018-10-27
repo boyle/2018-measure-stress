@@ -2,4 +2,4 @@
 [ -d venv ] || virtualenv venv
 source venv/bin/activate
 set -ex
-python -m pytest
+python -m pytest $*

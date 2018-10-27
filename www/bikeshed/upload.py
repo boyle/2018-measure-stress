@@ -3,7 +3,7 @@ from flask import (
     Blueprint, flash, request, redirect, url_for, send_from_directory,
     render_template, current_app
 )
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 from bikeshed.auth import login_required
 from bikeshed.db import get_db
@@ -22,29 +22,31 @@ def upload():
             return 'no patient ID'
         if ('session' not in request.form) or (request.form['session'] == ''):
             return 'no session number'
-        if not request.form['patient'].isdigit():
+        try:
+            patient = int(request.form['patient'])
+        except ValueError:
             return 'non-numeric patient ID'
-        if not request.form['session'].isdigit():
+        try:
+            session = int(request.form['session'])
+        except ValueError:
             return 'non-numeric session number'
-        patient = int(request.form['patient'])
-        session = int(request.form['session'])
         if not 0 <= patient < 1000:
             return 'bad patient ID'
         if not 0 < session < 1000:
             return 'bad session number'
         filelist = request.files.getlist("file[]")
-        if len(filelist) == 0:
-#            flash('Files not selected.');
-            return 'no files selected' #redirect(request.url)
         base = current_app.config['UPLOAD_FOLDER']
         path = os.path.join(base, str(patient), str(session))
-        os.makedirs(path, exist_ok=True)
+        try:
+            os.makedirs(path)
+        except OSError:
+            pass
         s = 'patient {}, session {}<br/><br/>'.format(patient,session)
         for f in filelist:
             fn = secure_filename(f.filename);
             if fn == '':
-                s += fn + ': skipped<br/>'
-                next
+                s += '{}: skipped<br/>'.format(f.filename)
+                continue
             s += fn + ': stored<br/>'
             if os.path.isfile(os.path.join(path, fn)): # collision
                 i = 0
