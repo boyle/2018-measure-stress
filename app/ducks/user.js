@@ -27,17 +27,18 @@ export default function reducer(state = defaultState, action = {}) {
 	let newState;
 	switch(action.type) {
 		case LOGIN_SUCCEEDED:
-			console.log('triggered')
 			newState = {...state, loggedIn: true};
-			break;
-		// TODO implement reducer logic for user entity
+			return newState;
 		default:
 			newState = {...state};
 			break;
 	}
-	return newState;
 }
 
 // ACTION CREATORS
-
-
+export function loginSucceeded(userProfile) {
+	return {
+		type: LOGIN_SUCCEEDED,
+		userProfile
+	};
+}
