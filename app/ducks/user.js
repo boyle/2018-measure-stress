@@ -16,18 +16,25 @@ const LOGOUT = 'user/logout';
 
 // DEFAULT STATE
 const defaultState = {
-		name: 'Francois Charih',
-		patientIdsList: [],
-		config: {},
+	loggedIn: false, 
+	name: '',
+	patientIdsList: [],
+	config: {},
 };
 
 // REDUCER
 export default function reducer(state = defaultState, action = {}) {
 	let newState;
 	switch(action.type) {
+		case LOGIN_SUCCEEDED:
+			newState = {...state, loggedIn: true};
+			break;
 		// TODO implement reducer logic for user entity
-		default: return state;
+		default:
+			newState = {...state};
+			break;
 	}
+	return state;
 }
 
 // ACTION CREATORS
