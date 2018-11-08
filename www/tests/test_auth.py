@@ -21,6 +21,7 @@ def test_register(client, app):
     ('a', '', '', b'Password is required.'),
     ('a', 'a', '', b'Authorization key is required.'),
     ('a', 'a', 'a', b'Incorrect authorization key.'),
+    ('test', 'test', 'a', b'Incorrect authorization key.'),
     ('test', 'test', 'c', b'already registered'),
 ))
 def test_register_validate_input(client, username, password,

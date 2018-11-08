@@ -24,16 +24,16 @@ def register():
             error = 'Username is required.'
         elif not password:
             error = 'Password is required.'
-        elif db.execute(
-            'SELECT id FROM user WHERE username = ?', (username,)
-        ).fetchone() is not None:
-            error = 'User {} is already registered.'.format(escape(username))
         elif not authorization:
             error = 'Authorization key is required.'
         elif not check_password_hash(
             current_app.config['AUTHORIZATION_KEY'],
             authorization ):
             error = 'Incorrect authorization key. %s %s'%(current_app.config['AUTHORIZATION_KEY'], current_app.config['AUTHORIZATION_KEY_RAW'])
+        elif db.execute(
+            'SELECT id FROM user WHERE username = ?', (username,)
+        ).fetchone() is not None:
+            error = 'User {} is already registered.'.format(escape(username))
 
         if error is None:
             db.execute(
