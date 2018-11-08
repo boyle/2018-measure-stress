@@ -13,7 +13,10 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.instance_path, 'bikeshed.db'),
         # TODO was UPLOAD_FOLDER = '/var/www/rawdata/db/'
         UPLOAD_FOLDER = os.path.join(app.instance_path, 'data'),
+        USER_FOLDER = os.path.join(app.instance_path, 'user'),
         MAX_CONTENT_LENGTH = 500 * 1024 * 1024, # 500 MB
+        WEBSITE_VERSION = '0.0.0w',
+        APPLICATION_VERSION = '0.0.0a',
     )
     from werkzeug.contrib.fixers import LighttpdCGIRootFix
     app.wsgi_app = LighttpdCGIRootFix(app.wsgi_app)
@@ -39,6 +42,11 @@ def create_app(test_config=None):
 
     try:
         os.makedirs(app.config['UPLOAD_FOLDER'])
+    except OSError:
+        pass
+
+    try:
+        os.makedirs(app.config['USER_FOLDER'])
     except OSError:
         pass
 

@@ -47,6 +47,8 @@ RSYNC="rsync -e \"ssh -o 'ControlPath=auto'\""
 if [ $# == 0 ] || [ $1 == "tx" ]; then
    echo "$S -> $R:$D"
    eval ${RSYNC} -au $R:/var/www/rawdata/config.py $S/
+   sed -i -e "s/^\\(WEBSITE_VERSION\\) = .*/\\1 = '$(git describe --tags --match='www-*' --dirty=+ | sed -e 's/\(-[0-9][0-9]*\)-[^+]*\(\+\)*/\1\2/' -e 's/^www-//')'/" config.py
+   sed -i -e "s/^\\(APPLICATION_VERSION\\) = .*/\\1 = '$(git describe --tags --match='app-*' --dirty=+ | sed -e 's/\(-[0-9][0-9]*\)-[^+]*\(\+\)*/\1\2/' -e 's/^app-//')'/" config.py
    [ -f $S/config.py ] && eval ${RSYNC} -au $S/config.py $R:/var/www/rawdata/
    eval ${RSYNC} -raq --delete --delete-excluded \
       --exclude '__pycache__' --exclude "/deploy" --exclude "/instance" --exclude "/venv" \
