@@ -28,7 +28,6 @@ def test_redirect(client, auth):
 def test_get(client, auth):
     auth.login()
     assert client.get('/upload/').status_code == 200
-    response = client.post('/upload/')
 
 
 @pytest.mark.parametrize(('files', 'patient', 'session', 'message'), (

@@ -1,4 +1,6 @@
 import pytest
+import os
+import shutil
 from flask import g, session
 
 
@@ -16,22 +18,52 @@ from flask import g, session
 #    assert b'%s: stored'%(filename) in response.data
 #    assert b'upload completed' in response.data
 
+def remove_patient(app, patient):
+    path = os.path.join(app.config['UPLOAD_FOLDER'], str(patient))
+    shutil.rmtree(path, ignore_errors=True)
 
-@pytest.mark.parametrize(('path', 'url_exists'), (
-    ('/api',      True),
-    ('/api/v0',   False),
-    ('/api/v1',   True),
-    ('/api/v2',   False),
-    ('/api/v1/p', True),
-    ('/api/v1/u', False),
+def load_patient_session(app, patient, session, filename):
+    path = os.path.join(app.config['UPLOAD_FOLDER'], str(patient))
+    try:
+        os.makedirs(path)
+    except OSError:
+        pass
+    path = os.path.join(path, str(session))
+    try:
+        os.makedirs(path)
+    except OSError:
+        pass
+    f = open(os.path.join(path,filename), 'w')
+    f.write('a test')
+    f.close()
+
+@pytest.mark.parametrize(('path', 'is404', 'is404_after_login'), (
+    ('/api',          False, False),
+    ('/api/v0',       True,  False),
+    ('/api/v1',       False, False),
+    ('/api/v2',       True,  False),
+    ('/api/v1/p',     False, False),
+    ('/api/v1/p/1',   False, False),
+    ('/api/v1/p/2',   False, True ),
+    ('/api/v1/p/1/1', False, False),
+    ('/api/v1/p/1/2', False, True ),
+    ('/api/v1/u',     True,  False),
+    ('/api/v1/ver',   True,  False),
 ))
-def test_api_exists(client, auth, path, url_exists):
-    if not url_exists:
+def test_api_exists(client, app, auth, path, is404, is404_after_login):
+    remove_patient(app, 1);
+    load_patient_session(app, 1, 1, 'test.txt');
+
+    if is404:
         assert client.get(path).status_code == 404
         return
+
     auth.logout()
     response = client.get(path)
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://localhost/auth/login'
     auth.login()
-    assert client.get(path).status_code == 200
+    if is404_after_login:
+        assert client.get(path).status_code == 404
+    else:
+        assert client.get(path).status_code == 200
