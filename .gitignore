@@ -11,3 +11,4 @@ dist/
 build/
 *.egg-info/
 .ropeproject
+www/config.py

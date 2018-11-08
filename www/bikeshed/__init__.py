@@ -9,7 +9,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        AUTHORIZATION_KEY = generate_password_hash('measureandcompute'),
+        AUTHORIZATION_KEY_RAW = 'devauthkey',
         DATABASE=os.path.join(app.instance_path, 'bikeshed.db'),
         # TODO was UPLOAD_FOLDER = '/var/www/rawdata/db/'
         UPLOAD_FOLDER = os.path.join(app.instance_path, 'data'),
@@ -20,10 +20,16 @@ def create_app(test_config=None):
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
+        # BIKESHED_SETTINGS=/dir/config.py from environment
+        app.config.from_envvar('BIKESHED_SETTINGS', silent=True)
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
+
+    app.config.update(
+        AUTHORIZATION_KEY = generate_password_hash(app.config['AUTHORIZATION_KEY_RAW']),
+        AUTHORIZATION_KEY_RAW = '',
+    )
 
     # ensure the instance folder exists
     try:

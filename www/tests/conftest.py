@@ -18,7 +18,7 @@ def app():
     app = create_app({
         'TESTING': True,
         'DATABASE': db_path,
-        'AUTHORIZATION_KEY': generate_password_hash('c'),
+        'AUTHORIZATION_KEY_RAW': 'c',
     })
 
     with app.app_context():
