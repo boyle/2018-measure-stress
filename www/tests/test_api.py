@@ -79,16 +79,17 @@ def test_api_exists(client, app, auth, path, is404, is404_after_login):
 
 
 @pytest.mark.parametrize(('path', 'outputs'), (
-    ('/api', [ b'v1' ]),
-    ('/api/v1', [ b'p', b'ver' ]),
-    ('/api/v1/p', [ b'1' ]),
-    ('/api/v1/p/1', [ b'1' ]),
-    ('/api/v1/p/1/1', [ b'test.txt' ]),
+    ('/api',                   [ b'v1' ]),
+    ('/api/v1',                [ b'p', b'u', b'ver' ]),
+    ('/api/v1/p',              [ b'1' ]),
+    ('/api/v1/p/1',            [ b'1' ]),
+    ('/api/v1/p/1/1',          [ b'test.txt' ]),
     ('/api/v1/p/1/1/test.txt', [ b'a test' ]),
-    ('/api/v1/u/test.cfg', [ b'a config' ]),
-    ('/api/v1/ver', [ b'web', b'app' ]),
-    ('/api/v1/ver/web', [ b'0.0.0w' ]),
-    ('/api/v1/ver/app', [ b'0.0.0a' ]),
+    ('/api/v1/u',              [ b'test.cfg' ]),
+    ('/api/v1/u/test.cfg',     [ b'a config' ]),
+    ('/api/v1/ver',            [ b'web', b'app' ]),
+    ('/api/v1/ver/web',        [ b'0.0.0w' ]),
+    ('/api/v1/ver/app',        [ b'0.0.0a' ]),
 ))
 def test_api_returns(client, app, auth, path, outputs):
     remove_user(app, 1);
