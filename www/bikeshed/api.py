@@ -1,8 +1,14 @@
 import os
-from flask import Flask, flash, request, redirect, url_for, send_from_directory
-from flask import render_template, jsonify
-from werkzeug import secure_filename
 import re
+from flask import (
+    Flask, flash, request, redirect, url_for, render_template,
+    send_from_directory, jsonify, Blueprint, current_app
+)
+from werkzeug import secure_filename
+
+from bikeshed.auth import login_required
+
+bp = Blueprint('api', __name__, url_prefix='/api')
 
 
 def listsubdirs(base):
@@ -17,24 +23,33 @@ def responselist(ret):
     else:
         return '<br/>'.join(ret)
 
-@app.route('/api')
+@bp.route('')
+@login_required
 def apiversionlist():
     return responselist(['v1'])
 
-@app.route('/api/v1')
+@bp.route('/v1')
+@login_required
+def apitypeslist():
+    return responselist(['p'])
+
+@bp.route('/v1/p')
+@login_required
 def patientlist():
-    base = app.config['UPLOAD_FOLDER']
+    base = current_app.config['UPLOAD_FOLDER']
     return responselist(listsubdirs(base))
 
-@app.route('/api/v1/<int:patient>')
+@bp.route('/v1/p/<int:patient>')
+@login_required
 def sessionlist(patient):
-    base = app.config['UPLOAD_FOLDER']
+    base = current_app.config['UPLOAD_FOLDER']
     path = os.path.join(base, str(patient))
     return responselist(listsubdirs(path))
 
-@app.route('/api/v1/<int:patient>/<int:session>')
+@bp.route('/v1/p/<int:patient>/<int:session>')
+@login_required
 def datalist(patient,session):
-    base = app.config['UPLOAD_FOLDER']
+    base = current_app.config['UPLOAD_FOLDER']
     files = listfiles(os.path.join(base,
                                    str(patient),
                                    str(session)))
@@ -42,9 +57,10 @@ def datalist(patient,session):
     files = filter(lambda i: not regex.search(i), files)
     return responselist(files)
 
-@app.route('/api/v1/<int:patient>/<int:session>/<string:measure>')
+@bp.route('/v1/p/<int:patient>/<int:session>/<string:measure>')
+@login_required
 def returnfile(patient, session, measure):
-    base = app.config['UPLOAD_FOLDER']
+    base = current_app.config['UPLOAD_FOLDER']
     return send_from_directory(os.path.join(base,
                                             str(patient),
                                             str(session)),

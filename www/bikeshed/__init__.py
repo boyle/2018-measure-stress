@@ -37,6 +37,11 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    try:
+        os.makedirs(app.config['UPLOAD_FOLDER'])
+    except OSError:
+        pass
+
     # a simple page that says hello
     @app.route('/hello')
     def hello():
@@ -54,5 +59,8 @@ def create_app(test_config=None):
 
     from . import upload
     app.register_blueprint(upload.bp)
+
+    from . import api
+    app.register_blueprint(api.bp)
 
     return app
