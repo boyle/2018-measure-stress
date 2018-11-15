@@ -64,6 +64,21 @@ alias.url = (
 }
 EOF
 
+# diff -u /etc/lighttpd/conf-enabled/10-ssl.conf.orig /etc/lighttpd/conf-enabled/10-ssl.conf
+cat > /root/10-ssl.conf.diff << EOF
+--- /etc/lighttpd/conf-available/10-ssl.conf	2018-11-15 16:50:17.888817024 -0500
++++ /etc/lighttpd/conf-available/10-ssl.conf	2018-11-15 16:50:26.016787997 -0500
+@@ -3,6 +3,7 @@
+ $SERVER["socket"] == "0.0.0.0:443" {
+ 	ssl.engine  = "enable"
+ 	ssl.pemfile = "/etc/lighttpd/server.pem"
++	ssl.ca-file = "/etc/lighttpd/fullchain.pem"
+ 
+ 	ssl.cipher-list = "ECDHE-RSA-AES256-SHA384:AES256-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH:!AESGCM"
+ 	ssl.honor-cipher-order = "enable"
+EOF
+patch /etc/lighttpd/conf-available/10-ssl.conf < /root/10-ssl.conf.diff
+
 cat > /etc/lighttpd/conf-available/15-saans-https.conf << EOF
 fastcgi.server += ( "/app.fcgi" =>
     ((
