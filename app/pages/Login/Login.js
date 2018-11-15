@@ -13,6 +13,7 @@ import {
   Image,
   TextInput
 } from 'react-native';
+import RegistrationForm from '../../components/RegistrationForm/RegistrationForm.js';
 
 export default class Login extends React.Component {
   constructor(props) {
@@ -25,7 +26,7 @@ export default class Login extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+			<View style={styles.container}>
         <Text style={styles.appTitle}>SAANS Annotation App</Text>
         <View style={styles.logoContainer}>
           <Image
@@ -59,7 +60,7 @@ export default class Login extends React.Component {
             title="Register"
             onPress={() => {console.log('Review Session clicked')}} // TODO hook up to registration modal
           />
-        </View>
+				</View>
       </View>
     );
   }

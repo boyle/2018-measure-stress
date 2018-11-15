@@ -33,6 +33,7 @@ export default function reducer(state = defaultState, action = {}) {
 			newState = {...state};
 			break;
 	}
+	return newState;
 }
 
 // ACTION CREATORS

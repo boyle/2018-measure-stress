@@ -5,24 +5,33 @@ import React from 'react';
  *
  * Description: Form to be filled by the clinical so that a profile can be created.
  */
-import { StyleSheet, Text, View, Button, Image, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Button, Image, TextInput, Modal } from 'react-native';
 
 export default class RegistrationForm extends React.Component {
 
   render() {
-    return (
-      <View style={styles.container}>
-      </View>
+		return (
+				<Modal
+					animationType="slide"
+					transparent={true}
+					visible={true}
+					onRequestClose={() => {}}
+				>
+					<View style={styles.container}>
+						<Text>My modal</Text>
+					</View>
+				</Modal>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
+	container: {
+		color: 'white',
     display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    width: '100%',
-    padding: 0,
+		flexDirection: 'column',
+		backgroundColor: 'blue',
+		width: "50%",
+		textAlign: 'center',
   },
 });
