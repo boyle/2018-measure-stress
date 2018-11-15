@@ -164,6 +164,48 @@ echo "$WEBAPP_SECRET_KEY" > ~/webapp-secret-key.txt
 chmod 700 ~/webapp-secret-key.txt
 
 echo "TODO: data and database snapshots (rsnapshot)"
+# backup from adler-server: crontab -l
+# 17 5 * * * D=/cubed/cubed/biomed-shared/saans.ca/face/ && mkdir -p ${D} && rsync -ar --delete --delete-excluded --exclude 'lost+found' --exclude '.snapshots' remotebackup@saans.ca:/var/www/rawdata/ $D
+
+# diff -u /etc/rsnapshot.conf.orig /etc/rsnapshot.conf > /root/rsnapshot.conf.diff
+cat > /root/rsnapshot.conf.diff << EOF
+--- /etc/rsnapshot.conf.orig	2018-11-15 16:14:51.874943525 -0500
++++ /etc/rsnapshot.conf	2018-11-15 16:17:11.059362886 -0500
+@@ -20,7 +20,7 @@
+ 
+ # All snapshots will be stored under this root directory.
+ #
+-snapshot_root	/var/cache/rsnapshot/
++snapshot_root	/var/www/rawdata/.snapshots/
+ 
+ # If no_create_root is enabled, rsnapshot will not automatically create the
+ # snapshot_root directory. This is particularly useful if you are backing
+@@ -163,6 +163,7 @@
+ #include	???
+ #exclude	???
+ #exclude	???
++exclude	'.snapshots'
+ 
+ # The include_file and exclude_file parameters, if enabled, simply get
+ # passed directly to rsync. Please look up the --include-from and
+@@ -226,7 +227,8 @@
+ # LOCALHOST
+ backup	/home/		localhost/
+ backup	/etc/		localhost/
+-backup	/usr/local/	localhost/
++#backup	/usr/local/	localhost/
++backup	/var/www/rawdata/	localhost/
+ #backup	/var/log/rsnapshot		localhost/
+ #backup	/etc/passwd	localhost/
+ #backup	/home/foo/My Documents/		localhost/
+EOF
+patch  /etc/rsnapshot.conf < /root/rsnapshot.conf.diff
+
+cat > /etc/cron.d/rsnapshot << EOF
+0 */4		* * *		root	/usr/bin/rsnapshot alpha
+30 3  	* * *		root	/usr/bin/rsnapshot beta
+0  3  	* * 1		root	/usr/bin/rsnapshot gamma
+30 2  	1 * *		root	/usr/bin/rsnapshot delta
+EOF
 
 echo "launch completed: $(date)"
-
