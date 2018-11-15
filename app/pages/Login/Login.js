@@ -21,8 +21,27 @@ export default class Login extends React.Component {
     this.state = {
       username: '',
       password: '',
-    };
-  }
+		};
+
+		this.authenticate = this.authenticate.bind(this);
+	}
+
+	/* Sends an authentication request. */
+	async authenticate() {
+		fetch('https://saans.ca/auth/login', {
+			method: 'post',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+				'Accept-Language': 'en-CA,en-US;q=0.7,en;q=0.3',
+			},
+			body: `username=${this.state.username}&password=${encodeURIComponent(this.state.password)}`
+		}).then(resp => {
+			console.log(resp);
+		}).catch(err => {
+			console.log(err);
+		})
+	}
 
   render() {
     return (
@@ -54,7 +73,7 @@ export default class Login extends React.Component {
         <View style={styles.buttonsContainer}>
           <Button
             title="Log in"
-            onPress={() => {this.props.navigation.navigate('Home')}}
+            onPress={this.authenticate}
           />
           <Button
             title="Register"
