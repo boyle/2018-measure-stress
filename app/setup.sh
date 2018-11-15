@@ -1,11 +1,13 @@
-# setup.sh
-# Author: Francois Charih <francoischarih@sce.carleton.ca>
-#
-# Description: Sets up the app so that it can be run on a local computer.
+#! /bin/bash
 if [ "$#" -ne 1 ]; then
 	echo "Usage: ./setup.sh <path to base folder of android sdk>"
 	exit
 fi
+
+# Install node js
+sudo apt update -y
+sudo apt install -y nodejs
+sudo apt install -y npm
 
 # Install the node modules (dependencies)
 npm install
