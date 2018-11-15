@@ -141,7 +141,7 @@ ufw allow Postfix
 echo "--- store raw data to persistent storage ---"
 mkdir -p /var/www/rawdata
 touch /var/www/rawdata/badmount # this will be hidden by the 'mount' if it is successful
-chown -R www-data:www-data /var/www/rawdata
+chown -R www-data:data /var/www/rawdata
 chmod -R o-rwx /var/www/rawdata
 sed -i '/ \/var\/www\/rawdata /d' /etc/fstab
 echo "UUID=ac2c7603-e407-4ee6-be14-9105aba53e7f /var/www/rawdata   ext4  errors=remount-ro,noexec 0 0" >> /etc/fstab

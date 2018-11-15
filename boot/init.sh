@@ -29,7 +29,8 @@ git clone --depth=1 git@github.com:boyle/2018-measure-stress.git
 D=2018-measure-stress/boot
 
 echo "--- ssh ---"
-cp $D/authorized_keys ~/.ssh/
+FIRST_USER=$(head -1 authorized_keys  | cut -d' ' -f3 | cut -d@ -f1)
+grep -e " ${FIRST_USER}@" $D/authorized_keys > ~/.ssh/authorized_keys
 uname -a
 ufw --force enable
 ufw allow ssh
