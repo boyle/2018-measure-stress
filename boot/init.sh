@@ -25,7 +25,7 @@ sed -i "s/127.0.0.1\t.*/127.0.0.1\tlocalhost,$(hostname)/" /etc/hosts
 
 # grab the repo
 apt -y install git
-git clone --depth=1 git@github.com:boyle/2018-measure-stress.git
+git clone --depth=1 https://github.com/boyle/2018-measure-stress.git
 D=2018-measure-stress/boot
 
 echo "--- ssh ---"
