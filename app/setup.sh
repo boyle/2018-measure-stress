@@ -40,7 +40,8 @@ sudo snap install android-studio --classic
 #
 #
 #  from cmd line in the "app" directory
-#  $ npm start
+#  $ npm start &
+#  $ react-native run-android 
 # 
 #
 # if missing linux 32-bit binaries:
@@ -72,8 +73,8 @@ react-native link react-native-svg
 
 # Set the path to the SDK
 #sudo apt install android-sdk
-D=$HOME/Android/Sdk
-echo "sdk.dir=$1" > android/local.properties
+D=${1:-${HOME}/Android/Sdk}
+echo "sdk.dir=$D" > android/local.properties
 
 # launch the app
 #   react-native run-android
