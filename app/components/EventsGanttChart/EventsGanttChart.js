@@ -12,19 +12,19 @@ import * as shape from 'd3-shape'
 
 
 export default class EventsGanttChart extends React.Component {
-	render() {
-        return (
-						<AreaChart
-                style={{ height: 200 }}
-                data={ this.props.data }
-                contentInset={{ top: 30, bottom: 30 }}
-                curve={ shape.curveNatural }
-                svg={{ fill: 'rgba(134, 65, 244, 0.8)' }}
-            >
-                <Grid/>
-							</AreaChart>
-        );
-    }
+  render() {
+    return (
+        <AreaChart
+          style={{ height: 200 }}
+          data={ this.props.data }
+          contentInset={{ top: 30, bottom: 30 }}
+          curve={ shape.curveNatural }
+          svg={{ fill: 'rgba(134, 65, 244, 0.8)' }}
+        >
+          <Grid/>
+        </AreaChart>
+    );
+  }
 }
 
 const styles = StyleSheet.create({

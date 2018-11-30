@@ -13,34 +13,34 @@ const HIDE_MODAL = 'ui/hide_modal';
 
 // DEFAULT STATE
 const defaultState = {
-	modal: {
-		display: false,
-		modalName: ''
-	}
+  modal: {
+    display: false,
+    modalName: ''
+  }
 };
 
 // REDUCER
 export default function reducer(state = defaultState, action = {}) {
-	let newState;
-	switch(action.type) {
+  let newState;
+  switch(action.type) {
 
-		case SHOW_MODAL:
-			newState = {...state, modal: { display: true, modalName: action.modalName } };
-			return newState;
-		
-		case HIDE_MODAL:
-			newState = {...state, modal: { display: false, modalName: '' } };
-			return newState;
+    case SHOW_MODAL:
+      newState = {...state, modal: { display: true, modalName: action.modalName } };
+      return newState;
+    
+    case HIDE_MODAL:
+      newState = {...state, modal: { display: false, modalName: '' } };
+      return newState;
 
-		default: return state;
-	}
+    default: return state;
+  }
 }
 
 // ACTION CREATORS
 export function showModal(modalName) {
-	return { type: SHOW_MODAL, modalName };
+  return { type: SHOW_MODAL, modalName };
 }
 
 export function hideModal() {
-	return { type: HIDE_MODAL };
+  return { type: HIDE_MODAL };
 }

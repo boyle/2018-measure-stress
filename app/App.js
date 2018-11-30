@@ -22,11 +22,11 @@ const Navigator = createStackNavigator({
 });
 
 const App = function(){
-	return (
-	 <Provider store={store}>  	
-		 <Navigator />
-	 </Provider>
-	);
+  return (
+   <Provider store={store}>   
+     <Navigator />
+   </Provider>
+  );
 }
 
 export default App;

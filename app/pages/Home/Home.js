@@ -46,9 +46,9 @@ const styles = StyleSheet.create({
 });
 
 function mapStateToProps(state) {
-	return {
-		user: state.user,
-	}
+  return {
+    user: state.user,
+  }
 }
 
 export default connect(mapStateToProps, null)(Home);

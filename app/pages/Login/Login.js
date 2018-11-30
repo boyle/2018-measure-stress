@@ -1,10 +1,10 @@
-import React from 'react';
 /*
  * Login.js
  *
  * Author: Francois Charih <francoischarih@sce.carleton.ca>
  * Description: Login page used by the user to authenticate.
  */
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -21,31 +21,31 @@ export default class Login extends React.Component {
     this.state = {
       username: '',
       password: '',
-		};
+    };
 
-		this.authenticate = this.authenticate.bind(this);
-	}
+    this.authenticate = this.authenticate.bind(this);
+  }
 
-	/* Sends an authentication request. */
-	async authenticate() {
-		fetch('https://saans.ca/auth/login', {
-			method: 'post',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-				'Accept-Language': 'en-CA,en-US;q=0.7,en;q=0.3',
-			},
-			body: `username=${this.state.username}&password=${encodeURIComponent(this.state.password)}`
-		}).then(resp => {
-			console.log(resp);
-		}).catch(err => {
-			console.log(err);
-		})
-	}
+  /* Sends an authentication request. */
+  async authenticate() {
+    fetch('https://saans.ca/auth/login', {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-CA,en-US;q=0.7,en;q=0.3',
+      },
+      body: `username=${this.state.username}&password=${encodeURIComponent(this.state.password)}`
+    }).then(resp => {
+      console.log(resp);
+    }).catch(err => {
+      console.log(err);
+    })
+  }
 
   render() {
     return (
-			<View style={styles.container}>
+      <View style={styles.container}>
         <Text style={styles.appTitle}>SAANS Annotation App</Text>
         <View style={styles.logoContainer}>
           <Image
@@ -79,7 +79,7 @@ export default class Login extends React.Component {
             title="Register"
             onPress={() => {console.log('Review Session clicked')}} // TODO hook up to registration modal
           />
-				</View>
+        </View>
       </View>
     );
   }

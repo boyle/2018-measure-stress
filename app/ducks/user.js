@@ -16,30 +16,30 @@ const LOGOUT = 'user/logout';
 
 // DEFAULT STATE
 const defaultState = {
-	loggedIn: false, 
-	name: '',
-	patientIdsList: [],
-	config: {},
+  loggedIn: false, 
+  name: '',
+  patientIdsList: [],
+  config: {},
 };
 
 // REDUCER
 export default function reducer(state = defaultState, action = {}) {
-	let newState;
-	switch(action.type) {
-		case LOGIN_SUCCEEDED:
-			newState = {...state, loggedIn: true};
-			return newState;
-		default:
-			newState = {...state};
-			break;
-	}
-	return newState;
+  let newState;
+  switch(action.type) {
+    case LOGIN_SUCCEEDED:
+      newState = {...state, loggedIn: true};
+      return newState;
+    default:
+      newState = {...state};
+      break;
+  }
+  return newState;
 }
 
 // ACTION CREATORS
 export function loginSucceeded(userProfile) {
-	return {
-		type: LOGIN_SUCCEEDED,
-		userProfile
-	};
+  return {
+    type: LOGIN_SUCCEEDED,
+    userProfile
+  };
 }
