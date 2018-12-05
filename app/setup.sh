@@ -74,3 +74,10 @@ react-native link react-native-svg
 #sudo apt install android-sdk
 D=$HOME/Android/Sdk
 echo "sdk.dir=$1" > android/local.properties
+
+# launch the app
+#   react-native run-android
+# or in the case of broken ncurses
+# https://bugs.gentoo.org/648720
+# https://github.com/gradle/gradle/issues/4426
+#   TERM=xterm-color react-native run-android
