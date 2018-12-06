@@ -72,7 +72,9 @@ def login():
 
         flash(error)
 
-    return render_template('auth/login.html')
+    return render_template('auth/login.html'), \
+        401, \
+        {'WWW-Authenticate': 'Fancy login FAIL!'}
 
 
 @bp.before_app_request
