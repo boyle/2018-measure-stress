@@ -29,7 +29,7 @@ def register():
         elif not check_password_hash(
             current_app.config['AUTHORIZATION_KEY'],
             authorization ):
-            error = 'Incorrect authorization key. %s %s'%(current_app.config['AUTHORIZATION_KEY'], current_app.config['AUTHORIZATION_KEY_RAW'])
+            error = 'Incorrect authorization key.'
         elif db.execute(
             'SELECT id FROM user WHERE username = ?', (username,)
         ).fetchone() is not None:
