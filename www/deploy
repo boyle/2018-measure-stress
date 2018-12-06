@@ -33,6 +33,7 @@ if [ $# == 1 ]; then
       venv_remote) ;;
       migrate_remote) ;;
       restart_remote) ;;
+      announce) ;;
       *)
          echo "error: $1: unrecognized cmd" 1>&2
          help
@@ -102,4 +103,14 @@ if [ $# == 1 ] && [ $1 == "restart_remote" ]; then
    chown -R www-data:www-data $D
    service lighttpd force-reload
    set +ex
+fi
+
+[ -f slack.cfg ] && source slack.cfg
+SLACKHOOK=${SLACKHOOK:-BADHOOK}
+if [ $# == 0 ] || [ $1 == "announce" ]; then
+   set -ex
+   HASH=$(git describe --tags --match='www-*' --dirty=+)
+   curl -X POST -H 'Content-type: application/json' \
+      --data "{\"text\":\"Commit \`${HASH}\` is live.\"}" \
+      ${SLACKHOOK}
 fi
