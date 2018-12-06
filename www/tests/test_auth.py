@@ -1,14 +1,21 @@
+import os
 import pytest
 from flask import g, session
 from bikeshed.db import get_db
 
 
 def test_register(client, app):
+    base = app.config['USER_FOLDER']
+    path = os.path.join(base, str(1))
+    #shutil.rmtree(path, ignore_errors=True)
+
     assert client.get('/auth/register').status_code == 200
     response = client.post(
         '/auth/register', data={'username': 'a', 'password': 'a', 'authorization': 'c'}
     )
     assert 'http://localhost/auth/login' == response.headers['Location']
+    assert response.status_code == 302
+    assert os.path.isdir(path)
 
     with app.app_context():
         assert get_db().execute(

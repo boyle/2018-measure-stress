@@ -1,3 +1,4 @@
+import os
 import functools
 
 from flask import (
@@ -13,6 +14,7 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
+    code = 200
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -36,17 +38,27 @@ def register():
             error = 'User {} is already registered.'.format(escape(username))
 
         if error is None:
-            db.execute(
+            cur = db.cursor()
+            cur.execute(
                 'INSERT INTO user (username, password) VALUES (?, ?)',
                 (username, generate_password_hash(password))
             )
             db.commit()
+            userid = cur.lastrowid
+            cur.close()
+            base = current_app.config['USER_FOLDER']
+            path = os.path.join(base, str(userid))
+            try:
+                os.makedirs(path)
+            except OSError:
+                pass
             flash('Registration completed. Please sign in.')
             return redirect(url_for('auth.login'))
 
         flash(error)
+        code = 400
 
-    return render_template('auth/register.html')
+    return render_template('auth/register.html'), code
 
 
 @bp.route('/login', methods=('GET', 'POST'))
