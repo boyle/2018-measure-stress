@@ -1,26 +1,39 @@
-import os
+import os, shutil
 import pytest
 from flask import g, session
 from bikeshed.db import get_db
 
 
-def test_register(client, app):
+
+@pytest.mark.parametrize(('username', 'existing_dir'), (
+    ('a', False),
+    ('b', True),
+))
+def test_register(client, app, username, existing_dir):
     base = app.config['USER_FOLDER']
-    path = os.path.join(base, str(1))
-    #shutil.rmtree(path, ignore_errors=True)
+    path = os.path.join(base, str(3))
+    shutil.rmtree(path, ignore_errors=True)
+    if existing_dir:
+       try:
+           os.makedirs(path)
+       except OSError:
+           pass
+    assert os.path.isdir(path) == existing_dir
 
     assert client.get('/auth/register').status_code == 200
     response = client.post(
-        '/auth/register', data={'username': 'a', 'password': 'a', 'authorization': 'c'}
+        '/auth/register', data={'username': username, 'password': 'a', 'authorization': 'c'}
     )
     assert 'http://localhost/auth/login' == response.headers['Location']
     assert response.status_code == 302
     assert os.path.isdir(path)
 
     with app.app_context():
-        assert get_db().execute(
-            "select * from user where username = 'a'",
-        ).fetchone() is not None
+        row = get_db().execute(
+            "select * from user where username = ?", (username)
+        ).fetchone()
+        assert response is not None
+        assert row['id'] == 3
 
 
 @pytest.mark.parametrize(('username', 'password', 'authorization', 'message'), (
