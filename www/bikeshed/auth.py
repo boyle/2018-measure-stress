@@ -53,7 +53,7 @@ def register():
             except OSError:
                 pass
             flash('Registration completed. Please sign in.')
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login'), 303)
 
         flash(error)
         code = 400

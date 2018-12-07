@@ -25,7 +25,7 @@ def test_register(client, app, username, existing_dir):
         '/auth/register', data={'username': username, 'password': 'a', 'authorization': 'c'}
     )
     assert 'http://localhost/auth/login' == response.headers['Location']
-    assert response.status_code == 302
+    assert response.status_code == 303
     assert os.path.isdir(path)
 
     with app.app_context():
