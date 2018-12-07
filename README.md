@@ -1,4 +1,6 @@
-Measure Stress [![Build Status](https://travis-ci.com/boyle/2018-measure-stress.svg?token=ppJxXrcSY7ZkfdM9JuFM&branch=master)](https://travis-ci.com/boyle/2018-measure-stress)
+Measure Stress
+[![Build Status](https://travis-ci.com/boyle/2018-measure-stress.svg?token=ppJxXrcSY7ZkfdM9JuFM&branch=master)](https://travis-ci.com/boyle/2018-measure-stress)
+[![Coverage Status](https://coveralls.io/repos/github/boyle/2018-measure-stress/badge.svg?branch=master)](https://coveralls.io/github/boyle/2018-measure-stress?branch=master)
 ==============
 
 The project title is:
