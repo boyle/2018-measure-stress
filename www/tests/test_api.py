@@ -87,6 +87,20 @@ def test_api_exists(client, app, auth, path, is404, is404_after_login):
     assert response.is_json
 
 
+def test_dir_permissions(client, app, auth):
+    path = '/api/v1/p/1'
+    remove_patient(app, 1)
+    base = app.config['UPLOAD_FOLDER']
+    os.chmod(base, 0o400)
+    auth.login()
+    assert client.get(path).status_code == 404
+    assert client.put(path).status_code == 404
+    assert client.get(path).status_code == 404
+    os.chmod(base, 0o770)
+    assert client.put(path).status_code == 201
+    assert client.get(path).status_code == 200
+
+
 @pytest.mark.parametrize(('path', 'outputs'), (
     ('/api',                   [b'v1']),
     ('/api/v1',                [b'p', b'u', b'ver']),
