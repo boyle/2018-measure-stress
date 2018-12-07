@@ -5,7 +5,7 @@
 <form enctype="multipart/form-data" method="POST" action="/upload/">
     <!-- MAX_FILE_SIZE must precede the file input field -->
     <input type="hidden" name="MAX_FILE_SIZE" value="500000000" />
-    <input name="file[]" type="file" multiple=""/><br/>
+    <input name="files" type="file" multiple=""/><br/>
     <label for="patient">Patient ID:</label>
     <input name="patient" type="number" step=1 min=0 max=1000 /><br/>
     <label for="session">Session Number:</label>

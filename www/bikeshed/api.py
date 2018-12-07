@@ -1,7 +1,7 @@
 import os
 import re
 from flask import (
-    Flask, flash, request, redirect, url_for, render_template, session,
+    request, session, escape,
     send_from_directory, jsonify, Blueprint, current_app, abort
 )
 from werkzeug import secure_filename
@@ -18,16 +18,19 @@ def before_request():
 
 
 def listsubdirs(base):
-    return [ o for o in os.listdir(base) if os.path.isdir(os.path.join(base, o)) ]
-
+    return [o for o in
+            os.listdir(base)
+            if os.path.isdir(os.path.join(base, o))]
 
 def listfiles(base):
-    return [ o for o in os.listdir(base) ]
+    if not os.path.isdir(base):
+        abort(404)
+    return [o for o in os.listdir(base)]
 
 
 def responselist(ret):
     if request.content_type == 'application/json':
-        return jsonify(ret)
+        return jsonify(escape(ret))
     else:
         return '<br/>'.join(ret)
 
@@ -46,25 +49,46 @@ def apitypeslist():
 def userfiles():
     base = current_app.config['USER_FOLDER']
     path = os.path.join(base, str(session['user_id']))
-    if not os.path.isdir(path):
-        return abort(404)
     files = listfiles(path)
     regex = re.compile(r'\.[0-9]+$')
     files = filter(lambda i: not regex.search(i), files)
     return responselist(files)
 
 
-@bp.route('/v1/u/<string:userconfig>')
+@bp.route('/v1/u/<string:userconfig>', methods=['GET', 'PUT'])
 def return_userfile(userconfig):
     base = current_app.config['USER_FOLDER']
     path = os.path.join(base, str(session['user_id']))
     if not os.path.isdir(path):
-        return abort(404)
-    pathfile = os.path.join(path, secure_filename(userconfig))
-    if not os.path.isfile(pathfile):
-        return abort(404)
-    return send_from_directory(path, secure_filename(userconfig))
+        abort(404)
+    code = 200
+    fn = secure_filename(userconfig)
+    pathfile = os.path.join(path, fn)
 
+    if request.method == 'PUT':
+        code = 201  # created
+        if 'files' not in request.files:
+            abort(422)
+        filelist = request.files.getlist("files")
+        if len(filelist) != 1:
+            abort(422)
+        f = filelist[0]
+        if os.path.isfile(os.path.join(path, fn)):  # collision
+            code = 204
+            i = 0
+            while os.path.isfile(os.path.join(path, fn + '.' + str(i))):
+                i += 1
+            os.rename(os.path.join(path, fn),
+                      os.path.join(path, fn + '.' + str(i)))
+        f.save(os.path.join(path, fn))
+
+    if not os.path.isfile(pathfile):
+        abort(404)
+
+    if code == 200:
+        return send_from_directory(path, fn)
+    else:
+        return ('', code)
 
 @bp.route('/v1/p')
 def patientlist():
@@ -72,42 +96,86 @@ def patientlist():
     return responselist(listsubdirs(base))
 
 
-@bp.route('/v1/p/<int:patient>')
-def sessionlist(patient):
+def patient_dir(patient, session):
     base = current_app.config['UPLOAD_FOLDER']
-    path = os.path.join(base, str(patient))
+    # <int:x> is always unsigned x, see https://github.com/pallets/flask/issues/2643
+    if not patient < 1000:
+        abort(404)
+    if session:
+        if not session < 1000:
+            abort(404)
+        path = os.path.join(base, str(patient), str(session))
+    else:
+        path = os.path.join(base, str(patient))
+    if request.method == 'PUT':
+        if os.path.isdir(path):
+            return (path, 204)
+        try:
+            os.makedirs(path)
+            return (path, 201)
+        except OSError:
+            pass
     if not os.path.isdir(path):
-        return abort(404)
+        abort(404)
+    return (path, 200)
+
+@bp.route('/v1/p/<int:patient>',
+          methods=['GET', 'PUT'])
+def sessionlist(patient):
+    (path, code) = patient_dir(patient, None)
+    if code != 200:
+        return ('', code)
     return responselist(listsubdirs(path))
 
 
-@bp.route('/v1/p/<int:patient>/<int:session>')
-def datalist(patient,session):
-    base = current_app.config['UPLOAD_FOLDER']
-    path = os.path.join(base, str(patient), str(session))
-    if not os.path.isdir(path):
-        return abort(404)
+@bp.route('/v1/p/<int:patient>/<int:session>',
+          methods=['GET', 'PUT'])
+def datalist(patient, session):
+    (path, code) = patient_dir(patient, session)
+    if code != 200:
+        return ('', code)
     files = listfiles(path)
     regex = re.compile(r'\.[0-9]+$')
     files = filter(lambda i: not regex.search(i), files)
     return responselist(files)
 
 
-@bp.route('/v1/p/<int:patient>/<int:session>/<string:measure>')
+@bp.route('/v1/p/<int:patient>/<int:session>/<string:measure>',
+          methods=['GET', 'PUT'])
 def returnfile(patient, session, measure):
-    base = current_app.config['UPLOAD_FOLDER']
-    path = os.path.join(base, str(patient), str(session))
-    if not os.path.isdir(path):
-        return abort(404)
-    pathfile = os.path.join(path, secure_filename(measure))
+    (path, code) = patient_dir(patient, session)
+    code = 200
+    fn = secure_filename(measure)
+    pathfile = os.path.join(path, fn)
+    if request.method == 'PUT':
+        code = 201  # created
+        if 'files' not in request.files:
+            abort(422)
+        filelist = request.files.getlist("files")
+        if len(filelist) != 1:
+            abort(422)
+        f = filelist[0]
+        if os.path.isfile(os.path.join(path, fn)):  # collision
+            code = 204
+            i = 0
+            while os.path.isfile(os.path.join(path, fn + '.' + str(i))):
+                i += 1
+            os.rename(os.path.join(path, fn),
+                      os.path.join(path, fn + '.' + str(i)))
+        f.save(os.path.join(path, fn))
+
     if not os.path.isfile(pathfile):
-        return abort(404)
-    return send_from_directory(path, secure_filename(measure))
+        abort(404)
+
+    if code == 200:
+        return send_from_directory(path, fn)
+    else:
+        return ('', code)
 
 
 @bp.route('/v1/ver')
 def version():
-    return responselist(['web','app'])
+    return responselist(['web', 'app'])
 
 
 @bp.route('/v1/ver/web')

@@ -43,7 +43,7 @@ def test_bad_post(client, auth, files, patient, session, message):
     auth.login()
     data = {'patient': patient, 'session': session}
     data = {key: str(value) for key, value in data.items()} # int to str
-    data['file[]'] = (io.BytesIO(b'a test'), files)
+    data['files'] = (io.BytesIO(b'a test'), files)
     response = client.post(
         '/upload/',
         content_type='multipart/form-data',
@@ -56,7 +56,7 @@ def test_empty_post(client, auth):
     auth.login()
     data = {'patient': 1, 'session': 1}
     data = {key: str(value) for key, value in data.items()} # int to str
-    data['file[]'] = list()
+    data['files'] = list()
     response = client.post(
         '/upload/',
         content_type='multipart/form-data',
@@ -75,7 +75,7 @@ def test_good_post(client, auth, app):
     auth.login()
     data = {'patient': patient, 'session': session}
     data = {key: str(value) for key, value in data.items()} # int to str
-    data['file[]'] = (io.BytesIO(b'a test'), 'test.txt')
+    data['files'] = (io.BytesIO(b'a test'), 'test.txt')
     response = client.post(
         '/upload/',
         content_type='multipart/form-data',
@@ -89,7 +89,7 @@ def test_good_post(client, auth, app):
 
     data = {'patient': patient, 'session': session}
     data = {key: str(value) for key, value in data.items()} # int to str
-    data['file[]'] = (io.BytesIO(b'a test'), 'test.txt')
+    data['files'] = (io.BytesIO(b'a test'), 'test.txt')
     response = client.post(
         '/upload/',
         content_type='multipart/form-data',
@@ -102,7 +102,7 @@ def test_good_post(client, auth, app):
 
     data = {'patient': patient, 'session': session}
     data = {key: str(value) for key, value in data.items()} # int to str
-    data['file[]'] = (io.BytesIO(b'a test'), '../..')
+    data['files'] = (io.BytesIO(b'a test'), '../..')
     response = client.post(
         '/upload/',
         content_type='multipart/form-data',
