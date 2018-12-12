@@ -13,6 +13,7 @@ import {
   Image,
   TextInput
 } from 'react-native';
+import config from '../../app_config.json';
 import RegistrationForm from '../../components/RegistrationForm/RegistrationForm.js';
 
 export default class Login extends React.Component {
@@ -27,8 +28,8 @@ export default class Login extends React.Component {
   }
 
   /* Sends an authentication request. */
-  async authenticate() {
-    fetch('https://saans.ca/auth/login', {
+	async authenticate() {
+    fetch(`${config.host}/auth/login`, {
       method: 'post',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -36,10 +37,16 @@ export default class Login extends React.Component {
         'Accept-Language': 'en-CA,en-US;q=0.7,en;q=0.3',
       },
       body: `username=${this.state.username}&password=${encodeURIComponent(this.state.password)}`
-    }).then(resp => {
-      console.log(resp);
-    }).catch(err => {
-      console.log(err);
+		}).then(response => {
+			const { status } = response;
+
+			if (status === 200) {
+				this.props.navigation.navigate('Home');
+			} else if (status === 401) {
+				console.log('Wrong credentials'); // TODO handle this case
+			}
+		}).catch(err => {
+			// TODO Handle case where 
     })
   }
 
