@@ -1,36 +1,56 @@
-language: python
+matrix:
+  include:
+    - language: python
+      python:
+        - "3.6"
+        - "3.5"
+        - "3.4"
+        - "2.7"
 
-python:
-  - "3.6"
-  - "3.5"
-  - "3.4"
-  - "2.7"
+      #service:
+      #  - postgresql
 
-#service:
-#  - postgresql
+      #before_install:
+      #  - export APP_SETTINGS="project.server.config.TestingConfig"
+      #  - export SECRET_KEY="justatest"
 
-#before_install:
-#  - export APP_SETTINGS="project.server.config.TestingConfig"
-#  - export SECRET_KEY="justatest"
+      install:
+        - pip install -r www/requirements.txt
+        - pip install coveralls
 
-install:
-  - pip install -r www/requirements.txt
-  - pip install coveralls
+      #before_script:
+      #  - psql -c 'create database flask_jwt_auth_test;' -U postgres
+      #  - python manage.py db init
+      #  - python manage.py db migrate
+      #  - python manage.py db upgrade
 
-#before_script:
-#  - psql -c 'create database flask_jwt_auth_test;' -U postgres
-#  - python manage.py db init
-#  - python manage.py db migrate
-#  - python manage.py db upgrade
+      script:
+        - cd ${TRAVIS_BUILD_DIR}/www
+        - coverage run -m pytest
+        - coverage report
+      #  - python manage.py cov
 
-script:
-  - cd ${TRAVIS_BUILD_DIR}/www
-  - coverage run -m pytest
-  - coverage report
-#  - python manage.py cov
+      after_success:
+        - coveralls
 
-after_success:
-   - coveralls
+    - language: node_js
+      node_js:
+        - '9'
+        - '10'
+        - '11'
+
+      before_install:
+        - cd ${TRAVIS_BUILD_DIR}/app
+        - npm install
+
+      cache:
+        yarn: true
+        directories:
+          - 'node_modules'
+
+      script:
+        - cd ${TRAVIS_BUILD_DIR}/app
+        - npm test
 
 notifications:
     slack: cimvhr-saans:Sor7cjZ280ryRSYs2byWUYm6
