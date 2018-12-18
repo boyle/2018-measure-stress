@@ -18,6 +18,10 @@ set -x
 
 echo "get an Android emulator setup..."
 # https://stackoverflow.com/questions/34556884/how-to-install-android-sdk-on-ubuntu
+sudo apt-get install cpu-checker
+egrep -c '(vmx|svm)' /proc/cpuinfo
+kvm-ok
+sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils adb
 sudo snap install android-studio --classic
 # launch "android-studio", follow the menus/dialoges <click>-ing on the appropriate plcaes
 # File > Settings <click>
@@ -41,8 +45,8 @@ sudo snap install android-studio --classic
 #
 #  from cmd line in the "app" directory
 #  $ npm start &
-#  $ react-native run-android 
-# 
+#  $ react-native run-android
+#
 #
 # if missing linux 32-bit binaries:
 # sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1
@@ -60,7 +64,7 @@ sudo apt-get -y update
 #sudo apt-get -y install yarn
 
 # Install node js
-sudo apt-get install -y npm
+#sudo apt-get install -y npm  ... but already installed by nodejs?
 
 # Install the node modules (dependencies)
 npm install
