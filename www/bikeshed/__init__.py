@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from werkzeug.security import generate_password_hash
 
 
@@ -54,6 +54,14 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
+
+    # pass-through for Let's Encrypt updates which are installed in the
+    # /.well-known/ static directory
+    @app.route('/.well-known/acme-challenge/<path:path>')
+    @app.route('/api/.well-known/acme-challenge/<path:path>')
+    def send_letsencrypt(path):
+        root = os.path.join(app.root_path, '..', '.well-known', 'acme-challenge')
+        return send_from_directory(root, path)
 
     from . import db
     db.init_app(app)

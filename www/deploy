@@ -53,7 +53,7 @@ if [ $# == 0 ] || [ $1 == "tx" ]; then
    [ -f $S/config.py ] && eval ${RSYNC} -au $S/config.py $R:/var/www/rawdata/
    eval ${RSYNC} -raq --delete --delete-excluded \
       --exclude '__pycache__' --exclude "/deploy" --exclude "/instance" --exclude "/venv" \
-      --exclude '.pytest_cache' --exclude '/htmlcov' \
+      --exclude '.pytest_cache' --exclude '/htmlcov' --exclude "/.well-known" \
       "$S/" $R:$D/
 fi
 
