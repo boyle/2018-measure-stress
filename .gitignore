@@ -13,3 +13,4 @@ build/
 .ropeproject
 www/config.py
 www/slack.cfg
+www/.well-known
