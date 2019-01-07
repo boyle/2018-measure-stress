@@ -1,9 +1,3 @@
-/*
- * App.js
- * Author: Francois Charih <francoischarih@sce.carleton.ca>
- *
- * Description: App entry point.
- */
 import React from 'react';
 import { StyleSheet, Text, View, Image, TextInput } from 'react-native';
 import { Provider } from 'react-redux';
@@ -16,15 +10,15 @@ import Home from './pages/Home/Home.js';
 import Activity from './pages/Activity/Activity.js';
 
 const Navigator = createStackNavigator({
-  Login: { screen: Login },
-  Home: { screen: Home },
-  Activity: { screen: Activity },
+  Home: { screen: Home, navigationOptions: { header: null } },
+  Login: { screen: Login, navigationOptions: { header: null } },
+  Activity: { screen: Activity, navigationOptions: { header: null } },
 });
 
 const App = function(){
   return (
-   <Provider store={store}>   
-     <Navigator />
+    <Provider store={store}>
+      <Navigator />
    </Provider>
   );
 }

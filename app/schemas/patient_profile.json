@@ -1,0 +1,35 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/PatientProfile",
+    "definitions": {
+        "PatientProfile": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "patientId": {
+                    "type": "integer"
+                },
+                "creationDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "conditions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "conditions",
+                "creationDate",
+                "gender",
+                "patientId"
+            ],
+            "title": "PatientProfile"
+        }
+    }
+}
