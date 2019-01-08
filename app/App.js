@@ -8,8 +8,10 @@ import store from './store';
 import Login from './pages/Login/Login.js';
 import Home from './pages/Home/Home.js';
 import Activity from './pages/Activity/Activity.js';
+import SSQ from './pages/SSQ/SSQ.js';
 
 const Navigator = createStackNavigator({
+  SSQ: { screen: SSQ, navigationOptions: { header: null } },
   Home: { screen: Home, navigationOptions: { header: null } },
   Login: { screen: Login, navigationOptions: { header: null } },
   Activity: { screen: Activity, navigationOptions: { header: null } },
