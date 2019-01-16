@@ -65,23 +65,13 @@ sudo apt-get -y update
 
 # Install node js
 #sudo apt-get install -y npm  ... but already installed by nodejs?
+sudo npm install -g yarn
 
 # Install the node modules (dependencies)
-npm install
-
-# Install the react-native CLI (requires sudo because global)
-sudo npm install -g react-native-cli
-
-# Link the react-native-svg library
-react-native link react-native-svg
-
-# Set the path to the SDK
-#sudo apt install android-sdk
-D=${1:-${HOME}/Android/Sdk}
-echo "sdk.dir=$D" > android/local.properties
+yarn install
 
 # launch the app
-#   react-native run-android
+#   yarn start
 # or in the case of broken ncurses
 # https://bugs.gentoo.org/648720
 # https://github.com/gradle/gradle/issues/4426
