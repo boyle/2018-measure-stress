@@ -15,7 +15,7 @@ export default class AnnotationSlider extends React.Component {
           minimumValue={this.props.minIndex}
           step={1}
           value={this.props.value}
-          thumbTintColor={`${Colors.dark}`}
+          thumbTintColor={this.props.sliderColor}
           onSlidingStart={value =>
             this.props.onSlideStart(this.props.domain, value)
           }

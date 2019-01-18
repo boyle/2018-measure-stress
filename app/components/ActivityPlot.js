@@ -1,30 +1,39 @@
 import React, { Component } from "react";
 import { View } from "react-native";
 import { Constants, Svg } from "expo";
-import { LineChart, YAxis, Grid } from "react-native-svg-charts";
 import { scaleLinear } from "d3-scale";
+import Variables from "../globals/tracked_variables.js";
 
 const yScaleLabels = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
 
 export default class ActivityPlot extends Component {
   constructor(props) {
     super(props);
+
+    this.getEvents = this.getEvents.bind(this);
+  }
+
+  getEvents() {
+    const mergedLog = [];
+    Object.entries(this.props.data).map(domain => {
+      domain[1].log.forEach(event => {
+        mergedLog.push(event);
+      });
+    });
+    return mergedLog;
   }
 
   render() {
-    const { width, height, padding } = this.props;
+    const { width, height, padding, refreshRate, elapsedTime } = this.props;
 
-    const INTERVAL = 10; // in s
-
-    // Set the maximum x value to the nearest 30s multiple above current time
     const xMax =
-      INTERVAL * Math.floor((this.props.elapsedTime + INTERVAL) / INTERVAL) ||
-      INTERVAL;
+      refreshRate * Math.floor((elapsedTime + refreshRate) / refreshRate) ||
+      refreshRate;
 
-    const xTicks = xMax / INTERVAL;
+    const xTicks = xMax / refreshRate;
     let xScaleLabels = [];
     for (let i = 0; i <= xTicks; i++) {
-      xScaleLabels.push(i * INTERVAL);
+      xScaleLabels.push(i * refreshRate);
     }
 
     const xScale = scaleLinear()
@@ -48,7 +57,7 @@ export default class ActivityPlot extends Component {
         {xScaleLabels.map((label, i) => {
           const xPos = xScale(label);
           return (
-            <Svg.G>
+            <Svg.G key={i}>
               <Svg.Line
                 x1={xPos}
                 y1={height - padding}
@@ -79,7 +88,7 @@ export default class ActivityPlot extends Component {
         {yScaleLabels.map((label, i) => {
           const yPos = yScale(label);
           return (
-            <Svg.G>
+            <Svg.G key={i}>
               <Svg.Line
                 x1={padding - 10}
                 y1={yPos}
@@ -95,6 +104,36 @@ export default class ActivityPlot extends Component {
               >
                 {label}
               </Svg.Text>
+
+              {this.getEvents().map((event, i) => (
+                <Svg.G key={i}>
+                  <Svg.Line
+                    x1={xScale(event.timestamp)}
+                    y1={yScale(0)}
+                    x2={xScale(event.timestamp)}
+                    y2={
+                      yScale(
+                        (event.value * 100) /
+                          Object.keys(Variables[event.domain].levels).length
+                      ) + 10
+                    }
+                    stroke={`${Variables[event.domain].color}`}
+                    strokeWidth={2}
+                  />
+
+                  <Svg.Circle
+                    r={10}
+                    cx={xScale(event.timestamp)}
+                    cy={yScale(
+                      (event.value * 100) /
+                        Object.keys(Variables[event.domain].levels).length
+                    )}
+                    stroke={`${Variables[event.domain].color}`}
+                    fill="transparent"
+                    strokeWidth={2}
+                  />
+                </Svg.G>
+              ))}
             </Svg.G>
           );
         })}

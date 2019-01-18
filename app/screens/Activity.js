@@ -28,17 +28,18 @@ export default class Activity extends React.Component {
       activeSliderDomain: null,
       activeSliderValue: null,
       activeSliderStart: null,
-      variables: {}
+      data: {}
     };
 
     const timestamp = new Date().getTime() / 1000;
     Object.keys(Variables).forEach(
       variable =>
-        (this.state.variables[variable] = {
+        (this.state.data[variable] = {
           value: 0,
           log: [
             {
-              timestamp: timestamp,
+              domain: variable,
+              timestamp: 0,
               value: 0
             }
           ]
@@ -98,6 +99,10 @@ export default class Activity extends React.Component {
   }
 
   getElapsedTime() {
+    if (!this.state.startTimestamp) {
+      return 0;
+    }
+
     return this.getTime() - this.state.startTimestamp; // in ms
   }
 
@@ -124,12 +129,12 @@ export default class Activity extends React.Component {
           onPress: () => stop()
         }
       ],
-      { cancelable: false }
+      { cancelable: true, onDismiss: () => {} }
     );
   }
 
   onSlideComplete(domain, value) {
-    const previousValue = this.state.variables[domain].value;
+    const previousValue = this.state.data[domain].value;
 
     // Only log the event if a change is made... but since slider
     // is done "sliding", the slider is no longer active.
@@ -142,22 +147,21 @@ export default class Activity extends React.Component {
     }
 
     const event = {
-      sliderStartTime: this.state.activeSliderStart,
-      sliderStopTime: this.getTime(),
+      timestamp: this.getElapsedTime(),
       domain: domain,
       value: value
     };
 
     this.setState({
       [domain]: value,
-      variables: {
-        ...this.state.variables,
+      data: {
+        ...this.state.data,
 
         [domain]: {
           value: value,
           log: this.activityIsActive()
-            ? [...this.state.variables[domain].log, event]
-            : [...this.state.variables[domain].log]
+            ? [...this.state.data[domain].log, event]
+            : [...this.state.data[domain].log]
         }
       },
       activeSliderDomain: null,
@@ -185,7 +189,9 @@ export default class Activity extends React.Component {
           height={400}
           width={700}
           padding={50}
+          refreshRate={10}
           elapsedTime={this.state.elapsedTime}
+          data={this.state.data}
         />
         <View style={styles.slidersContainer}>
           {Object.entries(Variables).map((variable, i) => {
@@ -197,12 +203,13 @@ export default class Activity extends React.Component {
             return (
               <AnnotationSlider
                 key={i}
+                sliderColor={Variables[domain].color}
                 domain={domain}
                 label={domainObj.label}
-                value={this.state.variables[domain].value}
+                value={this.state.data[domain].value}
                 minIndex={0}
                 maxIndex={levelsList.length - 1}
-                valueLabel={levels[this.state.variables[domain].value]}
+                valueLabel={levels[this.state.data[domain].value]}
                 onSlideComplete={this.onSlideComplete}
                 onSlideStart={this.onSlideStart}
                 onSlideDrag={this.onSlideDrag}
