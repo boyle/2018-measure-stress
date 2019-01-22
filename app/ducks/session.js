@@ -1,5 +1,6 @@
 // ACTIONS
 const INITIALIZE_SESSION = "session/initialize_session";
+const LOG_ACTIVITY = "session/log_activity";
 
 // DEFAULT STATE
 const defaultState = {
@@ -21,6 +22,18 @@ export default function reducer(state = defaultState, action = {}) {
         ...defaultState
       };
       return newState;
+
+    case LOG_ACTIVITY:
+      const activityNumber = Object.keys(state.activities).length + 1;
+      newState = {
+        ...state,
+        activities: {
+          ...state.activities,
+          [activityNumber]: action.payload
+        }
+      };
+      return newState;
+
     default:
       newState = { ...state };
       break;
@@ -32,5 +45,12 @@ export default function reducer(state = defaultState, action = {}) {
 export function initializeSession() {
   return {
     type: INITIALIZE_SESSION
+  };
+}
+
+export function logActivity(activity) {
+  return {
+    type: LOG_ACTIVITY,
+    payload: activity
   };
 }

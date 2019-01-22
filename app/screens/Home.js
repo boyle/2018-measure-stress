@@ -59,7 +59,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.navigation.navigate("Activity")}
+              action={() => this.props.navigation.navigate("SSQ")}
             />
             <IconButton
               iconName="description"

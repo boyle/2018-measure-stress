@@ -16,7 +16,7 @@ export default class ActivityPlot extends Component {
   getEvents() {
     const mergedLog = [];
     Object.entries(this.props.data).map(domain => {
-      domain[1].log.forEach(event => {
+      Object.values(domain[1].events).forEach(event => {
         mergedLog.push(event);
       });
     });
@@ -119,9 +119,9 @@ export default class ActivityPlot extends Component {
               {this.getEvents().map((event, i) => (
                 <Svg.G key={i}>
                   <Svg.Line
-                    x1={xScale(event.timestamp)}
+                    x1={xScale(event.elapsedTime)}
                     y1={yScale(0)}
-                    x2={xScale(event.timestamp)}
+                    x2={xScale(event.elapsedTime)}
                     y2={
                       yScale(
                         (event.value * 100) /
@@ -134,7 +134,7 @@ export default class ActivityPlot extends Component {
 
                   <Svg.Circle
                     r={10}
-                    cx={xScale(event.timestamp)}
+                    cx={xScale(event.elapsedTime)}
                     cy={yScale(
                       (event.value * 100) /
                         Object.keys(Variables[event.domain].levels).length

@@ -1,9 +1,10 @@
 import { createStore, combineReducers } from "redux";
-import { ui, user } from "./ducks";
+import { ui, user, session } from "./ducks";
 
 const metaReducer = combineReducers({
   ui,
-  user
+  user,
+  session
 });
 
 export default createStore(metaReducer);

@@ -10,6 +10,14 @@ import {
 } from "react-native";
 import { Slider, Button } from "react-native-elements";
 import { scaleLinear } from "d3-scale";
+import { connect } from "react-redux";
+
+import { generateRandomNum } from "../utils.js";
+import {
+  ACTIVITY_NOT_STARTED,
+  ACTIVITY_ONGOING,
+  ACTIVITY_COMPLETED
+} from "../globals/constants.js";
 
 import ActivityPlot from "../components/ActivityPlot.js";
 import AnnotationSlider from "../components/AnnotationSlider.js";
@@ -17,11 +25,13 @@ import PageTemplate from "../components/PageTemplate.js";
 import Colors from "../globals/colors.js";
 import Variables from "../globals/tracked_variables.js";
 import IconButton from "../components/IconButton.js";
+import ActivityTopBar from "../components/ActivityTopBar.js";
 
-export default class Activity extends React.Component {
+class Activity extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      activityStatus: ACTIVITY_NOT_STARTED,
       startTimestamp: null,
       endTimestamp: null,
       elapsedTime: 0,
@@ -31,18 +41,22 @@ export default class Activity extends React.Component {
       data: {}
     };
 
-    const timestamp = new Date().getTime() / 1000;
+    const timestamp = this.getTime();
+
+    // For every tracked domain, initialize the current value to 0
     Object.keys(Variables).forEach(
       variable =>
         (this.state.data[variable] = {
-          value: 0,
-          log: [
-            {
+          currentValue: 0,
+          events: {
+            0: {
+              eventId: 0,
               domain: variable,
-              timestamp: 0,
+              timestamp: timestamp,
+              elapsedTime: 0,
               value: 0
             }
-          ]
+          }
         })
     );
 
@@ -50,22 +64,30 @@ export default class Activity extends React.Component {
     this.stopActivity = this.stopActivity.bind(this);
     this.getElapsedTime = this.getElapsedTime.bind(this);
     this.rescaleXAxis = this.rescaleXAxis.bind(this);
+    this.logEvent = this.logEvent.bind(this);
     this.handleActivityButton = this.handleActivityButton.bind(this);
     this.onSlideComplete = this.onSlideComplete.bind(this);
     this.onSlideStart = this.onSlideStart.bind(this);
     this.onSlideDrag = this.onSlideDrag.bind(this);
+    this.activityIsActive = this.activityIsActive.bind(this);
+    this.activityIsNotStarted = this.activityIsNotStarted.bind(this);
+    this.activityIsCompleted = this.activityIsCompleted.bind(this);
   }
 
   getTime() {
-    return Math.floor(new Date().getTime() / 1000);
+    return Date.now(); // time in ms since epoch
+  }
+
+  activityIsNotStarted() {
+    return this.state.activityStatus === ACTIVITY_NOT_STARTED;
   }
 
   activityIsActive() {
-    return this.state.startTimestamp && !this.state.endTimestamp;
+    return this.state.activityStatus === ACTIVITY_ONGOING;
   }
 
   activityIsCompleted() {
-    return this.state.startTimestamp && this.state.endTimestamp;
+    return this.state.activityState === ACTIVITY_COMPLETED;
   }
 
   handleActivityButton() {
@@ -88,9 +110,12 @@ export default class Activity extends React.Component {
     );
 
     // Set interval
-    this.timer = setInterval(() => this.rescaleXAxis(), 5000);
+    this.timer = setInterval(() => this.rescaleXAxis(), 1000);
 
-    this.setState({ startTimestamp: startTimestamp });
+    this.setState({
+      activityStatus: ACTIVITY_ONGOING,
+      startTimestamp: startTimestamp
+    });
   }
 
   rescaleXAxis() {
@@ -103,14 +128,18 @@ export default class Activity extends React.Component {
       return 0;
     }
 
-    return this.getTime() - this.state.startTimestamp; // in ms
+    return (this.getTime() - this.state.startTimestamp) / 1000; // in s
   }
 
   stopActivity() {
+    // Ensure this is really what the user wants
     let confirmed = false;
 
     const stop = () => {
-      this.setState({ endTimestamp: this.getTime() });
+      this.setState({
+        activityStatus: ACTIVITY_COMPLETED,
+        endTimestamp: this.getTime()
+      });
       clearInterval(this.timer);
     };
 
@@ -132,8 +161,26 @@ export default class Activity extends React.Component {
     );
   }
 
+  logEvent(domain, event) {
+    this.setState({
+      data: {
+        ...this.state.data,
+
+        [domain]: {
+          currentValue: event.value,
+          events: this.activityIsActive()
+            ? { ...this.state.data[domain].events, [event.id]: event }
+            : { ...this.state.data[domain].events }
+        }
+      },
+      activeSliderDomain: null,
+      activeSliderValue: null,
+      activeSliderStart: null
+    });
+  }
+
   onSlideComplete(domain, value) {
-    const previousValue = this.state.data[domain].value;
+    const previousValue = this.state.data[domain].currentValue;
 
     // Only log the event if a change is made... but since slider
     // is done "sliding", the slider is no longer active.
@@ -146,27 +193,14 @@ export default class Activity extends React.Component {
     }
 
     const event = {
-      timestamp: this.getElapsedTime(),
+      id: generateRandomNum(),
+      timestamp: Date.now(),
+      elapsedTime: this.getElapsedTime(),
       domain: domain,
       value: value
     };
 
-    this.setState({
-      [domain]: value,
-      data: {
-        ...this.state.data,
-
-        [domain]: {
-          value: value,
-          log: this.activityIsActive()
-            ? [...this.state.data[domain].log, event]
-            : [...this.state.data[domain].log]
-        }
-      },
-      activeSliderDomain: null,
-      activeSliderValue: null,
-      activeSliderStart: null
-    });
+    this.logEvent(domain, event);
   }
 
   onSlideStart(domain, value) {
@@ -184,6 +218,12 @@ export default class Activity extends React.Component {
   render() {
     return (
       <PageTemplate>
+        <ActivityTopBar
+          activityStatus={this.state.activityStatus}
+          onPressStart={this.handleActivityButton}
+          activityNumber={Object.keys(this.props.session.activities).length + 1}
+          elapsedTime={this.state.elapsedTime}
+        />
         <ActivityPlot
           height={300}
           width={700}
@@ -216,6 +256,9 @@ export default class Activity extends React.Component {
               />
             );
           })}
+          <Button raised icon={{ name: "edit" }} title="Comment" />
+
+          {/*
           <IconButton
             iconName={`${
               !this.activityIsActive()
@@ -229,7 +272,7 @@ export default class Activity extends React.Component {
             iconWidth={"100%"}
             textStyle={styles.buttonTitle}
             action={!this.activityIsCompleted() && this.handleActivityButton}
-          />
+          />*/}
         </View>
         {this.state.activeSliderDomain && (
           <View style={styles.levelsIndicator}>
@@ -281,3 +324,18 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(169,169,169, 0.3)"
   }
 });
+
+function mapStateToProps(state) {
+  return {
+    session: state.session
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {};
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Activity);
