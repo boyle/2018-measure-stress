@@ -47,6 +47,9 @@ export default class ActivityPlot extends Component {
     return (
       <Svg height={this.props.height} width={this.props.width}>
         {/* X-axis*/}
+        <Svg.Text x={this.props.width / 2} y={yScale(-15)} textAnchor="middle">
+          Time (s)
+        </Svg.Text>
         <Svg.Line
           x1={padding}
           y1={height - padding}
@@ -78,6 +81,14 @@ export default class ActivityPlot extends Component {
         })}
 
         {/*Y-axis*/}
+        <Svg.Text
+          x={padding - 40}
+          y={yScale(50)}
+          textAnchor="middle"
+          transform={`rotate(-90 ${padding - 40} ${yScale(50)})`}
+        >
+          Severity (% of max)
+        </Svg.Text>
         <Svg.Line
           x1={padding}
           y1={padding}

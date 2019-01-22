@@ -107,7 +107,6 @@ export default class Activity extends React.Component {
   }
 
   stopActivity() {
-    // Ensure this is really what the user wants
     let confirmed = false;
 
     const stop = () => {
@@ -186,7 +185,7 @@ export default class Activity extends React.Component {
     return (
       <PageTemplate>
         <ActivityPlot
-          height={400}
+          height={300}
           width={700}
           padding={50}
           refreshRate={10}
