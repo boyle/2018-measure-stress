@@ -1,14 +1,15 @@
 // ACTIONS
 const INITIALIZE_SESSION = "session/initialize_session";
 const LOG_ACTIVITY = "session/log_activity";
+const SAVE_SSQ = "session/save_ssq";
 
 // DEFAULT STATE
 const defaultState = {
   sessionStart: null, // Timestamp in ISO format
   sessionId: null,
   patientId: null, // Integer
-  initialSsq: null,
-  endSsq: null,
+  firstSSQ: null,
+  secondSSQ: null,
   activities: {},
   activityEdits: {}
 };
@@ -34,6 +35,20 @@ export default function reducer(state = defaultState, action = {}) {
       };
       return newState;
 
+    case SAVE_SSQ:
+      let type;
+      if (!state.preSsq) {
+        type = "firstSSQ";
+      } else {
+        type = "secondSSQ";
+      }
+      newState = {
+        ...state,
+        [type]: action.payload
+      };
+
+      return newState;
+
     default:
       newState = { ...state };
       break;
@@ -52,5 +67,12 @@ export function logActivity(activity) {
   return {
     type: LOG_ACTIVITY,
     payload: activity
+  };
+}
+
+export function saveSSQ(form) {
+  return {
+    type: SAVE_SSQ,
+    payload: form
   };
 }

@@ -24,11 +24,7 @@ export default {
     { index: 3, label: "Severe", value: 3 }
   ],
   emptySSQForm: {
-    userId: null,
-    patientId: null,
-    sessionId: null,
     timestamp: null,
-    presession: null,
     symptoms: {
       0: null,
       1: null,

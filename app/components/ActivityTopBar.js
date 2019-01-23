@@ -32,7 +32,6 @@ export default class ActivityTopBar extends Component {
         </Text>
         <View style={styles.buttonContainer}>
           <Button
-            raised
             disabled={this.props.activityStatus === ACTIVITY_COMPLETED}
             buttonStyle={styles.button}
             icon={{
@@ -53,14 +52,12 @@ export default class ActivityTopBar extends Component {
             onPress={this.props.onPressStart}
           />
           <Button
-            raised
             disabled={this.props.activityStatus != ACTIVITY_COMPLETED}
             buttonStyle={styles.button}
             icon={{ name: "play-arrow" }}
             title="Edit"
           />
           <Button
-            raised
             disabled={this.props.activityStatus != ACTIVITY_COMPLETED}
             buttonStyle={styles.button}
             icon={{ name: "play-arrow" }}

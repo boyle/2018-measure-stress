@@ -1,5 +1,5 @@
 import React from "react";
-import { BackHandler } from "react-native";
+import { BackHandler, ToastAndroid } from "react-native";
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,7 @@ import {
 import { Button, Card, ButtonGroup, CheckBox } from "react-native-elements";
 import { connect } from "react-redux";
 
+import { saveSSQ } from "../ducks/session.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import SSQVars from "../globals/ssq.js";
@@ -29,56 +30,44 @@ class SSQ extends React.Component {
 
     this.saveForm = this.saveForm.bind(this);
     this.formIsFilled = this.formIsFilled.bind(this);
+    this.isFirstSSQ = this.isFirstSSQ.bind(this);
+  }
+
+  isFirstSSQ() {
+    return !this.props.session.firstSSQ;
   }
 
   formIsFilled() {
-    typeSpecified = this.state.presession != null;
-    allQuestionsAnswered = Object.values(this.state.symptoms).every(
+    const allQuestionsAnswered = Object.values(this.state.symptoms).every(
       answer => answer != null
     );
 
-    formFilled = typeSpecified && allQuestionsAnswered;
-    return formFilled;
+    return allQuestionsAnswered;
   }
 
   saveForm() {
     const submittedForm = {
       ...this.state,
-      annotatorId: null, // TODO connect to redux,
-      patientId: null, // TODO connect to redux,
       timestamp: new Date().toISOString()
     };
-    return -1; // TODO -> add to redux (session reducer)
+    this.props.saveSSQ(submittedForm);
+
+    ToastAndroid.showWithGravity(
+      "Saved the SSQ.",
+      ToastAndroid.LONG,
+      ToastAndroid.CENTER
+    );
+
+    this.props.navigation.navigate("Activity");
   }
 
   render() {
     return (
       <PageTemplate>
         <Text style={styles.title}>Simulation Sickness Questionnaire</Text>
-
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-around"
-          }}
-        >
-          <CheckBox
-            title="Pre-session"
-            checkedIcon="dot-circle-o"
-            uncheckedIcon="circle-o"
-            checked={this.state.presession === true}
-            onPress={() => this.setState({ presession: true })}
-          />
-          <CheckBox
-            title="Post-session"
-            checkedIcon="dot-circle-o"
-            uncheckedIcon="circle-o"
-            checked={this.state.presession === false}
-            onPress={() => this.setState({ presession: false })}
-          />
-        </View>
-
+        <Text style={styles.sessionLabel}>
+          {this.isFirstSSQ() ? "Pre" : "Post"}-session
+        </Text>
         <View style={styles.cardsContainer}>
           <ScrollView>
             {SSQVars.symptoms.map(symptom => (
@@ -109,7 +98,7 @@ class SSQ extends React.Component {
         <Button
           title="Save"
           disabled={!this.formIsFilled()}
-          onPress={() => null}
+          onPress={() => this.saveForm()}
         />
       </PageTemplate>
     );
@@ -179,16 +168,26 @@ const styles = StyleSheet.create({
   statsName: {
     textAlign: "center",
     fontSize: 32
+  },
+  sessionLabel: {
+    textAlign: "center"
   }
 });
 
 function mapStateToProps(state) {
   return {
-    user: state.user
+    user: state.user,
+    session: state.session
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    saveSSQ: ssq => dispatch(saveSSQ(ssq))
   };
 }
 
 export default connect(
   mapStateToProps,
-  null
+  mapDispatchToProps
 )(SSQ);

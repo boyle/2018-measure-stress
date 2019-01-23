@@ -145,7 +145,7 @@ class Activity extends React.Component {
 
     Alert.alert(
       "End activity",
-      "Are you sure that you are done with this activity? You will not be able to continue the activity.",
+      "Are you sure that you are done with this activity? You will not be able to resume the activity.",
       [
         {
           text: "Cancel",
@@ -318,10 +318,11 @@ const styles = StyleSheet.create({
   },
   levelsIndicator: {
     position: "absolute",
+    zIndex: 10,
     padding: 30,
     marginLeft: Math.floor(0.1 * Dimensions.get("window").width),
     width: Math.floor(0.8 * Dimensions.get("window").width),
-    backgroundColor: "rgba(169,169,169, 0.3)"
+    backgroundColor: "rgba(169,169,169, 0.8)"
   }
 });
 
