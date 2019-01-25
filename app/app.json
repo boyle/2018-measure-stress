@@ -25,5 +25,6 @@
     "ios": {
       "supportsTablet": true
     }
-  }
+  },
+	"host": "https://saans.ca"
 }

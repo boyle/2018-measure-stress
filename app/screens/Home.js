@@ -11,9 +11,11 @@ import {
 import { Button, Card } from "react-native-elements";
 import { connect } from "react-redux";
 
+import { showModal, hideModal } from "../ducks/ui.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import IconButton from "../components/IconButton.js";
+import NewPatient from "../components/NewPatient.js";
 
 function StatsCard({ statsName, statsValue }) {
   return (
@@ -25,6 +27,12 @@ function StatsCard({ statsName, statsValue }) {
 }
 
 class Home extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      displayNewPatientOverlay: false
+    };
+  }
   render() {
     const iconHeight = 140;
     const iconWidth = 140;
@@ -32,6 +40,14 @@ class Home extends React.Component {
     return (
       <PageTemplate>
         <View style={styles.container}>
+          {this.state.displayNewPatientOverlay && (
+            <NewPatient
+              onSave={() => null}
+              onCancel={() =>
+                this.setState({ displayNewPatientOverlay: false })
+              }
+            />
+          )}
           <Text style={styles.title}>Welcome, Francois!</Text>
           <Text>Here are some stats:</Text>
           <View style={styles.statsContainer}>
@@ -49,7 +65,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.navigation.navigate("Activity")}
+              action={() => this.setState({ displayNewPatientOverlay: true })}
             />
             <IconButton
               iconName="create"
@@ -166,11 +182,19 @@ const styles = StyleSheet.create({
 
 function mapStateToProps(state) {
   return {
-    user: state.user
+    user: state.user,
+    ui: state.ui
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    showModal: modalName => dispatch(showModal(modalName)),
+    hideModal: () => dispatch(hideModal())
   };
 }
 
 export default connect(
   mapStateToProps,
-  null
+  mapDispatchToProps
 )(Home);

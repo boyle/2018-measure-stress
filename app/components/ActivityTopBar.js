@@ -33,19 +33,24 @@ export default class ActivityTopBar extends Component {
         <View style={styles.buttonContainer}>
           <Button
             disabled={this.props.activityStatus === ACTIVITY_COMPLETED}
-            buttonStyle={styles.button}
+            buttonStyle={[
+              styles.button,
+              {
+                backgroundColor: `${
+                  this.props.activityStatus === ACTIVITY_ONGOING
+                    ? Colors.stopRed
+                    : Colors.playGreen
+                }`
+              }
+            ]}
             icon={{
+              color: "white",
               name: `${
                 this.props.activityStatus === ACTIVITY_ONGOING
                   ? "pause"
                   : "play-arrow"
               }`
             }}
-            backgroundColor={`${
-              this.props.activityStatus === ACTIVITY_ONGOING
-                ? Colors.stopRed
-                : Colors.playGreen
-            }`}
             title={`${
               this.props.activityStatus === ACTIVITY_ONGOING ? "Stop" : "Start"
             }`}
@@ -54,14 +59,15 @@ export default class ActivityTopBar extends Component {
           <Button
             disabled={this.props.activityStatus != ACTIVITY_COMPLETED}
             buttonStyle={styles.button}
-            icon={{ name: "play-arrow" }}
+            icon={{ color: "white", name: "edit" }}
             title="Edit"
           />
           <Button
             disabled={this.props.activityStatus != ACTIVITY_COMPLETED}
             buttonStyle={styles.button}
-            icon={{ name: "play-arrow" }}
-            title="Next"
+            onPress={this.props.onSave}
+            icon={{ color: "white", name: "save" }}
+            title="Save"
           />
         </View>
       </View>
@@ -86,6 +92,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: 100,
-    height: 50
+    height: 50,
+    backgroundColor: `${Colors.dark}`
   }
 });

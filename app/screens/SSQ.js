@@ -58,6 +58,7 @@ class SSQ extends React.Component {
       ToastAndroid.CENTER
     );
 
+    this.setState({ ...SSQVars.emptySSQForm });
     this.props.navigation.navigate("Activity");
   }
 
@@ -70,8 +71,8 @@ class SSQ extends React.Component {
         </Text>
         <View style={styles.cardsContainer}>
           <ScrollView>
-            {SSQVars.symptoms.map(symptom => (
-              <Card>
+            {SSQVars.symptoms.map((symptom, i) => (
+              <Card key={`symptom-${i}`}>
                 <Text style={styles.symptom}>{symptom.label}</Text>
                 <ButtonGroup
                   onPress={index =>
@@ -84,9 +85,9 @@ class SSQ extends React.Component {
                   }
                   selectedIndex={this.state.symptoms[symptom.index]}
                   selectedButtonStyle={{
-                    backgroundColor: `${
-                      buttonColor[this.state.symptoms[symptom.index]]
-                    }`
+                    backgroundColor: `${buttonColor[
+                      this.state.symptoms[symptom.index]
+                    ] || "white"}`
                   }}
                   buttons={["None", "Slight", "Moderate", "Severe"]}
                   containerStyle={{ height: 50 }}

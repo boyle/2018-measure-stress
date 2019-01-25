@@ -12,7 +12,7 @@ export default class Login extends React.Component {
       <View style={styles.container}>
         <View style={styles.topBar} />
         <View style={styles.contentContainer}>{this.props.children}</View>
-        <View style={styles.bottomBar} />
+        {/*<View style={styles.bottomBar} />*/}
       </View>
     );
   }

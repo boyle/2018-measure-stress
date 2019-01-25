@@ -8,16 +8,20 @@ import {
   Alert,
   ImageBackground
 } from "react-native";
-import { Card, Divider, Button, Input } from "react-native-elements";
+import { Card, Divider, Button, Input, Overlay } from "react-native-elements";
+import { connect } from "react-redux";
 import Colors from "../globals/colors.js";
-import config from "../app_config.json";
+import config from "../app.json";
+import { isLoading, isDoneLoading } from "../ducks/ui.js";
 
-export default class Login extends React.Component {
+class Login extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: "",
-      password: ""
+      credentials: {
+        username: "",
+        password: ""
+      }
     };
 
     this.authenticate = this.authenticate.bind(this);
@@ -32,11 +36,21 @@ export default class Login extends React.Component {
     );
   }
 
+  noNetworkAlert() {
+    Alert.alert(
+      "Cannot reach network",
+      'Unfortunately, a connection to the server cannot be established. You may use the "Guest" account with write-only privileges to record a session, but you will not have access to prior sessions.',
+      [{ text: "OK" }],
+      { cancelable: false }
+    );
+  }
+
   clearForm() {
-    this.setState({ username: "", password: "" });
+    this.setState({ credentials: { username: "", password: "" } });
   }
 
   async authenticate() {
+    this.props.isLoading();
     fetch(`${config.host}/auth/login`, {
       method: "post",
       headers: {
@@ -45,23 +59,26 @@ export default class Login extends React.Component {
           "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-CA,en-US;q=0.7,en;q=0.3"
       },
-      body: `username=${this.state.username}&password=${encodeURIComponent(
-        this.state.password
-      )}`
+      body: `username=${
+        this.state.credentials.username
+      }&password=${encodeURIComponent(this.state.credentials.password)}`
     })
       .then(response => {
         const { status } = response;
 
         if (status === 200) {
           this.clearForm();
+          this.props.isDoneLoading();
           this.props.navigation.navigate("Home");
         } else if (status === 401) {
           this.displayAlert();
+          this.props.isDoneLoading();
           this.clearForm();
         }
       })
       .catch(err => {
-        // TODO Handle case where there is no network
+        this.props.isDoneLoading();
+        this.noNetworkAlert();
       });
   }
 
@@ -77,23 +94,39 @@ export default class Login extends React.Component {
             <Text style={styles.appTitle}>SAANS</Text>
             <Text style={styles.appSubtitle}>Annotation App</Text>
             <TextInput
-              value={this.state.username}
+              value={this.state.credentials.username}
               style={styles.textInput}
               placeholder="Username"
-              onChangeText={text => this.setState({ username: text })}
+              onChangeText={text =>
+                this.setState({
+                  credentials: {
+                    ...this.state.credentials,
+                    username: text
+                  }
+                })
+              }
               underlineColorAndroid={`${Colors.dark}`}
             />
             <TextInput
-              value={this.state.password}
+              value={this.state.credentials.password}
               secureTextEntry
               style={styles.textInput}
               placeholder="Password"
-              onChangeText={text => this.setState({ password: text })}
+              onChangeText={text =>
+                this.setState({
+                  credentials: {
+                    ...this.state.credentials,
+                    password: text
+                  }
+                })
+              }
               underlineColorAndroid={`${Colors.dark}`}
               onSubmitEditing={this.authenticate}
             />
             <Button
               title="Log in"
+              loading={this.props.ui.isLoading}
+              disabled={this.props.ui.isLoading}
               onPress={this.authenticate}
               buttonStyle={styles.button}
             />
@@ -113,6 +146,24 @@ export default class Login extends React.Component {
     );
   }
 }
+
+function mapStatetoProps(state) {
+  return {
+    ui: state.ui
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    isLoading: () => dispatch(isLoading()),
+    isDoneLoading: () => dispatch(isDoneLoading())
+  };
+}
+
+export default connect(
+  mapStatetoProps,
+  mapDispatchToProps
+)(Login);
 
 const styles = StyleSheet.create({
   appTitle: {

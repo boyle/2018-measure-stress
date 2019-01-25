@@ -1,9 +1,9 @@
 {
   "devToolsPort": 19003,
-  "expoServerPort": 19000,
-  "packagerPort": 19007,
-  "packagerPid": 18723,
+  "expoServerPort": null,
+  "packagerPort": null,
+  "packagerPid": null,
   "expoServerNgrokUrl": "https://hk-qk5.anonymous.app.exp.direct",
   "packagerNgrokUrl": "https://packager.hk-qk5.anonymous.app.exp.direct",
-  "ngrokPid": 18852
+  "ngrokPid": 9885
 }

@@ -33,11 +33,12 @@ export default function reducer(state = defaultState, action = {}) {
           [activityNumber]: action.payload
         }
       };
+      console.log(newState);
       return newState;
 
     case SAVE_SSQ:
       let type;
-      if (!state.preSsq) {
+      if (!state.preSSQ) {
         type = "firstSSQ";
       } else {
         type = "secondSSQ";

@@ -19,6 +19,10 @@ import {
   ACTIVITY_COMPLETED
 } from "../globals/constants.js";
 
+import { logActivity } from "../ducks/session.js";
+import { showModal, hideModal } from "../ducks/ui.js";
+
+import ActivityModal from "../components/ActivityModal.js";
 import ActivityPlot from "../components/ActivityPlot.js";
 import AnnotationSlider from "../components/AnnotationSlider.js";
 import PageTemplate from "../components/PageTemplate.js";
@@ -30,7 +34,30 @@ import ActivityTopBar from "../components/ActivityTopBar.js";
 class Activity extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
+
+    this.state = { ...this.getInitialState() };
+
+    // For every tracked domain, initialize the current value to 0
+
+    this.startActivity = this.startActivity.bind(this);
+    this.stopActivity = this.stopActivity.bind(this);
+    this.getElapsedTime = this.getElapsedTime.bind(this);
+    this.rescaleXAxis = this.rescaleXAxis.bind(this);
+    this.logEvent = this.logEvent.bind(this);
+    this.handleActivityButton = this.handleActivityButton.bind(this);
+    this.onSlideComplete = this.onSlideComplete.bind(this);
+    this.onSlideStart = this.onSlideStart.bind(this);
+    this.onSlideDrag = this.onSlideDrag.bind(this);
+    this.saveActivity = this.saveActivity.bind(this);
+    this.activityIsActive = this.activityIsActive.bind(this);
+    this.activityIsNotStarted = this.activityIsNotStarted.bind(this);
+    this.activityIsCompleted = this.activityIsCompleted.bind(this);
+  }
+
+  getInitialState() {
+    const timestamp = this.getTime();
+    const initialState = {
+      inEditMode: false,
       activityStatus: ACTIVITY_NOT_STARTED,
       startTimestamp: null,
       endTimestamp: null,
@@ -41,12 +68,9 @@ class Activity extends React.Component {
       data: {}
     };
 
-    const timestamp = this.getTime();
-
-    // For every tracked domain, initialize the current value to 0
     Object.keys(Variables).forEach(
       variable =>
-        (this.state.data[variable] = {
+        (initialState.data[variable] = {
           currentValue: 0,
           events: {
             0: {
@@ -59,19 +83,7 @@ class Activity extends React.Component {
           }
         })
     );
-
-    this.startActivity = this.startActivity.bind(this);
-    this.stopActivity = this.stopActivity.bind(this);
-    this.getElapsedTime = this.getElapsedTime.bind(this);
-    this.rescaleXAxis = this.rescaleXAxis.bind(this);
-    this.logEvent = this.logEvent.bind(this);
-    this.handleActivityButton = this.handleActivityButton.bind(this);
-    this.onSlideComplete = this.onSlideComplete.bind(this);
-    this.onSlideStart = this.onSlideStart.bind(this);
-    this.onSlideDrag = this.onSlideDrag.bind(this);
-    this.activityIsActive = this.activityIsActive.bind(this);
-    this.activityIsNotStarted = this.activityIsNotStarted.bind(this);
-    this.activityIsCompleted = this.activityIsCompleted.bind(this);
+    return initialState;
   }
 
   getTime() {
@@ -161,6 +173,16 @@ class Activity extends React.Component {
     );
   }
 
+  saveActivity(createNextActivity) {
+    this.props.logActivity(this.state);
+    if (createNextActivity) {
+      this.setState({ ...this.getInitialState() });
+    } else {
+      this.props.navigation.navigate("SSQ");
+    }
+    this.props.hideModal();
+  }
+
   logEvent(domain, event) {
     this.setState({
       data: {
@@ -170,7 +192,7 @@ class Activity extends React.Component {
           currentValue: event.value,
           events: this.activityIsActive()
             ? { ...this.state.data[domain].events, [event.id]: event }
-            : { ...this.state.data[domain].events }
+            : { ...this.state.data[domain].events, 0: event } //log this as the initial event with id 0
         }
       },
       activeSliderDomain: null,
@@ -193,7 +215,7 @@ class Activity extends React.Component {
     }
 
     const event = {
-      id: generateRandomNum(),
+      eventId: generateRandomNum(),
       timestamp: Date.now(),
       elapsedTime: this.getElapsedTime(),
       domain: domain,
@@ -218,11 +240,18 @@ class Activity extends React.Component {
   render() {
     return (
       <PageTemplate>
+        {this.props.ui.modal.modalName === "ActivityModal" && (
+          <ActivityModal
+            onNextActivity={() => this.saveActivity(true)}
+            onSSQ={() => this.saveActivity(false)}
+          />
+        )}
         <ActivityTopBar
           activityStatus={this.state.activityStatus}
           onPressStart={this.handleActivityButton}
           activityNumber={Object.keys(this.props.session.activities).length + 1}
           elapsedTime={this.state.elapsedTime}
+          onSave={() => this.props.showModal("ActivityModal")}
         />
         <ActivityPlot
           height={300}
@@ -245,10 +274,10 @@ class Activity extends React.Component {
                 sliderColor={Variables[domain].color}
                 domain={domain}
                 label={domainObj.label}
-                value={this.state.data[domain].value}
+                value={this.state.data[domain].currentValue}
                 minIndex={0}
                 maxIndex={levelsList.length - 1}
-                valueLabel={levels[this.state.data[domain].value]}
+                valueLabel={levels[this.state.data[domain].currentValue]}
                 onSlideComplete={this.onSlideComplete}
                 onSlideStart={this.onSlideStart}
                 onSlideDrag={this.onSlideDrag}
@@ -256,7 +285,7 @@ class Activity extends React.Component {
               />
             );
           })}
-          <Button raised icon={{ name: "edit" }} title="Comment" />
+          {/*<Button raised icon={{ name: "edit" }} title="Comment" />*/}
 
           {/*
           <IconButton
@@ -284,7 +313,7 @@ class Activity extends React.Component {
                   key={i}
                   style={{
                     fontWeight: `${
-                      i === this.state.activeSliderValue ? "bold" : "regular"
+                      i === this.state.activeSliderValue ? "bold" : "normal"
                     }`,
                     fontSize: 20
                   }}
@@ -328,12 +357,17 @@ const styles = StyleSheet.create({
 
 function mapStateToProps(state) {
   return {
-    session: state.session
+    session: state.session,
+    ui: state.ui
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return {};
+  return {
+    logActivity: activity => dispatch(logActivity(activity)),
+    showModal: modalName => dispatch(showModal(modalName)),
+    hideModal: () => dispatch(hideModal())
+  };
 }
 
 export default connect(
