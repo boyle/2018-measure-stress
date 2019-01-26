@@ -40,11 +40,10 @@ export default class ActivityPlot extends Component {
       refreshRate;
 
     const xTicks = xMax / refreshRate;
-    //let xScaleLabels = [];
-    //for (let i = 0; i <= xTicks; i++) {
-    //  xScaleLabels.push(i * refreshRate);
-    //}
-    const xScaleLabels = [0, 10];
+    let xScaleLabels = [];
+    for (let i = 0; i <= xTicks; i++) {
+      xScaleLabels.push(i * refreshRate);
+    }
 
     const xScale = scaleLinear()
       .domain([0, xMax])
