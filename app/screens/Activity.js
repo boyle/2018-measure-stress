@@ -191,7 +191,7 @@ class Activity extends React.Component {
         [domain]: {
           currentValue: event.value,
           events: this.activityIsActive()
-            ? { ...this.state.data[domain].events, [event.id]: event }
+            ? { ...this.state.data[domain].events, [event.eventId]: event }
             : { ...this.state.data[domain].events, 0: event } //log this as the initial event with id 0
         }
       },
@@ -233,8 +233,12 @@ class Activity extends React.Component {
     });
   }
 
-  onSlideDrag(value) {
-    this.setState({ activeSliderValue: value });
+  onSlideDrag(domain, value) {
+    this.setState({
+      //activeSliderDomain: domain,
+      activeSliderValue: value
+      //activeSliderStart: this.getTime()
+    });
   }
 
   render() {
@@ -242,8 +246,10 @@ class Activity extends React.Component {
       <PageTemplate>
         {this.props.ui.modal.modalName === "ActivityModal" && (
           <ActivityModal
+            activityStatus={this.state.activityStatus}
             onNextActivity={() => this.saveActivity(true)}
             onSSQ={() => this.saveActivity(false)}
+            onClose={() => this.props.hideModal()}
           />
         )}
         <ActivityTopBar

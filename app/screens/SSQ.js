@@ -11,7 +11,7 @@ import {
 import { Button, Card, ButtonGroup, CheckBox } from "react-native-elements";
 import { connect } from "react-redux";
 
-import { saveSSQ } from "../ducks/session.js";
+import { initializeSession, saveSSQ } from "../ducks/session.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import SSQVars from "../globals/ssq.js";
@@ -31,10 +31,15 @@ class SSQ extends React.Component {
     this.saveForm = this.saveForm.bind(this);
     this.formIsFilled = this.formIsFilled.bind(this);
     this.isFirstSSQ = this.isFirstSSQ.bind(this);
+    this.isSecondSSQ = this.isSecondSSQ.bind(this);
   }
 
   isFirstSSQ() {
     return !this.props.session.firstSSQ;
+  }
+
+  isSecondSSQ() {
+    return !this.isFirstSSQ();
   }
 
   formIsFilled() {
@@ -52,14 +57,24 @@ class SSQ extends React.Component {
     };
     this.props.saveSSQ(submittedForm);
 
+    const toastMessage = this.isFirstSSQ()
+      ? "Saved the SSQ."
+      : "Saved the session.";
+
     ToastAndroid.showWithGravity(
-      "Saved the SSQ.",
+      toastMessage,
       ToastAndroid.LONG,
       ToastAndroid.CENTER
     );
 
     this.setState({ ...SSQVars.emptySSQForm });
-    this.props.navigation.navigate("Activity");
+
+    if (this.isFirstSSQ()) {
+      this.props.navigation.navigate("Activity");
+		} else {
+		  this.props.initializeSession();
+      this.props.navigation.navigate("Home");
+    }
   }
 
   render() {
@@ -75,6 +90,8 @@ class SSQ extends React.Component {
               <Card key={`symptom-${i}`}>
                 <Text style={styles.symptom}>{symptom.label}</Text>
                 <ButtonGroup
+                  textStyle={{ color: `${Colors.dark}` }}
+                  selectedTextStyle={{ color: `${Colors.dark}` }}
                   onPress={index =>
                     this.setState({
                       symptoms: {
@@ -184,7 +201,8 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    saveSSQ: ssq => dispatch(saveSSQ(ssq))
+		saveSSQ: ssq => dispatch(saveSSQ(ssq)),
+		initializeSession: () => dispatch(initializeSession()),
   };
 }
 

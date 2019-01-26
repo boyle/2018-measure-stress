@@ -9,6 +9,15 @@ const yScaleLabels = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
 export default class ActivityPlot extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      currentMax: 10
+    };
+
+    const { width, height, padding } = this.props;
+
+    this.yScale = scaleLinear()
+      .domain([0, 100])
+      .range([height - padding, padding]);
 
     this.getEvents = this.getEvents.bind(this);
   }
@@ -31,23 +40,24 @@ export default class ActivityPlot extends Component {
       refreshRate;
 
     const xTicks = xMax / refreshRate;
-    let xScaleLabels = [];
-    for (let i = 0; i <= xTicks; i++) {
-      xScaleLabels.push(i * refreshRate);
-    }
+    //let xScaleLabels = [];
+    //for (let i = 0; i <= xTicks; i++) {
+    //  xScaleLabels.push(i * refreshRate);
+    //}
+    const xScaleLabels = [0, 10];
 
     const xScale = scaleLinear()
       .domain([0, xMax])
       .range([padding, width - padding]);
 
-    const yScale = scaleLinear()
-      .domain([0, 100])
-      .range([height - padding, padding]);
-
     return (
       <Svg height={this.props.height} width={this.props.width}>
         {/* X-axis*/}
-        <Svg.Text x={this.props.width / 2} y={yScale(-15)} textAnchor="middle">
+        <Svg.Text
+          x={this.props.width / 2}
+          y={this.yScale(-15)}
+          textAnchor="middle"
+        >
           Time (s)
         </Svg.Text>
         <Svg.Line
@@ -83,9 +93,9 @@ export default class ActivityPlot extends Component {
         {/*Y-axis*/}
         <Svg.Text
           x={padding - 40}
-          y={yScale(50)}
+          y={this.yScale(50)}
           textAnchor="middle"
-          transform={`rotate(-90 ${padding - 40} ${yScale(50)})`}
+          transform={`rotate(-90 ${padding - 40} ${this.yScale(50)})`}
         >
           Severity (% of max)
         </Svg.Text>
@@ -97,7 +107,7 @@ export default class ActivityPlot extends Component {
           stroke="black"
         />
         {yScaleLabels.map((label, i) => {
-          const yPos = yScale(label);
+          const yPos = this.yScale(label);
           return (
             <Svg.G key={i}>
               <Svg.Line
@@ -120,10 +130,10 @@ export default class ActivityPlot extends Component {
                 <Svg.G key={i}>
                   <Svg.Line
                     x1={xScale(event.elapsedTime)}
-                    y1={yScale(0)}
+                    y1={this.yScale(0)}
                     x2={xScale(event.elapsedTime)}
                     y2={
-                      yScale(
+                      this.yScale(
                         (event.value * 100) /
                           Object.keys(Variables[event.domain].levels).length
                       ) + 10
@@ -135,7 +145,7 @@ export default class ActivityPlot extends Component {
                   <Svg.Circle
                     r={10}
                     cx={xScale(event.elapsedTime)}
-                    cy={yScale(
+                    cy={this.yScale(
                       (event.value * 100) /
                         Object.keys(Variables[event.domain].levels).length
                     )}

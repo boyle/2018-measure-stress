@@ -63,7 +63,6 @@ export default class ActivityTopBar extends Component {
             title="Edit"
           />
           <Button
-            disabled={this.props.activityStatus != ACTIVITY_COMPLETED}
             buttonStyle={styles.button}
             onPress={this.props.onSave}
             icon={{ color: "white", name: "save" }}
@@ -88,7 +87,8 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     padding: 10,
-    justifyContent: "space-around"
+    justifyContent: "space-around",
+    zIndex: -100
   },
   button: {
     width: 100,

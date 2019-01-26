@@ -1,11 +1,18 @@
 import React from "react";
-import { StyleSheet, Text, View, Button, TextInput } from "react-native";
+import {
+  //Slider,
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  TextInput
+} from "react-native";
 import { Slider } from "react-native-elements";
 
 import PageTemplate from "../components/PageTemplate.js";
 import Colors from "../globals/colors.js";
 
-export default class AnnotationSlider extends React.Component {
+export default class AnnotationSlider extends React.PureComponent {
   render() {
     return (
       <View style={{ width: this.props.width, margin: 20 }}>
@@ -22,8 +29,11 @@ export default class AnnotationSlider extends React.Component {
           onSlidingComplete={value =>
             this.props.onSlideComplete(this.props.domain, value)
           }
-          onValueChange={value => this.props.onSlideDrag(value)}
+          onValueChange={value =>
+            this.props.onSlideDrag(this.props.domain, value)
+          }
         />
+
         <Text style={styles.currentState}>{this.props.valueLabel}</Text>
       </View>
     );

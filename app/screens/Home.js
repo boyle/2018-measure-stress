@@ -88,6 +88,7 @@ class Home extends React.Component {
               action={() => this.props.navigation.navigate("Activity")}
             />
             <IconButton
+              disabled
               iconName="build"
               iconColor={iconColor}
               title="Settings"
@@ -98,6 +99,7 @@ class Home extends React.Component {
               action={() => this.props.navigation.navigate("Activity")}
             />
             <IconButton
+              disabled
               iconName="info"
               iconColor={iconColor}
               title="Help"

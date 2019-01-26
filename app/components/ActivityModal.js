@@ -1,24 +1,16 @@
 import React, { Component } from "react";
 import { View, StyleSheet, Text, TextInput } from "react-native";
 import { Overlay, Button } from "react-native-elements";
+import {
+  ACTIVITY_NOT_STARTED,
+  ACTIVITY_ONGOING,
+  ACTIVITY_COMPLETED
+} from "../globals/constants.js";
 
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
 
 export default class ActivityModal extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      patientId: ""
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  handleChange(id) {
-    this.setState({ patientId: id });
-  }
-
   render() {
     return (
       <ModalContainer>
@@ -26,15 +18,22 @@ export default class ActivityModal extends Component {
         <Text>
           Should we move on to another activity or go to the post-session SSQ.
         </Text>
-        <Button
-          buttonStyle={styles.button}
-          onPress={this.props.onNextActivity}
-          title="Next activity"
-        />
+        {this.props.activityStatus === ACTIVITY_COMPLETED && (
+          <Button
+            buttonStyle={styles.button}
+            onPress={this.props.onNextActivity}
+            title="Next activity"
+          />
+        )}
         <Button
           buttonStyle={styles.button}
           onPress={this.props.onSSQ}
           title="Go to SSQ"
+        />
+        <Button
+          buttonStyle={styles.button}
+          onPress={this.props.onClose}
+          title="Go back"
         />
       </ModalContainer>
     );
