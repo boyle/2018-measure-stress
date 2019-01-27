@@ -50,11 +50,11 @@ export default class ActivityPlot extends Component {
       .range([padding, width - padding]);
 
     return (
-      <Svg height={this.props.height} width={this.props.width}>
+      <Svg style={{ marginLeft: 90 }} height={this.props.height} width={this.props.width}>
         {/* X-axis*/}
         <Svg.Text
           x={this.props.width / 2}
-          y={this.yScale(-15)}
+          y={this.yScale(-20)}
           textAnchor="middle"
         >
           Time (s)
@@ -74,14 +74,14 @@ export default class ActivityPlot extends Component {
                 x1={xPos}
                 y1={height - padding}
                 x2={xPos}
-                y2={height - padding + 20}
+                y2={height - padding + 10}
                 stroke="black"
               />
               <Svg.Text
                 textAnchor="middle"
                 alignmentBaseline="hanging"
                 x={xPos}
-                y={height - padding + 25}
+                y={height - padding + 15}
               >
                 {label}
               </Svg.Text>

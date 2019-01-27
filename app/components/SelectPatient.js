@@ -1,18 +1,15 @@
 import React, { Component } from "react";
-import { View, StyleSheet, Text, TextInput } from "react-native";
+import { View, StyleSheet, Text, TextInput, FlatList, Picker } from "react-native";
 import { Overlay, Button } from "react-native-elements";
 
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
 
-export default class NewPatient extends Component {
+export default class SelectPatient extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      patientId: "",
-      success: false,
-      failure: false,
-      buttonsDisabled: false,
+      patientId: this.props.patientIdsList[0],
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -29,7 +26,6 @@ export default class NewPatient extends Component {
   }
 
   attemptCreate() {
-    this.props.onSave(this.state.patientId);
     this.setState({ success: true, buttonsDisabled: true });
     setTimeout(() => { this.setState({ success: false }); this.close();}, 1000);
   }
@@ -37,29 +33,25 @@ export default class NewPatient extends Component {
   render() {
     return (
       <ModalContainer>
-        <Text style={styles.title}>New Patient</Text>
+        <Text style={styles.title}>Select a patient</Text>
         <Text>
-          Please enter the ID of the patient you wish to add to your profile.
-        </Text>
-        <TextInput
-          value={this.state.patientId}
-          style={styles.textInput}
-          placeholder="Patient ID"
-          onChangeText={text => this.setState({ patientId: text })}
-          underlineColorAndroid={`${Colors.dark}`}
-        />
-        <Text style={{
-          textAlign: "center",
-          color: `${this.state.success ? "green" : "red"}`
-        }}>
-          {this.state.success && "Patient profile created."}
-          {this.state.failure && "Could not save patient."}
-        </Text>
+            Please select the patient who is undergoing therapy today.
+            </Text>
+
+            <Picker
+        selectedValue={this.state.patientId}
+        onValueChange={(itemValue, itemIndex) =>
+                       this.setState({patientId: itemValue})
+                      }>
+            {this.props.patientIdsList.map((id, i) =>
+                                           <Picker.Item label={`Patient ${id}`} value={id} />)}
+            </Picker>
+
         <Button
-          disabled={this.state.buttonsDisabled}
+          disabled={!this.state.patientId}
           buttonStyle={styles.button}
-          onPress={this.attemptCreate}
-          title="Create"
+        onPress={() => this.props.onPatientSelected(this.state.patientId)}
+          title="Select"
         />
         <Button
           disabled={this.state.buttonsDisabled}

@@ -22,6 +22,7 @@ export default function reducer(state = defaultState, action = {}) {
         ...state,
         modal: { display: true, modalName: action.modalName }
       };
+      console.log(newState)
       return newState;
 
     case IS_LOADING:

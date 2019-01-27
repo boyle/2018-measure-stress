@@ -27,6 +27,9 @@ export default class ActivityTopBar extends Component {
         <Text style={styles.activityLabel}>
           Activity {this.props.activityNumber}
         </Text>
+      <Text style={styles.time}>
+      Date: {new Date().toISOString().substring(0, 10)}
+      </Text>
         <Text style={styles.time}>
           Time elapsed: {this.formatTime(this.props.elapsedTime)}
         </Text>

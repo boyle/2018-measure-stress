@@ -28,7 +28,7 @@ export default class ActivityModal extends Component {
         <Button
           buttonStyle={styles.button}
           onPress={this.props.onSSQ}
-          title="Go to SSQ"
+          title="End session"
         />
         <Button
           buttonStyle={styles.button}

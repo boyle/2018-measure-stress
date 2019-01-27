@@ -114,12 +114,13 @@ class Activity extends React.Component {
     // Initialize all variables to zero
     const startTimestamp = this.getTime();
 
-    // Show a Toast, just 'coz you can
+		// Show a Toast, just 'coz you can
+		/*
     ToastAndroid.showWithGravity(
       "Activity started at " + startTimestamp,
       ToastAndroid.LONG,
       ToastAndroid.CENTER
-    );
+		);*/
 
     // Set interval
     this.timer = setInterval(() => this.rescaleXAxis(), 1000);
@@ -287,7 +288,7 @@ class Activity extends React.Component {
                 onSlideComplete={this.onSlideComplete}
                 onSlideStart={this.onSlideStart}
                 onSlideDrag={this.onSlideDrag}
-                width="40%"
+                width="45%"
               />
             );
           })}
@@ -349,10 +350,15 @@ const styles = StyleSheet.create({
   slidersContainer: {
     display: "flex",
     flexDirection: "row",
-    flexWrap: "wrap"
+    flexWrap: "wrap",
+    alignItems: "center",
+    marginLeft: "auto",
+    marginRight: "auto",
+    width: "45%"
   },
   levelsIndicator: {
     position: "absolute",
+    top: 120,
     zIndex: 10,
     padding: 30,
     marginLeft: Math.floor(0.1 * Dimensions.get("window").width),

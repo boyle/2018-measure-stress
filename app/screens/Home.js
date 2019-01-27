@@ -12,10 +12,12 @@ import { Button, Card } from "react-native-elements";
 import { connect } from "react-redux";
 
 import { showModal, hideModal } from "../ducks/ui.js";
+import { addPatient } from "../ducks/user.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import IconButton from "../components/IconButton.js";
 import NewPatient from "../components/NewPatient.js";
+import SelectPatient from "../components/SelectPatient.js";
 
 function StatsCard({ statsName, statsValue }) {
   return (
@@ -29,10 +31,16 @@ function StatsCard({ statsName, statsValue }) {
 class Home extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      displayNewPatientOverlay: false
-    };
+
+    this.onPatientSelected = this.onPatientSelected.bind(this);
   }
+
+  onPatientSelected(patientId) {
+    this.props.hideModal();
+    this.props.navigation.navigate("SSQ");
+  }
+
+
   render() {
     const iconHeight = 140;
     const iconWidth = 140;
@@ -40,12 +48,17 @@ class Home extends React.Component {
     return (
       <PageTemplate>
         <View style={styles.container}>
-          {this.state.displayNewPatientOverlay && (
+          {this.props.ui.modal.modalName === "NewPatient" && (
             <NewPatient
-              onSave={() => null}
-              onCancel={() =>
-                this.setState({ displayNewPatientOverlay: false })
-              }
+              onSave={this.props.addPatient}
+              onClose={this.props.hideModal}
+            />
+          )}
+          {this.props.ui.modal.modalName === "SelectPatient" && (
+            <SelectPatient
+              patientIdsList={this.props.user.patientIdsList}
+              onPatientSelected={this.onPatientSelected}
+              onClose={this.props.hideModal}
             />
           )}
           <Text style={styles.title}>Welcome, Francois!</Text>
@@ -65,7 +78,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.setState({ displayNewPatientOverlay: true })}
+              action={() => this.props.showModal("NewPatient")}
             />
             <IconButton
               iconName="create"
@@ -75,9 +88,10 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.navigation.navigate("SSQ")}
+              action={() => this.props.showModal('SelectPatient')}
             />
             <IconButton
+              disabled
               iconName="description"
               iconColor={iconColor}
               title="Review"
@@ -192,7 +206,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     showModal: modalName => dispatch(showModal(modalName)),
-    hideModal: () => dispatch(hideModal())
+    hideModal: () => dispatch(hideModal()),
+    addPatient: patientId => dispatch(addPatient(patientId))
   };
 }
 

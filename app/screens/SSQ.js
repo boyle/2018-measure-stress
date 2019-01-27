@@ -1,5 +1,5 @@
 import React from "react";
-import { BackHandler, ToastAndroid } from "react-native";
+import { BackHandler } from "react-native";
 import {
   StyleSheet,
   Text,
@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { Button, Card, ButtonGroup, CheckBox } from "react-native-elements";
 import { connect } from "react-redux";
+
+import Toast, { DURATION } from 'react-native-easy-toast';
 
 import { initializeSession, saveSSQ } from "../ducks/session.js";
 import Colors from "../globals/colors.js";
@@ -59,13 +61,16 @@ class SSQ extends React.Component {
 
     const toastMessage = this.isFirstSSQ()
       ? "Saved the SSQ."
-      : "Saved the session.";
+                       : "Saved the session.";
 
+    
+    /*
     ToastAndroid.showWithGravity(
       toastMessage,
       ToastAndroid.LONG,
       ToastAndroid.CENTER
     );
+    */
 
     this.setState({ ...SSQVars.emptySSQForm });
 
@@ -116,6 +121,7 @@ class SSQ extends React.Component {
         <Button
           title="Save"
           disabled={!this.formIsFilled()}
+          buttonStyle={styles.button}
           onPress={() => this.saveForm()}
         />
       </PageTemplate>
@@ -154,12 +160,10 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   button: {
-    margin: 10,
-    width: 200,
-    height: 200,
     backgroundColor: `${Colors.dark}`,
-    padding: 30,
-    borderRadius: 8
+    width: "50%",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   buttonIcon: {
     width: 150,
