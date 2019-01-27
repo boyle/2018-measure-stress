@@ -13,6 +13,7 @@ import { connect } from "react-redux";
 
 import { showModal, hideModal } from "../ducks/ui.js";
 import { addPatient } from "../ducks/user.js";
+import { startSession } from "../ducks/session.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import IconButton from "../components/IconButton.js";
@@ -37,6 +38,7 @@ class Home extends React.Component {
 
   onPatientSelected(patientId) {
     this.props.hideModal();
+    this.props.startSession(patientId);
     this.props.navigation.navigate("SSQ");
   }
 
@@ -207,7 +209,8 @@ function mapDispatchToProps(dispatch) {
   return {
     showModal: modalName => dispatch(showModal(modalName)),
     hideModal: () => dispatch(hideModal()),
-    addPatient: patientId => dispatch(addPatient(patientId))
+    addPatient: patientId => dispatch(addPatient(patientId)),
+    startSession: patientId => dispatch(startSession(patientId))
   };
 }
 

@@ -125,6 +125,21 @@ export default class ActivityPlot extends Component {
                 {label}
               </Svg.Text>
 
+        {Object.values(this.props.comments).map((event, i) => (
+                <Svg.G key={i}>
+                  <Svg.Rect
+                    width={20}
+                    height={20}
+                    x={xScale(event.elapsedTime) - 10}
+                    y={this.yScale(110) - 10}
+                    stroke={`black`}
+                    fill="transparent"
+                    strokeWidth={2}
+                  />
+                </Svg.G>
+              ))}
+
+
               {this.getEvents().map((event, i) => (
                 <Svg.G key={i}>
                   <Svg.Line

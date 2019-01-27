@@ -28,6 +28,9 @@ export default class ActivityTopBar extends Component {
           Activity {this.props.activityNumber}
         </Text>
       <Text style={styles.time}>
+      Patient: {this.props.patientId}
+      </Text>
+      <Text style={styles.time}>
       Date: {new Date().toISOString().substring(0, 10)}
       </Text>
         <Text style={styles.time}>
@@ -68,6 +71,7 @@ export default class ActivityTopBar extends Component {
           <Button
             buttonStyle={styles.button}
             onPress={this.props.onSave}
+            disabled={this.props.activityStatus === ACTIVITY_ONGOING}
             icon={{ color: "white", name: "save" }}
             title="Save"
           />

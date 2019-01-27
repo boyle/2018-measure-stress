@@ -23,6 +23,7 @@ import { logActivity } from "../ducks/session.js";
 import { showModal, hideModal } from "../ducks/ui.js";
 
 import ActivityModal from "../components/ActivityModal.js";
+import CommentModal from "../components/CommentModal.js";
 import ActivityPlot from "../components/ActivityPlot.js";
 import AnnotationSlider from "../components/AnnotationSlider.js";
 import PageTemplate from "../components/PageTemplate.js";
@@ -52,6 +53,7 @@ class Activity extends React.Component {
     this.activityIsActive = this.activityIsActive.bind(this);
     this.activityIsNotStarted = this.activityIsNotStarted.bind(this);
     this.activityIsCompleted = this.activityIsCompleted.bind(this);
+    this.logComment = this.logComment.bind(this);
   }
 
   getInitialState() {
@@ -65,7 +67,8 @@ class Activity extends React.Component {
       activeSliderDomain: null,
       activeSliderValue: null,
       activeSliderStart: null,
-      data: {}
+      data: {},
+      comments: {} // TODO might need to integrate that in data
     };
 
     Object.keys(Variables).forEach(
@@ -202,6 +205,12 @@ class Activity extends React.Component {
     });
   }
 
+  logComment(comment) {
+    this.setState({
+      comments: {...this.state.comments, [comment.commentId]: comment}
+    })
+  }
+
   onSlideComplete(domain, value) {
     const previousValue = this.state.data[domain].currentValue;
 
@@ -218,7 +227,7 @@ class Activity extends React.Component {
     const event = {
       eventId: generateRandomNum(),
       timestamp: Date.now(),
-      elapsedTime: this.getElapsedTime(),
+      elapsedTime: this.state.activeSliderStart,
       domain: domain,
       value: value
     };
@@ -230,7 +239,7 @@ class Activity extends React.Component {
     this.setState({
       activeSliderDomain: domain,
       activeSliderValue: value,
-      activeSliderStart: this.getTime()
+      activeSliderStart: this.getElapsedTime()
     });
   }
 
@@ -247,14 +256,23 @@ class Activity extends React.Component {
       <PageTemplate>
         {this.props.ui.modal.modalName === "ActivityModal" && (
           <ActivityModal
+            activityStatus={this.props.session.patientId}
             activityStatus={this.state.activityStatus}
             onNextActivity={() => this.saveActivity(true)}
             onSSQ={() => this.saveActivity(false)}
             onClose={() => this.props.hideModal()}
           />
         )}
+      {this.props.ui.modal.modalName === "CommentModal" && (
+        <CommentModal
+          getElapsedTime={this.getElapsedTime}
+          logComment={this.logComment}
+          onClose={() => this.props.hideModal()}
+        />
+      )}
         <ActivityTopBar
           activityStatus={this.state.activityStatus}
+          patientId={this.props.session.patientId}
           onPressStart={this.handleActivityButton}
           activityNumber={Object.keys(this.props.session.activities).length + 1}
           elapsedTime={this.state.elapsedTime}
@@ -267,6 +285,7 @@ class Activity extends React.Component {
           refreshRate={10}
           elapsedTime={this.state.elapsedTime}
           data={this.state.data}
+          comments={this.state.comments}
         />
         <View style={styles.slidersContainer}>
           {Object.entries(Variables).map((variable, i) => {
@@ -288,11 +307,16 @@ class Activity extends React.Component {
                 onSlideComplete={this.onSlideComplete}
                 onSlideStart={this.onSlideStart}
                 onSlideDrag={this.onSlideDrag}
-                width="45%"
+                width="40%"
               />
             );
           })}
-          {/*<Button raised icon={{ name: "edit" }} title="Comment" />*/}
+          <Button
+            onPress={() => this.props.showModal("CommentModal")}
+            containerViewStyle={{ width: "40%" }}
+            icon={{ name: "edit" }}
+            title="Comment"
+          />
 
           {/*
           <IconButton
@@ -352,9 +376,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    marginLeft: "auto",
-    marginRight: "auto",
-    width: "45%"
+    justifyContent: "center"
   },
   levelsIndicator: {
     position: "absolute",

@@ -2,6 +2,7 @@
 const INITIALIZE_SESSION = "session/initialize_session";
 const LOG_ACTIVITY = "session/log_activity";
 const SAVE_SSQ = "session/save_ssq";
+const START_SESSION = "session/start_session";
 
 // DEFAULT STATE
 const defaultState = {
@@ -21,6 +22,16 @@ export default function reducer(state = defaultState, action = {}) {
     case INITIALIZE_SESSION:
       newState = {
         ...defaultState
+      };
+      return newState;
+
+  case START_SESSION:
+
+      newState = {
+          ...defaultState,
+          sessionStart: Date.now(),
+          sessionId: Date.now(), // TODO change
+          patientId: action.payload,
       };
       return newState;
 
@@ -62,6 +73,13 @@ export function initializeSession() {
   return {
     type: INITIALIZE_SESSION
   };
+}
+
+export function startSession(patientId) {
+    return {
+        type: START_SESSION,
+        payload: patientId
+    };
 }
 
 export function logActivity(activity) {
