@@ -17,8 +17,8 @@ import { startSession } from "../ducks/session.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import IconButton from "../components/IconButton.js";
-import NewPatient from "../components/NewPatient.js";
-import SelectPatient from "../components/SelectPatient.js";
+import NewPatientModal from "../components/NewPatientModal.js";
+import SelectPatientModal from "../components/SelectPatientModal.js";
 
 function StatsCard({ statsName, statsValue }) {
   return (
@@ -42,7 +42,6 @@ class Home extends React.Component {
     this.props.navigation.navigate("SSQ");
   }
 
-
   render() {
     const iconHeight = 140;
     const iconWidth = 140;
@@ -50,14 +49,14 @@ class Home extends React.Component {
     return (
       <PageTemplate>
         <View style={styles.container}>
-          {this.props.ui.modal.modalName === "NewPatient" && (
-            <NewPatient
+          {this.props.ui.modal.modalName === "NewPatientModal" && (
+            <NewPatientModal
               onSave={this.props.addPatient}
               onClose={this.props.hideModal}
             />
           )}
-          {this.props.ui.modal.modalName === "SelectPatient" && (
-            <SelectPatient
+          {this.props.ui.modal.modalName === "SelectPatientModal" && (
+            <SelectPatientModal
               patientIdsList={this.props.user.patientIdsList}
               onPatientSelected={this.onPatientSelected}
               onClose={this.props.hideModal}
@@ -80,7 +79,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.showModal("NewPatient")}
+              action={() => this.props.showModal("NewPatientModal")}
             />
             <IconButton
               iconName="create"
@@ -90,7 +89,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.showModal('SelectPatient')}
+              action={() => this.props.showModal("SelectPatientModal")}
             />
             <IconButton
               disabled

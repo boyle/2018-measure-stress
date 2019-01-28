@@ -5,14 +5,14 @@ import { Overlay, Button } from "react-native-elements";
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
 
-export default class NewPatient extends Component {
+export default class NewPatientModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
       patientId: "",
       success: false,
       failure: false,
-      buttonsDisabled: false,
+      buttonsDisabled: false
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -31,7 +31,10 @@ export default class NewPatient extends Component {
   attemptCreate() {
     this.props.onSave(this.state.patientId);
     this.setState({ success: true, buttonsDisabled: true });
-    setTimeout(() => { this.setState({ success: false }); this.close();}, 1000);
+    setTimeout(() => {
+      this.setState({ success: false });
+      this.close();
+    }, 1000);
   }
 
   render() {
@@ -48,10 +51,12 @@ export default class NewPatient extends Component {
           onChangeText={text => this.setState({ patientId: text })}
           underlineColorAndroid={`${Colors.dark}`}
         />
-        <Text style={{
-          textAlign: "center",
-          color: `${this.state.success ? "green" : "red"}`
-        }}>
+        <Text
+          style={{
+            textAlign: "center",
+            color: `${this.state.success ? "green" : "red"}`
+          }}
+        >
           {this.state.success && "Patient profile created."}
           {this.state.failure && "Could not save patient."}
         </Text>

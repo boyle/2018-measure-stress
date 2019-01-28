@@ -1,15 +1,22 @@
 import React, { Component } from "react";
-import { View, StyleSheet, Text, TextInput, FlatList, Picker } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  TextInput,
+  FlatList,
+  Picker
+} from "react-native";
 import { Overlay, Button } from "react-native-elements";
 
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
 
-export default class SelectPatient extends Component {
+export default class SelectPatientModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      patientId: this.props.patientIdsList[0],
+      patientId: this.props.patientIdsList[0]
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -27,30 +34,33 @@ export default class SelectPatient extends Component {
 
   attemptCreate() {
     this.setState({ success: true, buttonsDisabled: true });
-    setTimeout(() => { this.setState({ success: false }); this.close();}, 1000);
+    setTimeout(() => {
+      this.setState({ success: false });
+      this.close();
+    }, 1000);
   }
 
   render() {
     return (
       <ModalContainer>
         <Text style={styles.title}>Select a patient</Text>
-        <Text>
-            Please select the patient who is undergoing therapy today.
-            </Text>
+        <Text>Please select the patient who is undergoing therapy today.</Text>
 
-            <Picker
-        selectedValue={this.state.patientId}
-        onValueChange={(itemValue, itemIndex) =>
-                       this.setState({patientId: itemValue})
-                      }>
-            {this.props.patientIdsList.map((id, i) =>
-                                           <Picker.Item label={`Patient ${id}`} value={id} />)}
-            </Picker>
+        <Picker
+          selectedValue={this.state.patientId}
+          onValueChange={(itemValue, itemIndex) =>
+            this.setState({ patientId: itemValue })
+          }
+        >
+          {this.props.patientIdsList.map((id, i) => (
+            <Picker.Item label={`Patient ${id}`} value={id} />
+          ))}
+        </Picker>
 
         <Button
           disabled={!this.state.patientId}
           buttonStyle={styles.button}
-        onPress={() => this.props.onPatientSelected(this.state.patientId)}
+          onPress={() => this.props.onPatientSelected(this.state.patientId)}
           title="Select"
         />
         <Button

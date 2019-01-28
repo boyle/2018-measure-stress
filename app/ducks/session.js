@@ -7,6 +7,7 @@ const START_SESSION = "session/start_session";
 // DEFAULT STATE
 const defaultState = {
   sessionStart: null, // Timestamp in ISO format
+  sessionEnd: null, // Timestamp in ISO format
   sessionId: null,
   patientId: null, // Integer
   firstSSQ: null,
@@ -25,13 +26,12 @@ export default function reducer(state = defaultState, action = {}) {
       };
       return newState;
 
-  case START_SESSION:
-
+    case START_SESSION:
       newState = {
-          ...defaultState,
-          sessionStart: Date.now(),
-          sessionId: Date.now(), // TODO change
-          patientId: action.payload,
+        ...defaultState,
+        sessionStart: Date.now(),
+        sessionId: Date.now(), // TODO change
+        patientId: action.payload
       };
       return newState;
 
@@ -44,7 +44,6 @@ export default function reducer(state = defaultState, action = {}) {
           [activityNumber]: action.payload
         }
       };
-      console.log(newState);
       return newState;
 
     case SAVE_SSQ:
@@ -76,10 +75,18 @@ export function initializeSession() {
 }
 
 export function startSession(patientId) {
-    return {
-        type: START_SESSION,
-        payload: patientId
-    };
+  return {
+    type: START_SESSION,
+    payload: patientId
+  };
+}
+
+export function saveSession(session) {
+  // TODO implement this
+  // should send the session data to the server
+  // if that fails, or if the user is in guest
+  // mode the session is saved locally
+  return -1;
 }
 
 export function logActivity(activity) {
