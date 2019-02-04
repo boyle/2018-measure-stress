@@ -20,7 +20,7 @@ export default function reducer(state = defaultState, action = {}) {
   let newState;
   switch (action.type) {
     case LOGIN_SUCCEEDED:
-      newState = { ...state, loggedIn: true };
+      newState = { ...state, loggedIn: true, cookie: payload };
       return newState;
 
   case ADD_PATIENT:
@@ -34,10 +34,10 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // ACTION CREATORS
-export function loginSucceeded(userProfile) {
+export function loginSucceeded(cookie) {
   return {
     type: LOGIN_SUCCEEDED,
-    userProfile
+    payload: cookie
   };
 }
 

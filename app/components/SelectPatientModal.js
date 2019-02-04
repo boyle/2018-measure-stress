@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Overlay, Button } from "react-native-elements";
 
+import config from "../app.json";
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
 
@@ -16,12 +17,25 @@ export default class SelectPatientModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      patientId: this.props.patientIdsList[0]
+      patientsList: [],
+      patientId: null
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.attemptCreate = this.attemptCreate.bind(this);
     this.close = this.close.bind(this);
+  }
+
+  async componentWillMount() {
+    fetch(`${config.host}/api/v1/p`, { credentials: "same-origin" })
+      .then(data => data.text())
+      .then(text => {
+        const patients = text.split("<br/>");
+        this.setState({ patientsList: patients, patientId: patients[0] });
+      })
+      .catch(err => {
+        // TODO handle
+      });
   }
 
   handleChange(id) {
@@ -52,8 +66,12 @@ export default class SelectPatientModal extends Component {
             this.setState({ patientId: itemValue })
           }
         >
-          {this.props.patientIdsList.map((id, i) => (
-            <Picker.Item label={`Patient ${id}`} value={id} />
+          {this.state.patientsList.map((id, i) => (
+            <Picker.Item
+              key={`patient-${i}`}
+              label={`Patient ${id}`}
+              value={id}
+            />
           ))}
         </Picker>
 

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { View, StyleSheet, Text, TextInput } from "react-native";
 import { Overlay, Button } from "react-native-elements";
 
+import config from "../app.json";
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
 
@@ -29,12 +30,22 @@ export default class NewPatientModal extends Component {
   }
 
   attemptCreate() {
-    this.props.onSave(this.state.patientId);
-    this.setState({ success: true, buttonsDisabled: true });
-    setTimeout(() => {
-      this.setState({ success: false });
-      this.close();
-    }, 1000);
+    fetch(`${config.host}/api/v1/p/${this.state.patientId}`, {
+      credentials: "same-origin",
+      method: "PUT"
+    })
+      .then(data => data.text())
+      .then(text => {
+        this.setState({ success: true, buttonsDisabled: true });
+        setTimeout(() => {
+          this.setState({ success: false });
+          this.close();
+        }, 1000);
+      })
+      .catch(err => {
+        console.log("error");
+        // TODO handle
+      });
   }
 
   render() {

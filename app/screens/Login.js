@@ -13,6 +13,7 @@ import { connect } from "react-redux";
 import Colors from "../globals/colors.js";
 import config from "../app.json";
 import { isLoading, isDoneLoading } from "../ducks/ui.js";
+import { loginSucceeded } from "../ducks/user.js";
 
 class Login extends React.Component {
   constructor(props) {
@@ -52,6 +53,7 @@ class Login extends React.Component {
   async authenticate() {
     this.props.isLoading();
     fetch(`${config.host}/auth/login`, {
+      credentials: "same-origin",
       method: "post",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
