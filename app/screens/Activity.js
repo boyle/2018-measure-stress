@@ -54,6 +54,7 @@ class Activity extends React.Component {
     this.activityIsNotStarted = this.activityIsNotStarted.bind(this);
     this.activityIsCompleted = this.activityIsCompleted.bind(this);
     this.logComment = this.logComment.bind(this);
+    this.toggleEditRequired = this.toggleEditRequired.bind(this);
   }
 
   getInitialState() {
@@ -68,6 +69,7 @@ class Activity extends React.Component {
       activeSliderValue: null,
       activeSliderStart: null,
       data: {},
+      edits: {},
       comments: {} // TODO might need to integrate that in data
     };
 
@@ -81,12 +83,32 @@ class Activity extends React.Component {
               domain: variable,
               timestamp: timestamp,
               elapsedTime: 0,
-              value: 0
+              value: 0,
+              editRequired: false
             }
           }
         })
     );
     return initialState;
+  }
+
+  toggleEditRequired(domain, eventId) {
+    if (!this.activityIsActive()) return;
+    const event = this.state.data[domain].events[eventId];
+    event.editRequired = !event.editRequired;
+    this.setState({
+      data: {
+        ...this.state.data,
+
+        [domain]: {
+          currentValue: this.state.data[domain].currentValue,
+          events: {
+            ...this.state.data[domain].events,
+            [event.eventId]: event
+          }
+        }
+      }
+    });
   }
 
   getTime() {
@@ -116,14 +138,6 @@ class Activity extends React.Component {
   startActivity() {
     // Initialize all variables to zero
     const startTimestamp = this.getTime();
-
-		// Show a Toast, just 'coz you can
-		/*
-    ToastAndroid.showWithGravity(
-      "Activity started at " + startTimestamp,
-      ToastAndroid.LONG,
-      ToastAndroid.CENTER
-		);*/
 
     // Set interval
     this.timer = setInterval(() => this.rescaleXAxis(), 1000);
@@ -207,8 +221,8 @@ class Activity extends React.Component {
 
   logComment(comment) {
     this.setState({
-      comments: {...this.state.comments, [comment.commentId]: comment}
-    })
+      comments: { ...this.state.comments, [comment.commentId]: comment }
+    });
   }
 
   onSlideComplete(domain, value) {
@@ -229,7 +243,8 @@ class Activity extends React.Component {
       timestamp: Date.now(),
       elapsedTime: this.state.activeSliderStart,
       domain: domain,
-      value: value
+      value: value,
+      editRequired: false
     };
 
     this.logEvent(domain, event);
@@ -263,13 +278,13 @@ class Activity extends React.Component {
             onClose={() => this.props.hideModal()}
           />
         )}
-      {this.props.ui.modal.modalName === "CommentModal" && (
-        <CommentModal
-          getElapsedTime={this.getElapsedTime}
-          logComment={this.logComment}
-          onClose={() => this.props.hideModal()}
-        />
-      )}
+        {this.props.ui.modal.modalName === "CommentModal" && (
+          <CommentModal
+            getElapsedTime={this.getElapsedTime}
+            logComment={this.logComment}
+            onClose={() => this.props.hideModal()}
+          />
+        )}
         <ActivityTopBar
           activityStatus={this.state.activityStatus}
           patientId={this.props.session.patientId}
@@ -283,6 +298,9 @@ class Activity extends React.Component {
           width={700}
           padding={50}
           refreshRate={10}
+          activityStatus={this.state.activityStatus}
+          toggleEditRequired={this.toggleEditRequired}
+          editRequired={this.state.editRequired}
           elapsedTime={this.state.elapsedTime}
           data={this.state.data}
           comments={this.state.comments}

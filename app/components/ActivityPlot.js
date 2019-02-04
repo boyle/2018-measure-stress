@@ -32,25 +32,78 @@ export default class ActivityPlot extends Component {
     return mergedLog;
   }
 
+  convertEventToSVG(event, x, y) {
+    return (
+      <Svg.G>
+        <Svg.Line
+          x1={x}
+          y1={this.yScale(0)}
+          x2={x}
+          y2={y}
+          stroke={`${Variables[event.domain].color}`}
+          strokeWidth={2}
+        />
+
+        <Svg.Circle
+          onPress={() =>
+            this.props.toggleEditRequired(event.domain, event.eventId)
+          }
+          r={10}
+          cx={x}
+          cy={y}
+          stroke={`${Variables[event.domain].color}`}
+          fill="transparent"
+          strokeWidth={2}
+        />
+        {event.editRequired && (
+          <Svg.Text x={x} y={y - 15} fontSize={32} textAnchor="middle">
+            ?
+          </Svg.Text>
+        )}
+      </Svg.G>
+    );
+  }
+
+  getFlaggedEvents() {
+    return Object.values(this.props.flaggedEvents);
+  }
+
+  computeXTicks(lowerBound, windowWidth, resolution) {
+    const numTicks = windowWidth / resolution + 1;
+    let ticks = [];
+    for (let i = 0; i <= numTicks; i++) {
+      ticks.push(lowerBound + i * resolution);
+    }
+    return ticks;
+  }
+
+  computeXDomain(elapsedTime, windowWidth, resolution) {
+    if (elapsedTime <= windowWidth) {
+      return [0, windowWidth];
+    }
+
+    const upperBound = Math.ceil(elapsedTime / resolution) * resolution;
+    const lowerBound = upperBound - windowWidth;
+
+    return [lowerBound, upperBound];
+  }
+
   render() {
     const { width, height, padding, refreshRate, elapsedTime } = this.props;
 
-    const xMax =
-      refreshRate * Math.floor((elapsedTime + refreshRate) / refreshRate) ||
-      refreshRate;
-
-    const xTicks = xMax / refreshRate;
-    let xScaleLabels = [];
-    for (let i = 0; i <= xTicks; i++) {
-      xScaleLabels.push(i * refreshRate);
-    }
+    const bounds = this.computeXDomain(elapsedTime, 60, 10);
+    const xTicks = this.computeXTicks(bounds[0], 60, 10);
 
     const xScale = scaleLinear()
-      .domain([0, xMax])
+      .domain(bounds)
       .range([padding, width - padding]);
 
     return (
-      <Svg style={{ marginLeft: 90 }} height={this.props.height} width={this.props.width}>
+      <Svg
+        style={{ marginLeft: 90 }}
+        height={this.props.height}
+        width={this.props.width}
+      >
         {/* X-axis*/}
         <Svg.Text
           x={this.props.width / 2}
@@ -66,7 +119,7 @@ export default class ActivityPlot extends Component {
           y2={height - padding}
           stroke="black"
         />
-        {xScaleLabels.map((label, i) => {
+        {xTicks.map((label, i) => {
           const xPos = xScale(label);
           return (
             <Svg.G key={i}>
@@ -125,7 +178,7 @@ export default class ActivityPlot extends Component {
                 {label}
               </Svg.Text>
 
-        {Object.values(this.props.comments).map((event, i) => (
+              {Object.values(this.props.comments).map((event, i) => (
                 <Svg.G key={i}>
                   <Svg.Rect
                     width={20}
@@ -139,36 +192,18 @@ export default class ActivityPlot extends Component {
                 </Svg.G>
               ))}
 
+              {this.getEvents().map((event, i) => {
+                const x = xScale(event.elapsedTime);
+                const y = this.yScale(
+                  (event.value * 100) /
+                    Object.keys(Variables[event.domain].levels).length
+                );
 
-              {this.getEvents().map((event, i) => (
-                <Svg.G key={i}>
-                  <Svg.Line
-                    x1={xScale(event.elapsedTime)}
-                    y1={this.yScale(0)}
-                    x2={xScale(event.elapsedTime)}
-                    y2={
-                      this.yScale(
-                        (event.value * 100) /
-                          Object.keys(Variables[event.domain].levels).length
-                      ) + 10
-                    }
-                    stroke={`${Variables[event.domain].color}`}
-                    strokeWidth={2}
-                  />
-
-                  <Svg.Circle
-                    r={10}
-                    cx={xScale(event.elapsedTime)}
-                    cy={this.yScale(
-                      (event.value * 100) /
-                        Object.keys(Variables[event.domain].levels).length
-                    )}
-                    stroke={`${Variables[event.domain].color}`}
-                    fill="transparent"
-                    strokeWidth={2}
-                  />
-                </Svg.G>
-              ))}
+                return (
+                  event.elapsedTime >= bounds[0] &&
+                  this.convertEventToSVG(event, x, y)
+                );
+              })}
             </Svg.G>
           );
         })}
