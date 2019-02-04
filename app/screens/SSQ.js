@@ -11,8 +11,6 @@ import {
 import { Button, Card, ButtonGroup, CheckBox } from "react-native-elements";
 import { connect } from "react-redux";
 
-import Toast, { DURATION } from 'react-native-easy-toast';
-
 import { initializeSession, saveSSQ } from "../ducks/session.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";

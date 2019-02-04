@@ -1,9 +1,9 @@
 {
-  "devToolsPort": 19003,
+  "devToolsPort": 19007,
   "expoServerPort": 19000,
-  "packagerPort": null,
-  "packagerPid": null,
+  "packagerPort": 19011,
+  "packagerPid": 1854,
   "expoServerNgrokUrl": "https://cg-jjy.anonymous.app.exp.direct",
   "packagerNgrokUrl": "https://packager.cg-jjy.anonymous.app.exp.direct",
-  "ngrokPid": 92419
+  "ngrokPid": 2013
 }
