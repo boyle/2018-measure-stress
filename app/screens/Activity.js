@@ -58,6 +58,7 @@ class Activity extends React.Component {
     this.activityIsActive = this.activityIsActive.bind(this);
     this.activityIsNotStarted = this.activityIsNotStarted.bind(this);
     this.activityIsCompleted = this.activityIsCompleted.bind(this);
+    this.clearActiveSlider = this.clearActiveSlider.bind(this);
   }
 
   getInitialState() {
@@ -130,6 +131,14 @@ class Activity extends React.Component {
     this.setState({ elapsedTime: elapsedTime });
   }
 
+  getElapsedTimeOf(timestamp) {
+    if (!this.props.session.sessionStart) {
+      return 0;
+    }
+
+    return (timestamp - this.props.session.sessionStart) / 1000; // in s
+  }
+
   getElapsedTime() {
     if (!this.props.session.sessionStart) {
       return 0;
@@ -171,14 +180,10 @@ class Activity extends React.Component {
     );
   }
 
-  saveActivity(createNextActivity) {
+  saveActivity() {
     this.props.logActivity(this.state);
-    if (createNextActivity) {
-      this.setState({ ...this.getInitialState() });
-    } else {
-      this.props.navigation.navigate("SSQ");
-      clearInterval(this.timer);
-    }
+    this.props.navigation.navigate("SSQ");
+    clearInterval(this.timer);
     this.props.hideModal();
   }
 
@@ -187,6 +192,10 @@ class Activity extends React.Component {
       event,
       this.state.activityStatus === ACTIVITY_NOT_STARTED
     );
+    this.clearActiveSlider();
+  }
+
+  clearActiveSlider() {
     this.setState({
       activeSliderDomain: null,
       activeSliderValue: null,
@@ -200,18 +209,14 @@ class Activity extends React.Component {
     // Only log the event if a change is made... but since slider
     // is done "sliding", the slider is no longer active.
     if (value === previousValue) {
-      return this.setState({
-        activeSliderDomain: null,
-        activeSliderValue: null,
-        activeSliderStart: null
-      });
+      return this.clearActiveSlider();
     }
 
     const event = {
       eventId: generateRandomNum(),
       type: "domain_variable",
       timestamp: Date.now(),
-      elapsedTime: this.state.activeSliderStart,
+      elapsedTime: this.getElapsedTimeOf(this.state.activeSliderStart),
       domain: domain,
       value: value,
       editRequired: false
