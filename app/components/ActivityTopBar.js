@@ -25,20 +25,19 @@ export default class ActivityTopBar extends Component {
     return (
       <View>
         <Text style={styles.activityLabel}>
-          Activity {this.props.activityNumber}
+          {this.props.activityStatus === ACTIVITY_COMPLETED
+            ? "Rest period"
+            : "Activity " + this.props.activityNumber}
         </Text>
-      <Text style={styles.time}>
-      Patient: {this.props.patientId}
-      </Text>
-      <Text style={styles.time}>
-      Date: {new Date().toISOString().substring(0, 10)}
-      </Text>
+        <Text style={styles.time}>Patient: {this.props.patientId}</Text>
+        <Text style={styles.time}>
+          Date: {new Date().toISOString().substring(0, 10)}
+        </Text>
         <Text style={styles.time}>
           Time elapsed: {this.formatTime(this.props.elapsedTime)}
         </Text>
         <View style={styles.buttonContainer}>
           <Button
-            disabled={this.props.activityStatus === ACTIVITY_COMPLETED}
             buttonStyle={[
               styles.button,
               {

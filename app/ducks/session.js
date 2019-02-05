@@ -1,19 +1,49 @@
+import {
+  VESTIBULAR_DOMAIN,
+  HYPERAROUSAL_DOMAIN,
+  MOTOR_SYSTEM_DOMAIN,
+  SENSORY_DOMAIN,
+  COGNITIVE_DOMAIN,
+  PAIN_LEVEL,
+  PERCEIVED_EXERTION
+} from "../globals/tracked_variables.js";
+
+import {
+  ACTIVITY_NOT_STARTED,
+  ACTIVITY_ONGOING,
+  ACTIVITY_COMPLETED
+} from "../globals/constants.js";
+
 // ACTIONS
 const INITIALIZE_SESSION = "session/initialize_session";
+const LOG_EVENT = "session/log_event";
 const LOG_ACTIVITY = "session/log_activity";
 const SAVE_SSQ = "session/save_ssq";
 const START_SESSION = "session/start_session";
+const TOGGLE_EDIT_REQUIRED = "session/toggle_edit_required";
 
 // DEFAULT STATE
 const defaultState = {
-  sessionStart: null, // Timestamp in ISO format
-  sessionEnd: null, // Timestamp in ISO format
-  sessionId: null,
+  sessionStart: null, // Time at which the first SSQ is shown
+  sessionEnd: null, // Time at which the last SSQ is submitted
+  sessionId: null, // Integer
   patientId: null, // Integer
   firstSSQ: null,
   secondSSQ: null,
-  activities: {},
-  activityEdits: {}
+  activityStatus: ACTIVITY_NOT_STARTED,
+  sliderValues: {
+    VESTIBULAR_DOMAIN: 0,
+    HYPERAROUSAL_DOMAIN: 0,
+    MOTOR_SYSTEM_DOMAIN: 0,
+    SENSORY_DOMAIN: 0,
+    COGNITIVE_DOMAIN: 0,
+    PAIN_LEVEL: 0,
+    PERCEIVED_EXERTION: 0
+  },
+  activities: [], // Meta-data on the activities (eg. start, end, scenario, rest)
+  restPeriods: [],
+  events: {}, // Events identified by a unique ID
+  editedEvents: {}
 };
 
 // REDUCER
@@ -28,22 +58,65 @@ export default function reducer(state = defaultState, action = {}) {
 
     case START_SESSION:
       newState = {
-        ...defaultState,
+        ...state,
         sessionStart: Date.now(),
-        sessionId: Date.now(), // TODO change
-        patientId: action.payload
+        sessionId: 120, // TODO change
+        patientId: 20
       };
       return newState;
 
-    case LOG_ACTIVITY:
-      const activityNumber = Object.keys(state.activities).length + 1;
+    case TOGGLE_EDIT_REQUIRED:
+      const eventId = action.payload;
       newState = {
         ...state,
-        activities: {
-          ...state.activities,
-          [activityNumber]: action.payload
+        events: {
+          ...state.events,
+          [eventId]: {
+            ...state.events[eventId],
+            editRequired: !state.events[eventId].editRequired
+          }
         }
       };
+      return newState;
+
+    case LOG_EVENT:
+      // TODO THIS IS UGLY AF, CHANGE THIS.
+      // Before the session starts, the plot should only
+      // display one marker at baseline by domain... changes
+      // made via slider should create events that REPLACE previous events.
+      const { event, baseline } = action.payload;
+      newState = {
+        ...state,
+        events: {
+          ...state.events,
+          [event.eventId]: event
+        },
+        sliderValues: {
+          ...state.sliderValues,
+          [event.domain]: event.value
+        }
+      };
+
+      if (
+        Object.values(state.events).filter(
+          eventf => eventf.domain === event.domain
+        ).length > 0 &&
+        action.payload.baseline
+      ) {
+        const eventId = Object.values(state.events).filter(
+          eventf => eventf.domain == event.domain
+        )[0].eventId;
+        delete newState.events[eventId];
+      }
+
+      return newState;
+
+    case LOG_ACTIVITY:
+      newState = {
+        ...state,
+        activities: [...state.activities, action.payload]
+      };
+
       return newState;
 
     case SAVE_SSQ:
@@ -68,6 +141,24 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // ACTION CREATORS
+
+export function toggleEditRequired(eventId) {
+  return {
+    type: TOGGLE_EDIT_REQUIRED,
+    payload: eventId
+  };
+}
+
+export function logEvent(event, baseline) {
+  return {
+    type: LOG_EVENT,
+    payload: {
+      event,
+      baseline
+    }
+  };
+}
+
 export function initializeSession() {
   return {
     type: INITIALIZE_SESSION

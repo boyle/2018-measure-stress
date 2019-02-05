@@ -19,7 +19,12 @@ import {
   ACTIVITY_COMPLETED
 } from "../globals/constants.js";
 
-import { logActivity } from "../ducks/session.js";
+import {
+  startSession,
+  logActivity,
+  logEvent,
+  toggleEditRequired
+} from "../ducks/session.js";
 import { showModal, hideModal } from "../ducks/ui.js";
 
 import ActivityModal from "../components/ActivityModal.js";
@@ -53,8 +58,6 @@ class Activity extends React.Component {
     this.activityIsActive = this.activityIsActive.bind(this);
     this.activityIsNotStarted = this.activityIsNotStarted.bind(this);
     this.activityIsCompleted = this.activityIsCompleted.bind(this);
-    this.logComment = this.logComment.bind(this);
-    this.toggleEditRequired = this.toggleEditRequired.bind(this);
   }
 
   getInitialState() {
@@ -68,47 +71,14 @@ class Activity extends React.Component {
       activeSliderDomain: null,
       activeSliderValue: null,
       activeSliderStart: null,
-      data: {},
-      edits: {},
-      comments: {} // TODO might need to integrate that in data
+      currentActivity: {
+        activityTitle: null,
+        startTimestamp: null,
+        stopTimestamp: null
+      }
     };
 
-    Object.keys(Variables).forEach(
-      variable =>
-        (initialState.data[variable] = {
-          currentValue: 0,
-          events: {
-            0: {
-              eventId: 0,
-              domain: variable,
-              timestamp: timestamp,
-              elapsedTime: 0,
-              value: 0,
-              editRequired: false
-            }
-          }
-        })
-    );
     return initialState;
-  }
-
-  toggleEditRequired(domain, eventId) {
-    if (!this.activityIsActive()) return;
-    const event = this.state.data[domain].events[eventId];
-    event.editRequired = !event.editRequired;
-    this.setState({
-      data: {
-        ...this.state.data,
-
-        [domain]: {
-          currentValue: this.state.data[domain].currentValue,
-          events: {
-            ...this.state.data[domain].events,
-            [event.eventId]: event
-          }
-        }
-      }
-    });
   }
 
   getTime() {
@@ -136,15 +106,22 @@ class Activity extends React.Component {
   }
 
   startActivity() {
+    // Modal to choose activity
+
     // Initialize all variables to zero
     const startTimestamp = this.getTime();
 
-    // Set interval
-    this.timer = setInterval(() => this.rescaleXAxis(), 1000);
+    // If this is the first activity
+    if (this.props.session.activities.length == 0) {
+      this.props.startSession();
+      this.timer = setInterval(() => this.rescaleXAxis(), 1000);
+    }
 
     this.setState({
       activityStatus: ACTIVITY_ONGOING,
-      startTimestamp: startTimestamp
+      currentActivity: {
+        startTimestamp
+      }
     });
   }
 
@@ -154,11 +131,11 @@ class Activity extends React.Component {
   }
 
   getElapsedTime() {
-    if (!this.state.startTimestamp) {
+    if (!this.props.session.sessionStart) {
       return 0;
     }
 
-    return (this.getTime() - this.state.startTimestamp) / 1000; // in s
+    return (this.getTime() - this.props.session.sessionStart) / 1000; // in s
   }
 
   stopActivity() {
@@ -168,9 +145,12 @@ class Activity extends React.Component {
     const stop = () => {
       this.setState({
         activityStatus: ACTIVITY_COMPLETED,
-        endTimestamp: this.getTime()
+        currentActivity: {
+          ...this.state.currentActivity,
+          endTimestamp: this.getTime()
+        }
       });
-      clearInterval(this.timer);
+      this.props.logActivity(this.state.currentActivity);
     };
 
     Alert.alert(
@@ -197,36 +177,25 @@ class Activity extends React.Component {
       this.setState({ ...this.getInitialState() });
     } else {
       this.props.navigation.navigate("SSQ");
+      clearInterval(this.timer);
     }
     this.props.hideModal();
   }
 
-  logEvent(domain, event) {
+  logEvent(event) {
+    this.props.logEvent(
+      event,
+      this.state.activityStatus === ACTIVITY_NOT_STARTED
+    );
     this.setState({
-      data: {
-        ...this.state.data,
-
-        [domain]: {
-          currentValue: event.value,
-          events: this.activityIsActive()
-            ? { ...this.state.data[domain].events, [event.eventId]: event }
-            : { ...this.state.data[domain].events, 0: event } //log this as the initial event with id 0
-        }
-      },
       activeSliderDomain: null,
       activeSliderValue: null,
       activeSliderStart: null
     });
   }
 
-  logComment(comment) {
-    this.setState({
-      comments: { ...this.state.comments, [comment.commentId]: comment }
-    });
-  }
-
   onSlideComplete(domain, value) {
-    const previousValue = this.state.data[domain].currentValue;
+    const previousValue = this.props.session.sliderValues[domain];
 
     // Only log the event if a change is made... but since slider
     // is done "sliding", the slider is no longer active.
@@ -240,6 +209,7 @@ class Activity extends React.Component {
 
     const event = {
       eventId: generateRandomNum(),
+      type: "domain_variable",
       timestamp: Date.now(),
       elapsedTime: this.state.activeSliderStart,
       domain: domain,
@@ -247,7 +217,7 @@ class Activity extends React.Component {
       editRequired: false
     };
 
-    this.logEvent(domain, event);
+    this.logEvent(event);
   }
 
   onSlideStart(domain, value) {
@@ -260,9 +230,7 @@ class Activity extends React.Component {
 
   onSlideDrag(domain, value) {
     this.setState({
-      //activeSliderDomain: domain,
       activeSliderValue: value
-      //activeSliderStart: this.getTime()
     });
   }
 
@@ -271,7 +239,7 @@ class Activity extends React.Component {
       <PageTemplate>
         {this.props.ui.modal.modalName === "ActivityModal" && (
           <ActivityModal
-            activityStatus={this.props.session.patientId}
+            patientId={this.props.session.patientId}
             activityStatus={this.state.activityStatus}
             onNextActivity={() => this.saveActivity(true)}
             onSSQ={() => this.saveActivity(false)}
@@ -281,7 +249,7 @@ class Activity extends React.Component {
         {this.props.ui.modal.modalName === "CommentModal" && (
           <CommentModal
             getElapsedTime={this.getElapsedTime}
-            logComment={this.logComment}
+            logEvent={this.logEvent}
             onClose={() => this.props.hideModal()}
           />
         )}
@@ -298,8 +266,9 @@ class Activity extends React.Component {
           width={700}
           padding={50}
           refreshRate={10}
+          events={this.props.session.events}
           activityStatus={this.state.activityStatus}
-          toggleEditRequired={this.toggleEditRequired}
+          toggleEditRequired={this.props.toggleEditRequired}
           editRequired={this.state.editRequired}
           elapsedTime={this.state.elapsedTime}
           data={this.state.data}
@@ -318,10 +287,10 @@ class Activity extends React.Component {
                 sliderColor={Variables[domain].color}
                 domain={domain}
                 label={domainObj.label}
-                value={this.state.data[domain].currentValue}
+                value={this.props.session.sliderValues[domain]}
                 minIndex={0}
                 maxIndex={levelsList.length - 1}
-                valueLabel={levels[this.state.data[domain].currentValue]}
+                valueLabel={levels[this.props.session.sliderValues[domain]]}
                 onSlideComplete={this.onSlideComplete}
                 onSlideStart={this.onSlideStart}
                 onSlideDrag={this.onSlideDrag}
@@ -335,22 +304,6 @@ class Activity extends React.Component {
             icon={{ name: "edit" }}
             title="Comment"
           />
-
-          {/*
-          <IconButton
-            iconName={`${
-              !this.activityIsActive()
-                ? "play-circle-filled"
-                : "pause-circle-filled"
-            }`}
-            iconColor={"blue"}
-            title={`${!this.activityIsActive() ? "Start" : "Stop"}`}
-            buttonStyle={styles.button}
-            iconHeight={"100%"}
-            iconWidth={"100%"}
-            textStyle={styles.buttonTitle}
-            action={!this.activityIsCompleted() && this.handleActivityButton}
-          />*/}
         </View>
         {this.state.activeSliderDomain && (
           <View style={styles.levelsIndicator}>
@@ -417,6 +370,9 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     logActivity: activity => dispatch(logActivity(activity)),
+    logEvent: (event, baseline) => dispatch(logEvent(event, baseline)),
+    startSession: timestamp => dispatch(startSession(startSession)),
+    toggleEditRequired: eventId => dispatch(toggleEditRequired(eventId)),
     showModal: modalName => dispatch(showModal(modalName)),
     hideModal: () => dispatch(hideModal())
   };

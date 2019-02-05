@@ -18,18 +18,6 @@ export default class ActivityPlot extends Component {
     this.yScale = scaleLinear()
       .domain([0, 100])
       .range([height - padding, padding]);
-
-    this.getEvents = this.getEvents.bind(this);
-  }
-
-  getEvents() {
-    const mergedLog = [];
-    Object.entries(this.props.data).map(domain => {
-      Object.values(domain[1].events).forEach(event => {
-        mergedLog.push(event);
-      });
-    });
-    return mergedLog;
   }
 
   convertEventToSVG(event, x, y) {
@@ -45,9 +33,7 @@ export default class ActivityPlot extends Component {
         />
 
         <Svg.Circle
-          onPress={() =>
-            this.props.toggleEditRequired(event.domain, event.eventId)
-          }
+          onPress={() => this.props.toggleEditRequired(event.eventId)}
           r={10}
           cx={x}
           cy={y}
@@ -178,32 +164,34 @@ export default class ActivityPlot extends Component {
                 {label}
               </Svg.Text>
 
-              {Object.values(this.props.comments).map((event, i) => (
-                <Svg.G key={i}>
-                  <Svg.Rect
-                    width={20}
-                    height={20}
-                    x={xScale(event.elapsedTime) - 10}
-                    y={this.yScale(110) - 10}
-                    stroke={`black`}
-                    fill="transparent"
-                    strokeWidth={2}
-                  />
-                </Svg.G>
-              ))}
+              {Object.values(this.props.events)
+                .filter(event => event.type === "comment")
+                .map((event, i) => (
+                  <Svg width="1px" height="1px">
+                    <Svg.G>
+                      <Svg.Path
+                        transform={`translate(${xScale(event.elapsedTime) -
+                          5},${this.yScale(100) - 10})scale(0.05)`}
+                        d="M352,0H32v512h448V128L352,0z M352,45.25L434.75,128H352V45.25z M448,480H64V32h256v128h128V480z M288,128H96V96h192V128z    M96,192h320v32H96V192z M96,288h320v32H96V288z M96,384h320v32H96V384z"
+                      />
+                    </Svg.G>
+                  </Svg>
+                ))}
 
-              {this.getEvents().map((event, i) => {
-                const x = xScale(event.elapsedTime);
-                const y = this.yScale(
-                  (event.value * 100) /
-                    Object.keys(Variables[event.domain].levels).length
-                );
+              {Object.values(this.props.events)
+                .filter(event => event.type === "domain_variable")
+                .map((event, i) => {
+                  const x = xScale(event.elapsedTime);
+                  const y = this.yScale(
+                    (event.value * 100) /
+                      Object.keys(Variables[event.domain].levels).length
+                  );
 
-                return (
-                  event.elapsedTime >= bounds[0] &&
-                  this.convertEventToSVG(event, x, y)
-                );
-              })}
+                  return (
+                    event.elapsedTime >= bounds[0] &&
+                    this.convertEventToSVG(event, x, y)
+                  );
+                })}
             </Svg.G>
           );
         })}

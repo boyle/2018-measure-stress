@@ -15,16 +15,7 @@ export default class ActivityModal extends Component {
     return (
       <ModalContainer>
         <Text style={styles.title}>What next?</Text>
-        <Text>
-          Should we move on to another activity or go to the post-session SSQ.
-        </Text>
-        {this.props.activityStatus === ACTIVITY_COMPLETED && (
-          <Button
-            buttonStyle={styles.button}
-            onPress={this.props.onNextActivity}
-            title="Next activity"
-          />
-        )}
+        <Text>Do you want to terminate this session?</Text>
         <Button
           buttonStyle={styles.button}
           onPress={this.props.onSSQ}

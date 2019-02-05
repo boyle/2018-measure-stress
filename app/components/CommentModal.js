@@ -14,8 +14,10 @@ export default class CommentModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      commentId: generateRandomNum(),
+      eventId: generateRandomNum(),
+      type: "comment",
       elapsedTime: this.props.getElapsedTime(),
+      timestamp: Date.now(),
       reportedBy: CLINICIAN,
       comment: ""
     };
@@ -74,7 +76,7 @@ export default class CommentModal extends Component {
             disabled={this.state.buttonsDisabled}
             buttonStyle={styles.button}
             onPress={() => {
-              this.props.logComment(this.state);
+              this.props.logEvent(this.state);
               this.props.onClose();
             }}
             title="Save"
