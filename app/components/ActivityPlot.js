@@ -23,14 +23,16 @@ export default class ActivityPlot extends Component {
   convertEventToSVG(event, x, y) {
     return (
       <Svg.G>
-        <Svg.Line
-          x1={x}
-          y1={this.yScale(0)}
-          x2={x}
-          y2={y}
-          stroke={`${Variables[event.domain].color}`}
-          strokeWidth={2}
-        />
+        {y != this.yScale(0) && (
+          <Svg.Line
+            x1={x}
+            y1={this.yScale(0)}
+            x2={x}
+            y2={y + 10}
+            stroke={`${Variables[event.domain].color}`}
+            strokeWidth={2}
+          />
+        )}
 
         <Svg.Circle
           onPress={() => this.props.toggleEditRequired(event.eventId)}
@@ -167,15 +169,13 @@ export default class ActivityPlot extends Component {
               {Object.values(this.props.events)
                 .filter(event => event.type === "comment")
                 .map((event, i) => (
-                  <Svg width="1px" height="1px">
-                    <Svg.G>
-                      <Svg.Path
-                        transform={`translate(${xScale(event.elapsedTime) -
-                          5},${this.yScale(100) - 10})scale(0.05)`}
-                        d="M352,0H32v512h448V128L352,0z M352,45.25L434.75,128H352V45.25z M448,480H64V32h256v128h128V480z M288,128H96V96h192V128z    M96,192h320v32H96V192z M96,288h320v32H96V288z M96,384h320v32H96V384z"
-                      />
-                    </Svg.G>
-                  </Svg>
+                  <Svg.G>
+                    <Svg.Path
+                      transform={`translate(${xScale(event.elapsedTime) -
+                        5},${this.yScale(100) - 10})scale(0.05)`}
+                      d="M352,0H32v512h448V128L352,0z M352,45.25L434.75,128H352V45.25z M448,480H64V32h256v128h128V480z M288,128H96V96h192V128z    M96,192h320v32H96V192z M96,288h320v32H96V288z M96,384h320v32H96V384z"
+                    />
+                  </Svg.G>
                 ))}
 
               {Object.values(this.props.events)

@@ -216,7 +216,7 @@ class Activity extends React.Component {
       eventId: generateRandomNum(),
       type: "domain_variable",
       timestamp: Date.now(),
-      elapsedTime: this.getElapsedTimeOf(this.state.activeSliderStart),
+      elapsedTime: this.getElapsedTime(),
       domain: domain,
       value: value,
       editRequired: false
