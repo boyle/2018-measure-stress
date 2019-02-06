@@ -72,6 +72,7 @@ class Activity extends React.Component {
     this.stopTicking = this.stopTicking.bind(this);
     this.sessionIsStarted = this.sessionIsStarted.bind(this);
     this.endSession = this.endSession.bind(this);
+    this.getCurrentActivityNumber = this.getCurrentActivityNumber.bind(this);
 
     this.startSession();
   }
@@ -145,6 +146,13 @@ class Activity extends React.Component {
     );
   }
 
+  getCurrentActivityNumber() {
+    return (
+      Object.values(this.props.session.activities).filter(x => !x.resting)
+        .length + 1
+    );
+  }
+
   getElapsedTimeOf(timestamp) {
     if (!this.props.session.sessionStart) {
       return 0;
@@ -158,10 +166,7 @@ class Activity extends React.Component {
       return 0;
     }
 
-    const elapsedTime =
-      (this.getTime() - this.props.session.startTimestamp) / 1000; // in s
-
-    return elapsedTime;
+    return this.getTime() - this.props.session.startTimestamp;
   }
 
   endSession() {
@@ -244,10 +249,7 @@ class Activity extends React.Component {
           activityStatus={this.state.activityStatus}
           patientId={this.props.session.patientId}
           onPressStart={this.handleActivityButton}
-          activityNumber={
-            Object.values(this.props.session.activities).filter(x => !x.resting)
-              .length + 1
-          }
+          activityNumber={this.getCurrentActivityNumber()}
           elapsedTime={this.props.session.elapsedTime}
           onSave={() => this.props.showModal("ActivityModal")}
         />
@@ -259,7 +261,6 @@ class Activity extends React.Component {
           events={this.props.session.events}
           activityStatus={this.state.activityStatus}
           toggleEditRequired={this.props.toggleEditRequired}
-          editRequired={this.state.editRequired}
           elapsedTime={this.props.session.elapsedTime}
         />
         <View style={styles.slidersContainer}>
