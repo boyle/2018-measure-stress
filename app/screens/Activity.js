@@ -16,14 +16,22 @@ import { generateRandomNum } from "../utils.js";
 import {
   ACTIVITY_NOT_STARTED,
   ACTIVITY_ONGOING,
-  ACTIVITY_COMPLETED
+  ACTIVITY_COMPLETED,
+  SESSION_NOT_STARTED,
+  RESTING
 } from "../globals/constants.js";
 
 import {
   startSession,
+  stopSession,
+  startActivity,
+  stopActivity,
+  endActivity,
   logActivity,
   logEvent,
-  toggleEditRequired
+  toggleEditRequired,
+  tick,
+  updateSessionStatus
 } from "../ducks/session.js";
 import { showModal, hideModal } from "../ducks/ui.js";
 
@@ -41,127 +49,84 @@ class Activity extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { ...this.getInitialState() };
+    this.state = {
+      inEditMode: false,
+      activeSliderDomain: null,
+      activeSliderValue: null,
+      activeSliderStart: null
+    };
 
     // For every tracked domain, initialize the current value to 0
-
+    this.startSession = this.startSession.bind(this);
     this.startActivity = this.startActivity.bind(this);
-    this.stopActivity = this.stopActivity.bind(this);
     this.getElapsedTime = this.getElapsedTime.bind(this);
-    this.rescaleXAxis = this.rescaleXAxis.bind(this);
     this.logEvent = this.logEvent.bind(this);
     this.handleActivityButton = this.handleActivityButton.bind(this);
     this.onSlideComplete = this.onSlideComplete.bind(this);
     this.onSlideStart = this.onSlideStart.bind(this);
     this.onSlideDrag = this.onSlideDrag.bind(this);
-    this.saveActivity = this.saveActivity.bind(this);
-    this.activityIsActive = this.activityIsActive.bind(this);
-    this.activityIsNotStarted = this.activityIsNotStarted.bind(this);
-    this.activityIsCompleted = this.activityIsCompleted.bind(this);
+    this.activityIsOngoing = this.activityIsOngoing.bind(this);
+    this.isResting = this.isResting.bind(this);
     this.clearActiveSlider = this.clearActiveSlider.bind(this);
-  }
+    this.startTicking = this.startTicking.bind(this);
+    this.stopTicking = this.stopTicking.bind(this);
+    this.sessionIsStarted = this.sessionIsStarted.bind(this);
+    this.endSession = this.endSession.bind(this);
 
-  getInitialState() {
-    const timestamp = this.getTime();
-    const initialState = {
-      inEditMode: false,
-      activityStatus: ACTIVITY_NOT_STARTED,
-      startTimestamp: null,
-      endTimestamp: null,
-      elapsedTime: 0,
-      activeSliderDomain: null,
-      activeSliderValue: null,
-      activeSliderStart: null,
-      currentActivity: {
-        activityTitle: null,
-        startTimestamp: null,
-        stopTimestamp: null
-      }
-    };
-
-    return initialState;
+    this.startSession();
   }
 
   getTime() {
     return Date.now(); // time in ms since epoch
   }
 
-  activityIsNotStarted() {
-    return this.state.activityStatus === ACTIVITY_NOT_STARTED;
+  sessionIsStarted() {
+    return this.props.session.startTimestamp != null;
   }
 
-  activityIsActive() {
-    return this.state.activityStatus === ACTIVITY_ONGOING;
+  activityIsOngoing() {
+    return this.props.session.sessionStatus === ACTIVITY_ONGOING;
   }
 
-  activityIsCompleted() {
-    return this.state.activityState === ACTIVITY_COMPLETED;
+  isResting() {
+    return this.props.session.sessionStatus === RESTING;
   }
 
   handleActivityButton() {
-    if (!this.activityIsActive()) {
-      this.startActivity();
+    if (this.activityIsOngoing()) {
+      this.promptForActivityEnd();
     } else {
-      this.stopActivity();
+      this.startActivity();
     }
+  }
+
+  startTicking() {
+    this.timer = setInterval(() => this.props.tick(), 1000);
+  }
+
+  stopTicking() {
+    clearInterval(this.timer);
+  }
+
+  startSession() {
+    this.props.startSession();
+    this.startTicking();
   }
 
   startActivity() {
     // Modal to choose activity
+    const activityId = 20; // TODO use a modal
 
-    // Initialize all variables to zero
-    const startTimestamp = this.getTime();
-
-    // If this is the first activity
-    if (this.props.session.activities.length == 0) {
-      this.props.startSession();
-      this.timer = setInterval(() => this.rescaleXAxis(), 1000);
+    if (this.isResting()) {
+      this.props.updateSessionStatus(ACTIVITY_ONGOING);
+      this.props.startActivity(activityId);
+    } else {
+      this.props.updateSessionStatus(RESTING);
+      this.props.startActivity(0); // activity with ID 0 is the "rest" activity
     }
-
-    this.setState({
-      activityStatus: ACTIVITY_ONGOING,
-      currentActivity: {
-        startTimestamp
-      }
-    });
   }
 
-  rescaleXAxis() {
-    const elapsedTime = this.getElapsedTime();
-    this.setState({ elapsedTime: elapsedTime });
-  }
-
-  getElapsedTimeOf(timestamp) {
-    if (!this.props.session.sessionStart) {
-      return 0;
-    }
-
-    return (timestamp - this.props.session.sessionStart) / 1000; // in s
-  }
-
-  getElapsedTime() {
-    if (!this.props.session.sessionStart) {
-      return 0;
-    }
-
-    return (this.getTime() - this.props.session.sessionStart) / 1000; // in s
-  }
-
-  stopActivity() {
-    // Ensure this is really what the user wants
-    let confirmed = false;
-
-    const stop = () => {
-      this.setState({
-        activityStatus: ACTIVITY_COMPLETED,
-        currentActivity: {
-          ...this.state.currentActivity,
-          endTimestamp: this.getTime()
-        }
-      });
-      this.props.logActivity(this.state.currentActivity);
-    };
-
+  promptForActivityEnd() {
     Alert.alert(
       "End activity",
       "Are you sure that you are done with this activity? You will not be able to resume the activity.",
@@ -173,24 +138,43 @@ class Activity extends React.Component {
         },
         {
           text: "OK",
-          onPress: () => stop()
+          onPress: () => this.props.stopActivity()
         }
       ],
       { cancelable: true, onDismiss: () => {} }
     );
   }
 
-  saveActivity() {
-    this.props.logActivity(this.state);
-    this.props.navigation.navigate("SSQ");
-    clearInterval(this.timer);
+  getElapsedTimeOf(timestamp) {
+    if (!this.props.session.sessionStart) {
+      return 0;
+    }
+
+    return (timestamp - this.props.session.startTimestamp) / 1000; // in s
+  }
+
+  getElapsedTime() {
+    if (!this.props.session.startTimestamp) {
+      return 0;
+    }
+
+    const elapsedTime =
+      (this.getTime() - this.props.session.startTimestamp) / 1000; // in s
+
+    return elapsedTime;
+  }
+
+  endSession() {
+    this.props.stopSession();
+    this.stopTicking();
     this.props.hideModal();
+    this.props.navigation.navigate("SSQ");
   }
 
   logEvent(event) {
     this.props.logEvent(
       event,
-      this.state.activityStatus === ACTIVITY_NOT_STARTED
+      !this.sessionIsStarted() // TODO: fix this, this is a hacky parameter that is required so that only one circle is plotted at baseline.
     );
     this.clearActiveSlider();
   }
@@ -244,10 +228,7 @@ class Activity extends React.Component {
       <PageTemplate>
         {this.props.ui.modal.modalName === "ActivityModal" && (
           <ActivityModal
-            patientId={this.props.session.patientId}
-            activityStatus={this.state.activityStatus}
-            onNextActivity={() => this.saveActivity(true)}
-            onSSQ={() => this.saveActivity(false)}
+            onEndSession={() => this.endSession()}
             onClose={() => this.props.hideModal()}
           />
         )}
@@ -259,11 +240,15 @@ class Activity extends React.Component {
           />
         )}
         <ActivityTopBar
+          canStart={this.isResting()}
           activityStatus={this.state.activityStatus}
           patientId={this.props.session.patientId}
           onPressStart={this.handleActivityButton}
-          activityNumber={Object.keys(this.props.session.activities).length + 1}
-          elapsedTime={this.state.elapsedTime}
+          activityNumber={
+            Object.values(this.props.session.activities).filter(x => !x.resting)
+              .length + 1
+          }
+          elapsedTime={this.props.session.elapsedTime}
           onSave={() => this.props.showModal("ActivityModal")}
         />
         <ActivityPlot
@@ -275,9 +260,7 @@ class Activity extends React.Component {
           activityStatus={this.state.activityStatus}
           toggleEditRequired={this.props.toggleEditRequired}
           editRequired={this.state.editRequired}
-          elapsedTime={this.state.elapsedTime}
-          data={this.state.data}
-          comments={this.state.comments}
+          elapsedTime={this.props.session.elapsedTime}
         />
         <View style={styles.slidersContainer}>
           {Object.entries(Variables).map((variable, i) => {
@@ -374,9 +357,14 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
+    startActivity: activityId => dispatch(startActivity(activityId)),
+    stopActivity: () => dispatch(stopActivity()),
+    tick: () => dispatch(tick()),
+    updateSessionStatus: status => dispatch(updateSessionStatus(status)),
     logActivity: activity => dispatch(logActivity(activity)),
     logEvent: (event, baseline) => dispatch(logEvent(event, baseline)),
     startSession: timestamp => dispatch(startSession(startSession)),
+    stopSession: () => dispatch(stopSession()),
     toggleEditRequired: eventId => dispatch(toggleEditRequired(eventId)),
     showModal: modalName => dispatch(showModal(modalName)),
     hideModal: () => dispatch(hideModal())

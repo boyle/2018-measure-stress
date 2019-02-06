@@ -4,7 +4,8 @@ import { Button } from "react-native-elements";
 import {
   ACTIVITY_NOT_STARTED,
   ACTIVITY_ONGOING,
-  ACTIVITY_COMPLETED
+  ACTIVITY_COMPLETED,
+  REST_PERIOD
 } from "../globals/constants.js";
 
 import Colors from "../globals/colors.js";
@@ -25,7 +26,7 @@ export default class ActivityTopBar extends Component {
     return (
       <View>
         <Text style={styles.activityLabel}>
-          {this.props.activityStatus === ACTIVITY_COMPLETED
+          {this.props.canStart
             ? "Rest period"
             : "Activity " + this.props.activityNumber}
         </Text>
@@ -42,23 +43,15 @@ export default class ActivityTopBar extends Component {
               styles.button,
               {
                 backgroundColor: `${
-                  this.props.activityStatus === ACTIVITY_ONGOING
-                    ? Colors.stopRed
-                    : Colors.playGreen
+                  !this.props.canStart ? Colors.stopRed : Colors.playGreen
                 }`
               }
             ]}
             icon={{
               color: "white",
-              name: `${
-                this.props.activityStatus === ACTIVITY_ONGOING
-                  ? "pause"
-                  : "play-arrow"
-              }`
+              name: `${!this.props.canStart ? "pause" : "play-arrow"}`
             }}
-            title={`${
-              this.props.activityStatus === ACTIVITY_ONGOING ? "Stop" : "Start"
-            }`}
+            title={`${!this.props.canStart ? "Stop" : "Start"}`}
             onPress={this.props.onPressStart}
           />
           <Button

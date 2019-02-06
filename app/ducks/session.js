@@ -9,9 +9,9 @@ import {
 } from "../globals/tracked_variables.js";
 
 import {
-  ACTIVITY_NOT_STARTED,
+  SESSION_NOT_STARTED,
   ACTIVITY_ONGOING,
-  ACTIVITY_COMPLETED
+  RESTING
 } from "../globals/constants.js";
 
 // ACTIONS
@@ -20,17 +20,23 @@ const LOG_EVENT = "session/log_event";
 const LOG_ACTIVITY = "session/log_activity";
 const SAVE_SSQ = "session/save_ssq";
 const START_SESSION = "session/start_session";
+const STOP_SESSION = "session/stop_session";
 const TOGGLE_EDIT_REQUIRED = "session/toggle_edit_required";
+const UPDATE_SESSION_STATUS = "session/update_session_status";
+const TICK = "session/tick";
+const START_ACTIVITY = "session/start_activity";
+const STOP_ACTIVITY = "session/stop_activity";
 
 // DEFAULT STATE
 const defaultState = {
-  sessionStart: null, // Time at which the first SSQ is shown
-  sessionEnd: null, // Time at which the last SSQ is submitted
+  startTimestamp: null, // Time at which the first SSQ is shown
+  endTimestamp: null, // Time at which the last SSQ is submitted
   sessionId: null, // Integer
   patientId: null, // Integer
   firstSSQ: null,
   secondSSQ: null,
-  activityStatus: ACTIVITY_NOT_STARTED,
+  sessionStatus: RESTING,
+  elapsedTime: 0,
   sliderValues: {
     VESTIBULAR_DOMAIN: 0,
     HYPERAROUSAL_DOMAIN: 0,
@@ -40,8 +46,8 @@ const defaultState = {
     PAIN_LEVEL: 0,
     PERCEIVED_EXERTION: 0
   },
+
   activities: [], // Meta-data on the activities (eg. start, end, scenario, rest)
-  restPeriods: [],
   events: {}, // Events identified by a unique ID
   editedEvents: {}
 };
@@ -56,13 +62,61 @@ export default function reducer(state = defaultState, action = {}) {
       };
       return newState;
 
+    // This happends when the SSQ is submitted
     case START_SESSION:
       newState = {
         ...state,
-        sessionStart: Date.now(),
+        sessionStatus: RESTING,
+        startTimestamp: Date.now(),
         sessionId: 120, // TODO change
-        patientId: 20
+        patientId: 20,
+        currentActivity: {
+          activityId: 0,
+          resting: true,
+          startTimestamp: Date.now(),
+          endTimestamp: null
+        }
       };
+      return newState;
+
+    case START_ACTIVITY:
+      const precedingRestPeriod = {
+        ...state.currentActivity,
+        endTimestamp: Date.now()
+      };
+
+      newState = {
+        ...state,
+        sessionStatus: ACTIVITY_ONGOING,
+        currentActivity: {
+          startTimestamp: Date.now(),
+          activityId: action.activityId,
+          resting: false
+        },
+        activities: [...state.activities, precedingRestPeriod]
+      };
+
+      return newState;
+
+    case STOP_ACTIVITY:
+      const currentActivity = {
+        ...state.currentActivity,
+        endTimestamp: Date.now(),
+        elapsedTime: Date.now() - state.startTimestamp
+      };
+
+      newState = {
+        ...state,
+        sessionStatus: RESTING,
+        activities: [...state.activities, currentActivity],
+        currentActivity: {
+          activityId: 0,
+          resting: true,
+          startTimestamp: Date.now(),
+          endTimestamp: null
+        }
+      };
+
       return newState;
 
     case TOGGLE_EDIT_REQUIRED:
@@ -77,6 +131,23 @@ export default function reducer(state = defaultState, action = {}) {
           }
         }
       };
+      return newState;
+
+    case TICK:
+      const elapsedTime = (Date.now() - state.startTimestamp) / 1000;
+      newState = {
+        ...state,
+        elapsedTime
+      };
+
+      return newState;
+
+    case UPDATE_SESSION_STATUS:
+      newState = {
+        ...state,
+        sessionStatus: action.status
+      };
+
       return newState;
 
     case LOG_EVENT:
@@ -111,14 +182,6 @@ export default function reducer(state = defaultState, action = {}) {
 
       return newState;
 
-    case LOG_ACTIVITY:
-      newState = {
-        ...state,
-        activities: [...state.activities, action.payload]
-      };
-
-      return newState;
-
     case SAVE_SSQ:
       let type;
       if (!state.preSSQ) {
@@ -141,6 +204,19 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // ACTION CREATORS
+
+export function startActivity(activityId) {
+  return {
+    type: START_ACTIVITY,
+    activityId
+  };
+}
+
+export function stopActivity() {
+  return {
+    type: STOP_ACTIVITY
+  };
+}
 
 export function toggleEditRequired(eventId) {
   return {
@@ -172,6 +248,12 @@ export function startSession(patientId) {
   };
 }
 
+export function stopSession() {
+  return {
+    type: STOP_SESSION
+  };
+}
+
 export function saveSession(session) {
   // TODO implement this
   // should send the session data to the server
@@ -191,5 +273,18 @@ export function saveSSQ(form) {
   return {
     type: SAVE_SSQ,
     payload: form
+  };
+}
+
+export function updateSessionStatus(status) {
+  return {
+    type: UPDATE_SESSION_STATUS,
+    status
+  };
+}
+
+export function tick() {
+  return {
+    type: TICK
   };
 }

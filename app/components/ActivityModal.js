@@ -18,7 +18,7 @@ export default class ActivityModal extends Component {
         <Text>Do you want to terminate this session?</Text>
         <Button
           buttonStyle={styles.button}
-          onPress={this.props.onSSQ}
+          onPress={this.props.onEndSession}
           title="End session"
         />
         <Button
