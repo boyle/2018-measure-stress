@@ -18,6 +18,8 @@ export default class ActivityPlot extends Component {
     this.yScale = scaleLinear()
       .domain([0, 100])
       .range([height - padding, padding]);
+
+    this.inSecondsElapsed = this.inSecondsElapsed.bind(this);
   }
 
   convertEventToSVG(event, x, y) {
@@ -76,8 +78,11 @@ export default class ActivityPlot extends Component {
     return [lowerBound, upperBound];
   }
 
+  inSecondsElapsed(timestamp) {
+    return (timestamp - this.props.sessionStart) / 1000;
+  }
+
   render() {
-    console.log(this.props.activities);
     const { width, height, padding, refreshRate, elapsedTime } = this.props;
 
     const bounds = this.computeXDomain(elapsedTime, 60, 10);
@@ -96,24 +101,21 @@ export default class ActivityPlot extends Component {
         {this.props.activities
           .filter(activity => !activity.resting)
           .map(activity => {
-            const crossesYAxis = activity.startElapsedTime <= bounds[0];
-            const isCompleted = activity.endElapsedTime;
+            const crossesYAxis =
+              this.inSecondsElapsed(activity.startTimestamp) <= bounds[0];
+            const isCompleted = activity.endTimestamp;
 
-            let leftBound = activity.startElapsedTime;
-            let rightBound = this.props.elapsedTime;
-            let notDisplayed = 0;
+            let leftBound = Math.max(
+              this.inSecondsElapsed(activity.startTimestamp),
+              bounds[0]
+            );
 
-            if (crossesYAxis) {
-              leftBound = bounds[0];
-              notDisplayed =
-                xScale(bounds[0]) - xScale(activity.startElapsedTime);
-            }
+            let rightBound = !isCompleted
+              ? this.props.elapsedTime
+              : this.inSecondsElapsed(activity.endTimestamp);
 
-            if (isCompleted) {
-              rightBound = activity.endElapsedTime;
-            }
-
-            const width = xScale(rightBound) - xScale(leftBound);
+            const diff = xScale(rightBound) - xScale(leftBound);
+            const width = diff >= 0 ? diff : 0;
 
             return (
               <Svg.Rect
@@ -215,11 +217,10 @@ export default class ActivityPlot extends Component {
               {Object.values(this.props.events)
                 .filter(event => event.type === "domain_variable")
                 .map((event, i) => {
-                  console.log(event);
-                  const x = xScale(event.elapsedTime);
+                  const x = xScale(this.inSecondsElapsed(event.timestamp));
                   const y = this.yScale(
                     (event.value * 100) /
-                      Object.keys(Variables[event.domain].levels).length
+                      (Object.keys(Variables[event.domain].levels).length - 1)
                   );
 
                   return (

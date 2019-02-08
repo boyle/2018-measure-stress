@@ -102,7 +102,7 @@ class Activity extends React.Component {
   }
 
   startTicking() {
-    this.timer = setInterval(() => this.props.tick(), 1000);
+    this.timer = setInterval(() => this.props.tick(), 200);
   }
 
   stopTicking() {
@@ -199,7 +199,7 @@ class Activity extends React.Component {
     const event = {
       eventId: generateRandomNum(),
       type: "domain_variable",
-      timestamp: Date.now(),
+      timestamp: this.state.activeSliderStart,
       elapsedTime: this.getElapsedTime(),
       domain: domain,
       value: value,
@@ -213,7 +213,7 @@ class Activity extends React.Component {
     this.setState({
       activeSliderDomain: domain,
       activeSliderValue: value,
-      activeSliderStart: this.getElapsedTime()
+      activeSliderStart: this.getTime()
     });
   }
 
@@ -253,6 +253,7 @@ class Activity extends React.Component {
           width={700}
           padding={50}
           refreshRate={10}
+          sessionStart={this.props.session.startTimestamp}
           events={this.props.session.events}
           activities={[
             ...this.props.session.activities,
