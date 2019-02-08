@@ -32,6 +32,14 @@ class SSQ extends React.Component {
     this.formIsFilled = this.formIsFilled.bind(this);
     this.isFirstSSQ = this.isFirstSSQ.bind(this);
     this.isSecondSSQ = this.isSecondSSQ.bind(this);
+    this.scrollToTop = this.scrollToTop.bind(this);
+  }
+
+  componentDidMount() {
+    this.focusListener = this.props.navigation.addListener(
+      "didFocus",
+      this.scrollToTop
+    );
   }
 
   isFirstSSQ() {
@@ -59,9 +67,8 @@ class SSQ extends React.Component {
 
     const toastMessage = this.isFirstSSQ()
       ? "Saved the SSQ."
-                       : "Saved the session.";
+      : "Saved the session.";
 
-    
     /*
     ToastAndroid.showWithGravity(
       toastMessage,
@@ -74,10 +81,14 @@ class SSQ extends React.Component {
 
     if (this.isFirstSSQ()) {
       this.props.navigation.navigate("Activity");
-		} else {
-		  this.props.initializeSession();
+    } else {
+      this.props.initializeSession();
       this.props.navigation.navigate("Home");
     }
+  }
+
+  scrollToTop() {
+    this.scrollViewRef.scrollTo({ y: 0 });
   }
 
   render() {
@@ -88,7 +99,11 @@ class SSQ extends React.Component {
           {this.isFirstSSQ() ? "Pre" : "Post"}-session
         </Text>
         <View style={styles.cardsContainer}>
-          <ScrollView>
+          <ScrollView
+            ref={ref => {
+              this.scrollViewRef = ref;
+            }}
+          >
             {SSQVars.symptoms.map((symptom, i) => (
               <Card key={`symptom-${i}`}>
                 <Text style={styles.symptom}>{symptom.label}</Text>
@@ -161,7 +176,7 @@ const styles = StyleSheet.create({
     backgroundColor: `${Colors.dark}`,
     width: "50%",
     marginLeft: "auto",
-    marginRight: "auto",
+    marginRight: "auto"
   },
   buttonIcon: {
     width: 150,
@@ -203,8 +218,8 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-		saveSSQ: ssq => dispatch(saveSSQ(ssq)),
-		initializeSession: () => dispatch(initializeSession()),
+    saveSSQ: ssq => dispatch(saveSSQ(ssq)),
+    initializeSession: () => dispatch(initializeSession())
   };
 }
 
