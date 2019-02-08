@@ -77,6 +77,7 @@ export default class ActivityPlot extends Component {
   }
 
   render() {
+    console.log(this.props.activities);
     const { width, height, padding, refreshRate, elapsedTime } = this.props;
 
     const bounds = this.computeXDomain(elapsedTime, 60, 10);

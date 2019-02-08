@@ -27,6 +27,23 @@ const TICK = "session/tick";
 const START_ACTIVITY = "session/start_activity";
 const STOP_ACTIVITY = "session/stop_activity";
 
+// Helpers
+function createActivity({ activityId, elapsedTime, startTimestamp }) {
+  const activity = {
+    activityId: activityId,
+    resting: activityId === 0,
+    startTimestamp: Date.now(),
+    startElapsedTime: elapsedTime,
+    endTimestamp: null
+  };
+
+  return activity;
+}
+
+function getElapsedTime({ now, start }) {
+  return (now - start) / 1000;
+}
+
 // DEFAULT STATE
 const defaultState = {
   startTimestamp: null, // Time at which the first SSQ is shown
@@ -46,13 +63,11 @@ const defaultState = {
     PAIN_LEVEL: 0,
     PERCEIVED_EXERTION: 0
   },
-  currentActivity: {
+  currentActivity: createActivity({
     activityId: 0,
-    resting: true,
     startTimestamp: Date.now(),
-    startElapsedTime: 0,
-    endTimestamp: null
-  },
+    elapsedTime: 0
+  }), // Patient at rest at session start
   activities: [], // Meta-data on the activities (eg. start, end, scenario, rest)
   events: {}, // Events identified by a unique ID
   editedEvents: {}
@@ -61,6 +76,7 @@ const defaultState = {
 // REDUCER
 export default function reducer(state = defaultState, action = {}) {
   let newState;
+  const timestamp = Date.now();
   switch (action.type) {
     case INITIALIZE_SESSION:
       newState = {
@@ -72,37 +88,38 @@ export default function reducer(state = defaultState, action = {}) {
     case START_SESSION:
       newState = {
         ...state,
-        sessionStatus: RESTING,
-        startTimestamp: Date.now(),
+        startTimestamp: timestamp,
         sessionId: 120, // TODO change
-        patientId: 20,
-        currentActivity: {
+        patientId: 20, // TODO change
+        currentActivity: createActivity({
           activityId: 0,
-          resting: true,
-          startTimestamp: Date.now(),
-          startElapsedTime: 0,
-          endTimestamp: null
-        }
+          startTimestamp: timestamp,
+          elapsedTime: 0
+        })
       };
       return newState;
 
     case START_ACTIVITY:
-      const time = Date.now();
       const precedingRestPeriod = {
         ...state.currentActivity,
-        endTimestamp: time,
-        endElapsedTime: (time - state.startTimestamp) / 1000
+        endTimestamp: timestamp,
+        endElapsedTime: getElapsedTime({
+          now: timestamp,
+          start: state.startTimestamp
+        })
       };
 
       newState = {
         ...state,
         sessionStatus: ACTIVITY_ONGOING,
-        currentActivity: {
-          startTimestamp: Date.now(),
-          startElapsedTime: (Date.now() - state.startTimestamp) / 1000,
+        currentActivity: createActivity({
           activityId: action.activityId,
-          resting: false
-        },
+          startTimestamp: timestamp,
+          elapsedTime: getElapsedTime({
+            start: state.startTimestamp,
+            now: timestamp
+          })
+        }),
         activities: [...state.activities, precedingRestPeriod]
       };
 
