@@ -214,7 +214,7 @@ export default class ActivityPlot extends Component {
                   </Svg.G>
                 ))}
 
-              {Object.values(this.props.events)
+              {Object.values(this.props.events) // TODO: refactor
                 .filter(event => event.type === "domain_variable")
                 .map((event, i) => {
                   const x = xScale(this.inSecondsElapsed(event.timestamp));
@@ -224,7 +224,7 @@ export default class ActivityPlot extends Component {
                   );
 
                   return (
-                    event.elapsedTime >= bounds[0] &&
+                    this.inSecondsElapsed(event.timestamp) >= bounds[0] &&
                     this.convertEventToSVG(event, x, y)
                   );
                 })}
