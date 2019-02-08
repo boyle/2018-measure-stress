@@ -92,6 +92,39 @@ export default class ActivityPlot extends Component {
         height={this.props.height}
         width={this.props.width}
       >
+        {this.props.activities
+          .filter(activity => !activity.resting)
+          .map(activity => {
+            const crossesYAxis = activity.startElapsedTime <= bounds[0];
+            const isCompleted = activity.endElapsedTime;
+
+            let leftBound = activity.startElapsedTime;
+            let rightBound = this.props.elapsedTime;
+            let notDisplayed = 0;
+
+            if (crossesYAxis) {
+              leftBound = bounds[0];
+              notDisplayed =
+                xScale(bounds[0]) - xScale(activity.startElapsedTime);
+            }
+
+            if (isCompleted) {
+              rightBound = activity.endElapsedTime;
+            }
+
+            const width = xScale(rightBound) - xScale(leftBound);
+
+            return (
+              <Svg.Rect
+                x={xScale(leftBound)}
+                y={this.yScale(100)}
+                height={this.yScale(0) - this.yScale(100)}
+                width={width}
+                fill="blue"
+                opacity={0.1}
+              />
+            );
+          })}
         {/* X-axis*/}
         <Svg.Text
           x={this.props.width / 2}
@@ -181,6 +214,7 @@ export default class ActivityPlot extends Component {
               {Object.values(this.props.events)
                 .filter(event => event.type === "domain_variable")
                 .map((event, i) => {
+                  console.log(event);
                   const x = xScale(event.elapsedTime);
                   const y = this.yScale(
                     (event.value * 100) /
@@ -195,6 +229,14 @@ export default class ActivityPlot extends Component {
             </Svg.G>
           );
         })}
+        <Svg.Line
+          x1={xScale(this.props.elapsedTime)}
+          x2={xScale(this.props.elapsedTime)}
+          y1={this.yScale(0)}
+          y2={this.yScale(100)}
+          stroke="red"
+          strokeWidth={3}
+        />
       </Svg>
     );
   }

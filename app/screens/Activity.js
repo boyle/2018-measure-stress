@@ -118,13 +118,8 @@ class Activity extends React.Component {
     // Modal to choose activity
     const activityId = 20; // TODO use a modal
 
-    if (this.isResting()) {
-      this.props.updateSessionStatus(ACTIVITY_ONGOING);
-      this.props.startActivity(activityId);
-    } else {
-      this.props.updateSessionStatus(RESTING);
-      this.props.startActivity(0); // activity with ID 0 is the "rest" activity
-    }
+    this.props.updateSessionStatus(ACTIVITY_ONGOING);
+    this.props.startActivity(activityId);
   }
 
   promptForActivityEnd() {
@@ -166,7 +161,7 @@ class Activity extends React.Component {
       return 0;
     }
 
-    return this.getTime() - this.props.session.startTimestamp;
+    return (this.getTime() - this.props.session.startTimestamp) / 1000; // in s
   }
 
   endSession() {
@@ -259,6 +254,10 @@ class Activity extends React.Component {
           padding={50}
           refreshRate={10}
           events={this.props.session.events}
+          activities={[
+            ...this.props.session.activities,
+            this.props.session.currentActivity
+          ]}
           activityStatus={this.state.activityStatus}
           toggleEditRequired={this.props.toggleEditRequired}
           elapsedTime={this.props.session.elapsedTime}

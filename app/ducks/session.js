@@ -46,7 +46,13 @@ const defaultState = {
     PAIN_LEVEL: 0,
     PERCEIVED_EXERTION: 0
   },
-
+  currentActivity: {
+    activityId: 0,
+    resting: true,
+    startTimestamp: Date.now(),
+    startElapsedTime: 0,
+    endTimestamp: null
+  },
   activities: [], // Meta-data on the activities (eg. start, end, scenario, rest)
   events: {}, // Events identified by a unique ID
   editedEvents: {}
@@ -74,15 +80,18 @@ export default function reducer(state = defaultState, action = {}) {
           activityId: 0,
           resting: true,
           startTimestamp: Date.now(),
+          startElapsedTime: 0,
           endTimestamp: null
         }
       };
       return newState;
 
     case START_ACTIVITY:
+      const time = Date.now();
       const precedingRestPeriod = {
         ...state.currentActivity,
-        endTimestamp: Date.now()
+        endTimestamp: time,
+        endElapsedTime: (time - state.startTimestamp) / 1000
       };
 
       newState = {
@@ -90,6 +99,7 @@ export default function reducer(state = defaultState, action = {}) {
         sessionStatus: ACTIVITY_ONGOING,
         currentActivity: {
           startTimestamp: Date.now(),
+          startElapsedTime: (Date.now() - state.startTimestamp) / 1000,
           activityId: action.activityId,
           resting: false
         },
@@ -102,7 +112,7 @@ export default function reducer(state = defaultState, action = {}) {
       const currentActivity = {
         ...state.currentActivity,
         endTimestamp: Date.now(),
-        elapsedTime: Date.now() - state.startTimestamp
+        endElapsedTime: (Date.now() - state.startTimestamp) / 1000
       };
 
       newState = {
@@ -113,6 +123,7 @@ export default function reducer(state = defaultState, action = {}) {
           activityId: 0,
           resting: true,
           startTimestamp: Date.now(),
+          startElapsedTime: (Date.now() - state.startTimestamp) / 1000,
           endTimestamp: null
         }
       };
