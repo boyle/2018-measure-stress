@@ -4,6 +4,8 @@ import { Constants, Svg } from "expo";
 import { scaleLinear } from "d3-scale";
 import Variables from "../globals/tracked_variables.js";
 
+import PlotNavigator from "../components/PlotNavigator.js";
+
 const yScaleLabels = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
 
 export default class ActivityPlot extends Component {
@@ -238,6 +240,14 @@ export default class ActivityPlot extends Component {
           y2={this.yScale(100)}
           stroke="red"
           strokeWidth={3}
+        />
+        <PlotNavigator
+          elapsedTime={this.props.elapsedTime}
+          rightBound={bounds[1]}
+          x={xScale(bounds[0])}
+          y={this.yScale(100) - 40}
+          height={20}
+          width={xScale(bounds[1]) - xScale(bounds[0])}
         />
       </Svg>
     );

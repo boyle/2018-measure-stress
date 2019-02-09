@@ -51,6 +51,7 @@ class Activity extends React.Component {
 
     this.state = {
       inEditMode: false,
+      focusedRegion: null,
       activeSliderDomain: null,
       activeSliderValue: null,
       activeSliderStart: null
