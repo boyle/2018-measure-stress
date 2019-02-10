@@ -12,7 +12,11 @@ export default class ActivityPlot extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentMax: 10
+      focus: {
+        windowWidth: 5 * this.props.resolution,
+        leftBound: 0,
+        rightBound: 5 * this.props.resolution
+      }
     };
 
     const { width, height, padding } = this.props;
@@ -22,6 +26,20 @@ export default class ActivityPlot extends Component {
       .range([height - padding, padding]);
 
     this.inSecondsElapsed = this.inSecondsElapsed.bind(this);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.elapsedTime > this.state.focus.rightBound) {
+      const rightBound =
+        Math.ceil(nextProps.elapsedTime / this.props.resolution) *
+        this.props.resolution;
+      this.updateFocus({ rightBound });
+    }
+  }
+
+  updateFocus({ rightBound }) {
+    const leftBound = rightBound - this.state.focus.windowWidth;
+    this.setState({ focus: { ...this.state.focus, rightBound, leftBound } });
   }
 
   convertEventToSVG(event, x, y) {
@@ -60,11 +78,11 @@ export default class ActivityPlot extends Component {
     return Object.values(this.props.flaggedEvents);
   }
 
-  computeXTicks(lowerBound, windowWidth, resolution) {
-    const numTicks = windowWidth / resolution + 1;
+  computeXTicks() {
+    const numTicks = this.state.focus.windowWidth / this.props.resolution + 1;
     let ticks = [];
     for (let i = 0; i <= numTicks; i++) {
-      ticks.push(lowerBound + i * resolution);
+      ticks.push(this.state.focus.leftBound + i * this.props.resolution);
     }
     return ticks;
   }
@@ -84,14 +102,17 @@ export default class ActivityPlot extends Component {
     return (timestamp - this.props.sessionStart) / 1000;
   }
 
+  formatSeconds(seconds) {
+    return new Date(1000 * seconds).toISOString().substr(11, 8);
+  }
+
   render() {
     const { width, height, padding, refreshRate, elapsedTime } = this.props;
 
-    const bounds = this.computeXDomain(elapsedTime, 60, 10);
-    const xTicks = this.computeXTicks(bounds[0], 60, 10);
+    const xTicks = this.computeXTicks(this.state.focus.leftBound, 60, 10);
 
     const xScale = scaleLinear()
-      .domain(bounds)
+      .domain([this.state.focus.leftBound, this.state.focus.rightBound])
       .range([padding, width - padding]);
 
     return (
@@ -104,12 +125,13 @@ export default class ActivityPlot extends Component {
           .filter(activity => !activity.resting)
           .map(activity => {
             const crossesYAxis =
-              this.inSecondsElapsed(activity.startTimestamp) <= bounds[0];
+              this.inSecondsElapsed(activity.startTimestamp) <=
+              this.state.focus.leftBound;
             const isCompleted = activity.endTimestamp;
 
             let leftBound = Math.max(
               this.inSecondsElapsed(activity.startTimestamp),
-              bounds[0]
+              this.state.focus.leftBound
             );
 
             let rightBound = !isCompleted
@@ -136,7 +158,7 @@ export default class ActivityPlot extends Component {
           y={this.yScale(-20)}
           textAnchor="middle"
         >
-          Time (s)
+          Time elapsed
         </Svg.Text>
         <Svg.Line
           x1={padding}
@@ -162,7 +184,7 @@ export default class ActivityPlot extends Component {
                 x={xPos}
                 y={height - padding + 15}
               >
-                {label}
+                {this.formatSeconds(label)}
               </Svg.Text>
             </Svg.G>
           );
@@ -226,7 +248,8 @@ export default class ActivityPlot extends Component {
                   );
 
                   return (
-                    this.inSecondsElapsed(event.timestamp) >= bounds[0] &&
+                    this.inSecondsElapsed(event.timestamp) >=
+                      this.state.focus.leftBound &&
                     this.convertEventToSVG(event, x, y)
                   );
                 })}
@@ -243,11 +266,15 @@ export default class ActivityPlot extends Component {
         />
         <PlotNavigator
           elapsedTime={this.props.elapsedTime}
-          rightBound={bounds[1]}
-          x={xScale(bounds[0])}
+          leftBound={this.state.focus.leftBound}
+          rightBound={this.state.focus.rightBound}
+          x={xScale(this.state.focus.leftBound)}
           y={this.yScale(100) - 40}
           height={20}
-          width={xScale(bounds[1]) - xScale(bounds[0])}
+          width={
+            xScale(this.state.focus.rightBound) -
+            xScale(this.state.focus.leftBound)
+          }
         />
       </Svg>
     );

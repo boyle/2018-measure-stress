@@ -252,6 +252,7 @@ class Activity extends React.Component {
           height={300}
           width={700}
           padding={50}
+          resolution={20}
           refreshRate={10}
           sessionStart={this.props.session.startTimestamp}
           events={this.props.session.events}
