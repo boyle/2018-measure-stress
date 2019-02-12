@@ -50,7 +50,6 @@ class Activity extends React.Component {
     super(props);
 
     this.state = {
-      inEditMode: false,
       focusedRegion: null,
       activeSliderDomain: null,
       activeSliderValue: null,
@@ -242,6 +241,7 @@ class Activity extends React.Component {
         <ActivityTopBar
           canStart={this.isResting()}
           activityStatus={this.state.activityStatus}
+          inEditMode={this.state.inEditMode}
           patientId={this.props.session.patientId}
           onPressStart={this.handleActivityButton}
           activityNumber={this.getCurrentActivityNumber()}

@@ -13,6 +13,7 @@ export default class ActivityPlot extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      navigating: true,
       navigationFocus: {
         windowWidth: 5 * this.props.resolution,
         leftBound: 0,
@@ -33,6 +34,7 @@ export default class ActivityPlot extends Component {
 
     this.inSecondsElapsed = this.inSecondsElapsed.bind(this);
     this.move = this.move.bind(this);
+    this.resetNavigation = this.resetNavigation.bind(this);
 
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (e, gesture) => true,
@@ -52,6 +54,10 @@ export default class ActivityPlot extends Component {
         this.props.resolution;
       this.updateFocus({ rightBound });
     }
+  }
+
+  resetNavigation() {
+    this.setState({ navigating: false });
   }
 
   move(event, gesture) {
@@ -74,15 +80,18 @@ export default class ActivityPlot extends Component {
       rightBound = upperBound;
       leftBound = upperBound - this.state.focus.windowWidth;
     }
-    this.setState({ focus: { ...this.state.focus, leftBound, rightBound } });
+    this.setState({
+      navigating: true,
+      focus: { ...this.state.focus, leftBound, rightBound }
+    });
+    //this.updateFocus({ rightBound });
   }
 
   updateFocus({ rightBound }) {
     const leftBound = rightBound - this.state.focus.windowWidth;
-    if (false) {
+    if (this.state.navigating) {
       // TODO is not in editmode mode
       this.setState({
-        focus: { ...this.state.focus, rightBound, leftBound },
         navigationFocus: {
           ...this.state.navigationFocus,
           rightBound,
@@ -91,6 +100,7 @@ export default class ActivityPlot extends Component {
       });
     } else {
       this.setState({
+        focus: { ...this.state.focus, rightBound, leftBound },
         navigationFocus: {
           ...this.state.navigationFocus,
           rightBound,
@@ -194,6 +204,28 @@ export default class ActivityPlot extends Component {
           width={this.props.width - 2 * this.props.padding}
           fill="white"
         />
+        {this.state.navigating && (
+          <Svg.G>
+            <Svg.Text
+              x={this.props.width - this.props.padding - 50}
+              y={this.yScale(90)}
+              fill="black"
+            >
+              Reset
+            </Svg.Text>
+            <Svg.Rect
+              onPress={this.resetNavigation}
+              x={this.props.width - this.props.padding - 54}
+              y={this.yScale(97)}
+              height={20}
+              width={40}
+              stroke="black"
+              fill="transparent"
+              rx={8}
+              ry={8}
+            />
+          </Svg.G>
+        )}
         {this.props.activities
           .filter(activity => !activity.resting)
           .map(activity => {
