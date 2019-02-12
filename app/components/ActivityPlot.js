@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { View } from "react-native";
+import { PanResponder, Animated } from "react-native";
 import { Constants, Svg } from "expo";
 import { scaleLinear } from "d3-scale";
 import Variables from "../globals/tracked_variables.js";
@@ -12,6 +13,11 @@ export default class ActivityPlot extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      navigationFocus: {
+        windowWidth: 5 * this.props.resolution,
+        leftBound: 0,
+        rightBound: 5 * this.props.resolution
+      },
       focus: {
         windowWidth: 5 * this.props.resolution,
         leftBound: 0,
@@ -26,6 +32,17 @@ export default class ActivityPlot extends Component {
       .range([height - padding, padding]);
 
     this.inSecondsElapsed = this.inSecondsElapsed.bind(this);
+    this.move = this.move.bind(this);
+
+    this.panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: (e, gesture) => true,
+      onResponderTerminate: (e, gesture) => true,
+      onPanResponderGrant: (e, gesture) => {
+        this.initial = this.state.focus.rightBound;
+      },
+      onPanResponderMove: this.move,
+      onPanResponderRelease: (e, g) => {}
+    });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -37,9 +54,50 @@ export default class ActivityPlot extends Component {
     }
   }
 
+  move(event, gesture) {
+    const xScale = scaleLinear()
+      .domain([this.state.focus.leftBound, this.state.focus.rightBound])
+      .range([this.props.padding, this.props.width - this.props.padding]);
+    const { dx } = gesture;
+    let rightBound = xScale.invert(xScale(this.initial) - dx);
+    let leftBound = rightBound - this.state.focus.windowWidth;
+
+    const upperBound =
+      Math.ceil(this.props.elapsedTime / this.props.resolution) *
+      this.props.resolution;
+
+    if (leftBound < 0) {
+      leftBound = 0;
+      rightBound = leftBound + this.state.focus.windowWidth;
+    }
+    if (rightBound > upperBound) {
+      rightBound = upperBound;
+      leftBound = upperBound - this.state.focus.windowWidth;
+    }
+    this.setState({ focus: { ...this.state.focus, leftBound, rightBound } });
+  }
+
   updateFocus({ rightBound }) {
     const leftBound = rightBound - this.state.focus.windowWidth;
-    this.setState({ focus: { ...this.state.focus, rightBound, leftBound } });
+    if (false) {
+      // TODO is not in editmode mode
+      this.setState({
+        focus: { ...this.state.focus, rightBound, leftBound },
+        navigationFocus: {
+          ...this.state.navigationFocus,
+          rightBound,
+          leftBound
+        }
+      });
+    } else {
+      this.setState({
+        navigationFocus: {
+          ...this.state.navigationFocus,
+          rightBound,
+          leftBound
+        }
+      });
+    }
   }
 
   convertEventToSVG(event, x, y) {
@@ -111,8 +169,15 @@ export default class ActivityPlot extends Component {
 
     const xTicks = this.computeXTicks(this.state.focus.leftBound, 60, 10);
 
-    const xScale = scaleLinear()
+    this.xScale = scaleLinear()
       .domain([this.state.focus.leftBound, this.state.focus.rightBound])
+      .range([padding, width - padding]);
+
+    const navigationScale = scaleLinear()
+      .domain([
+        this.state.navigationFocus.leftBound,
+        this.state.navigationFocus.rightBound
+      ])
       .range([padding, width - padding]);
 
     return (
@@ -121,6 +186,14 @@ export default class ActivityPlot extends Component {
         height={this.props.height}
         width={this.props.width}
       >
+        <Svg.Rect
+          {...this.panResponder.panHandlers}
+          x={this.props.padding}
+          y={this.props.padding}
+          height={this.props.height - 2 * this.props.padding}
+          width={this.props.width - 2 * this.props.padding}
+          fill="white"
+        />
         {this.props.activities
           .filter(activity => !activity.resting)
           .map(activity => {
@@ -138,12 +211,12 @@ export default class ActivityPlot extends Component {
               ? this.props.elapsedTime
               : this.inSecondsElapsed(activity.endTimestamp);
 
-            const diff = xScale(rightBound) - xScale(leftBound);
+            const diff = this.xScale(rightBound) - this.xScale(leftBound);
             const width = diff >= 0 ? diff : 0;
 
             return (
               <Svg.Rect
-                x={xScale(leftBound)}
+                x={this.xScale(leftBound)}
                 y={this.yScale(100)}
                 height={this.yScale(0) - this.yScale(100)}
                 width={width}
@@ -168,7 +241,7 @@ export default class ActivityPlot extends Component {
           stroke="black"
         />
         {xTicks.map((label, i) => {
-          const xPos = xScale(label);
+          const xPos = this.xScale(label);
           return (
             <Svg.G key={i}>
               <Svg.Line
@@ -231,7 +304,7 @@ export default class ActivityPlot extends Component {
                 .map((event, i) => (
                   <Svg.G>
                     <Svg.Path
-                      transform={`translate(${xScale(event.elapsedTime) -
+                      transform={`translate(${this.xScale(event.elapsedTime) -
                         5},${this.yScale(100) - 10})scale(0.05)`}
                       d="M352,0H32v512h448V128L352,0z M352,45.25L434.75,128H352V45.25z M448,480H64V32h256v128h128V480z M288,128H96V96h192V128z    M96,192h320v32H96V192z M96,288h320v32H96V288z M96,384h320v32H96V384z"
                     />
@@ -241,7 +314,7 @@ export default class ActivityPlot extends Component {
               {Object.values(this.props.events) // TODO: refactor
                 .filter(event => event.type === "domain_variable")
                 .map((event, i) => {
-                  const x = xScale(this.inSecondsElapsed(event.timestamp));
+                  const x = this.xScale(this.inSecondsElapsed(event.timestamp));
                   const y = this.yScale(
                     (event.value * 100) /
                       (Object.keys(Variables[event.domain].levels).length - 1)
@@ -257,23 +330,25 @@ export default class ActivityPlot extends Component {
           );
         })}
         <Svg.Line
-          x1={xScale(this.props.elapsedTime)}
-          x2={xScale(this.props.elapsedTime)}
+          x1={this.xScale(this.props.elapsedTime)}
+          x2={this.xScale(this.props.elapsedTime)}
           y1={this.yScale(0)}
           y2={this.yScale(100)}
           stroke="red"
           strokeWidth={3}
         />
         <PlotNavigator
+          inEditMode={true}
           elapsedTime={this.props.elapsedTime}
-          leftBound={this.state.focus.leftBound}
-          rightBound={this.state.focus.rightBound}
-          x={xScale(this.state.focus.leftBound)}
+          markerLeft={this.state.focus.leftBound}
+          leftBound={this.state.navigationFocus.leftBound}
+          rightBound={this.state.navigationFocus.rightBound}
+          x={navigationScale(this.state.navigationFocus.leftBound)}
           y={this.yScale(100) - 40}
           height={20}
           width={
-            xScale(this.state.focus.rightBound) -
-            xScale(this.state.focus.leftBound)
+            navigationScale(this.state.navigationFocus.rightBound) -
+            navigationScale(this.state.navigationFocus.leftBound)
           }
         />
       </Svg>
