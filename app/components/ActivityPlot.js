@@ -240,8 +240,11 @@ export default class ActivityPlot extends Component {
             );
 
             let rightBound = !isCompleted
-              ? this.props.elapsedTime
-              : this.inSecondsElapsed(activity.endTimestamp);
+              ? Math.min(this.props.elapsedTime, this.state.focus.rightBound)
+              : Math.min(
+                  this.inSecondsElapsed(activity.endTimestamp),
+                  this.state.focus.rightBound
+                );
 
             const diff = this.xScale(rightBound) - this.xScale(leftBound);
             const width = diff >= 0 ? diff : 0;
@@ -254,6 +257,7 @@ export default class ActivityPlot extends Component {
                 width={width}
                 fill="blue"
                 opacity={0.1}
+                {...this.panResponder.panHandlers}
               />
             );
           })}
@@ -361,14 +365,16 @@ export default class ActivityPlot extends Component {
             </Svg.G>
           );
         })}
-        <Svg.Line
-          x1={this.xScale(this.props.elapsedTime)}
-          x2={this.xScale(this.props.elapsedTime)}
-          y1={this.yScale(0)}
-          y2={this.yScale(100)}
-          stroke="red"
-          strokeWidth={3}
-        />
+        {this.props.elapsedTime <= this.state.focus.rightBound && (
+          <Svg.Line
+            x1={this.xScale(this.props.elapsedTime)}
+            x2={this.xScale(this.props.elapsedTime)}
+            y1={this.yScale(0)}
+            y2={this.yScale(100)}
+            stroke="red"
+            strokeWidth={3}
+          />
+        )}
         <PlotNavigator
           inEditMode={true}
           elapsedTime={this.props.elapsedTime}
