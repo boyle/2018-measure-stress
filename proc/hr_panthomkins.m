@@ -14,20 +14,20 @@ if 0
     subplot(412); plot(P.BRAmplitude); xlabel('t (s)'); ylabel('BRAmplitude');
     subplot(413); plot(P.BRNoise); xlabel('t (s)'); ylabel('BRNoise');
     subplot(414); plot(P.BRConfidence); xlabel('t (s)'); ylabel('BRConfidence');
-    
+
     figure(2); clf;
     subplot(511); plot(P.HR); xlabel('t (s)'); ylabel('HR');
     subplot(512); plot(P.ECGAmplitude); xlabel('t (s)'); ylabel('ECGAmplitude');
     subplot(513); plot(P.ECGNoise); xlabel('t (s)'); ylabel('ECGNoise');
     subplot(514); plot(P.HRConfidence); xlabel('t (s)'); ylabel('HRConfidence');
     subplot(515); plot(P.HRV); xlabel('t (s)'); ylabel('HRV');
-    
+
     figure(3); clf;
     subplot(411); plot(P.SkinTemp);  xlabel('t (s)'); ylabel('SkinTemp');
     subplot(412); plot(P.Posture);   xlabel('t (s)'); ylabel('Posture');
     subplot(413); plot(P.Activity);  xlabel('t (s)'); ylabel('Activity');
     subplot(414); plot(P.PeakAccel); xlabel('t (s)'); ylabel('PeakAccel');
-    
+
     close all
 end
 
@@ -61,17 +61,18 @@ fprintf('loading data completed\n');
 fc = [ 5 12 ];% Hz or [5 15] or [5 13]
 [b, a] = butter(4, fc/fs);
 ECGf = filtfilt(b, a, ECG);
-if 1
+if 0
     ECGi = [diff(ECGf); 0]; % could do better difference (5 pt?)
 else
-    ECGi = 0;
+    b  = [1 2 0 -2 -1];
+    ECGi = filtfilt(b, 1, ECGf);
 end
 ECGi = ECGi .^ 2;
 if 0
     ECGi = movmean(ECGi,round(150e-3/Ts)); % 150 ms window
 else
-    fc = 1/120e-3;
-    [b, a] = butter(4, fc/fs);
+    fc = 1/150e-3;
+    [b, a] = butter(6, fc/fs);
     ECGi = filtfilt(b, a, ECGi);
 end
 [~,idx] = findpeaks(ECGi);
@@ -88,7 +89,7 @@ t1 = 0;
 off_ECGf = pks;
 for i = 1:length(pks)
     peaki = ECGi(idx(i));
-    
+
     % find peak for filtered waveform: hill climb
     j = 0;
     rng = round(150e-3/Ts);
@@ -104,16 +105,16 @@ for i = 1:length(pks)
     end
     off_ECGf(i) = j;
     peakf = ECGf(idx(i)+j);
-    
+
     % is peak?
     pks(i) = (peaki > thi(i)) & (peakf > thf(i));
-    
+
     % update R-R intervals
     if pks(i)
         t0 = t1; t1 = t(idx(i));
         rr_new = (t1-t0);
         rr(i) = rr_new;
-        
+
         % update average R-R intervals
         rr1 = [rr1(2:end); rr_new];
         if (sum(pks(1:i)) < 50) | ... % bootstrap rr_avg2
@@ -127,14 +128,14 @@ for i = 1:length(pks)
         rr_avg1(i) = mean(rr1);
         rr_avg2(i) = mean(rr2);
         % rr_avg1 == rr_avg2 for normal sinus rhythm for 8 beats
-        
+
         % udpate R-R thresholds
         rr_low  = 0.92 * rr_avg2(i);
         rr_high = 1.16 * rr_avg2(i);
         rr_miss = 1.66 * rr_avg2(i);
     end
 
-        % catch missing beats
+    % catch missing beats
     if 0 & ~pks(i) & (i > 1) & ...
             (t(idx(i)) - t1 > rr_miss)
         n = find(flipud(pks(1:i)), 1);
@@ -155,15 +156,15 @@ for i = 1:length(pks)
         t0 = t1; t1 = t(idx(ii));
         rr_new = (t1-t0);
         rr1 = [rr1(2:end); rr_new];
-        missing(ii);     
+        missing(ii);
     end
-    
 
-    
+
+
     if i == length(idx)
         break; % last peak!
     end
-    
+
     % filtered waveform
     if pks(i) % signal
         spkf(i+1) = 1/8*peakf + 7/8*spkf(i);
@@ -173,7 +174,7 @@ for i = 1:length(pks)
         npkf(i+1) = 1/8*peakf + 7/8*npkf(i);
     end
     thf(i+1) = npkf(i+1) + 1/4*(spkf(i+1) - npkf(i+1));
-    
+
     % integrated waveform
     if pks(i) % signal
         spki(i+1) = 1/8*peaki + 7/8*spki(i);
