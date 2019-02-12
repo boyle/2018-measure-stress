@@ -13,7 +13,7 @@ export default class ActivityPlot extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      navigating: true,
+      navigating: false,
       navigationFocus: {
         windowWidth: 5 * this.props.resolution,
         leftBound: 0,
@@ -204,28 +204,7 @@ export default class ActivityPlot extends Component {
           width={this.props.width - 2 * this.props.padding}
           fill="white"
         />
-        {this.state.navigating && (
-          <Svg.G>
-            <Svg.Text
-              x={this.props.width - this.props.padding - 50}
-              y={this.yScale(90)}
-              fill="black"
-            >
-              Reset
-            </Svg.Text>
-            <Svg.Rect
-              onPress={this.resetNavigation}
-              x={this.props.width - this.props.padding - 54}
-              y={this.yScale(97)}
-              height={20}
-              width={40}
-              stroke="black"
-              fill="transparent"
-              rx={8}
-              ry={8}
-            />
-          </Svg.G>
-        )}
+
         {this.props.activities
           .filter(activity => !activity.resting)
           .map(activity => {
@@ -359,6 +338,8 @@ export default class ActivityPlot extends Component {
                   return (
                     this.inSecondsElapsed(event.timestamp) >=
                       this.state.focus.leftBound &&
+                    this.inSecondsElapsed(event.timestamp) <=
+                      this.state.focus.rightBound &&
                     this.convertEventToSVG(event, x, y)
                   );
                 })}
@@ -389,6 +370,28 @@ export default class ActivityPlot extends Component {
             navigationScale(this.state.navigationFocus.leftBound)
           }
         />
+        {this.state.navigating && (
+          <Svg.G>
+            <Svg.Text
+              x={this.props.width - this.props.padding - 50}
+              y={this.yScale(90)}
+              fill="black"
+            >
+              Reset
+            </Svg.Text>
+            <Svg.Rect
+              onPress={this.resetNavigation}
+              x={this.props.width - this.props.padding - 54}
+              y={this.yScale(97)}
+              height={20}
+              width={40}
+              stroke="black"
+              fill="transparent"
+              rx={8}
+              ry={8}
+            />
+          </Svg.G>
+        )}
       </Svg>
     );
   }

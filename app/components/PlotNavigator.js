@@ -78,7 +78,7 @@ class PlotNavigator extends Component {
           y={this.props.y}
           height={this.props.height}
           width={this.focusWidth}
-          fill="none"
+          fill="grey"
           stroke="grey"
         />
         {/*Current position*/}
