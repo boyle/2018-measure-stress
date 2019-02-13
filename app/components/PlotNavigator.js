@@ -6,62 +6,36 @@ import { scaleLinear } from "d3-scale";
 class PlotNavigator extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      leftBound: 0 // in s
-    };
 
-    this.move = this.move.bind(this);
-  }
-
-  // TAP FOR SELECTION
-  // Put center of focus as close
-  // to the place corresponding to the finger tap
-
-  move(event, gesture) {
-    const { dx } = gesture;
-    const left = this.initialX + this.xScale.invert(dx);
-
-    // If bar is dragged beyond left edge
-    if (left < 0) {
-      console.log("cant move left");
-      return;
-    }
-
-    // If bar is dragged beyond right edge
-    if (
-      left +
-        this.xScale.invert(this.focusWidth) -
-        this.xScale.invert(this.props.x) >
-      this.props.rightBound
-    ) {
-      console.log("cant move right");
-      return;
-    }
-
-    this.setState({ leftBound: this.initialX + this.xScale.invert(dx) });
-  }
-
-  componentWillMount() {
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (e, gesture) => true,
-      onPanResponderGrant: (e, gesture) => {
-        this.initialX = this.state.leftBound;
+      onResponderTerminate: (e, gesture) => true,
+      onPanResponderGrant: (e, gesture) => {},
+      onPanResponderMove: e => {
+        this.props.goTo(this.xScale.invert(e.nativeEvent.locationX));
       },
-      onPanResponderMove: this.move,
-      onPanResponderRelease: null
+      onPanResponderRelease: (e, g) => {}
     });
   }
 
-  render() {
-    this.xScale = scaleLinear()
-      .domain([0, this.props.rightBound])
-      .range([this.props.x, this.props.x + this.props.width]);
+  // TODO TAP FOR SELECTION
+  // Put center of focus as close
+  // to the place corresponding to the finger tap
 
+  render() {
+    const { x, width, leftBound, rightBound } = this.props;
+
+    // Axis
+    this.xScale = scaleLinear()
+      .domain([0, rightBound])
+      .range([x, x + width]);
+
+    // Width of focused region (in px)
     this.focusWidth =
       this.xScale(this.props.rightBound) - this.xScale(this.props.leftBound);
 
     return (
-      <Svg.G>
+      <Svg.G {...this.panResponder.panHandlers} onPress={event => null}>
         {/*Entire session*/}
         <Svg.Rect
           x={this.props.x}
@@ -72,7 +46,6 @@ class PlotNavigator extends Component {
           fill="transparent"
         />
         {/*Focused region*/}
-        {/*...this.panResponder.panHandlers*/}
         <Svg.Rect
           x={this.xScale(this.props.markerLeft)}
           y={this.props.y}

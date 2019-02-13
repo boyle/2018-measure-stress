@@ -12,8 +12,8 @@ import SSQ from "./screens/SSQ.js";
 import SynchronizationModal from "./components/SynchronizationModal.js";
 
 const Navigator = createStackNavigator({
-  Login: { screen: Login, navigationOptions: { header: null } },
   Activity: { screen: Activity, navigationOptions: { header: null } },
+  Login: { screen: Login, navigationOptions: { header: null } },
   SyncModal: {
     screen: SynchronizationModal,
     navigationOptions: { header: null }

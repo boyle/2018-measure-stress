@@ -33,6 +33,7 @@ export default class ActivityPlot extends Component {
       .range([height - padding, padding]);
 
     this.inSecondsElapsed = this.inSecondsElapsed.bind(this);
+    this.goTo = this.goTo.bind(this);
     this.move = this.move.bind(this);
     this.resetNavigation = this.resetNavigation.bind(this);
 
@@ -48,12 +49,38 @@ export default class ActivityPlot extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    // Update the focused region if the playhead reaches/passes
+    // the right bound of the plot
     if (nextProps.elapsedTime > this.state.focus.rightBound) {
       const rightBound =
         Math.ceil(nextProps.elapsedTime / this.props.resolution) *
         this.props.resolution;
       this.updateFocus({ rightBound });
     }
+  }
+
+  goTo(time) {
+    let rightBound = time + this.state.focus.windowWidth / 2;
+    let leftBound = time - this.state.focus.windowWidth / 2;
+
+    if (leftBound < 0) {
+      leftBound = 0;
+      rightBound = this.state.focus.windowWidth;
+    }
+
+    if (rightBound > this.state.navigationFocus.rightBound) {
+      rightBound = this.state.navigationFocus.rightBound;
+      leftBound = rightBound - this.state.focus.windowWidth;
+    }
+
+    this.setState({
+      navigating: true,
+      focus: {
+        ...this.state.focus,
+        leftBound,
+        rightBound
+      }
+    });
   }
 
   resetNavigation() {
@@ -357,6 +384,7 @@ export default class ActivityPlot extends Component {
           />
         )}
         <PlotNavigator
+          goTo={this.goTo}
           inEditMode={true}
           elapsedTime={this.props.elapsedTime}
           markerLeft={this.state.focus.leftBound}
