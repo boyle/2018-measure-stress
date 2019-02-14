@@ -13,7 +13,7 @@ export default class ActivityPlot extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      navigating: false,
+      detached: false, // is the focused region detached from time
       navigationFocus: {
         windowWidth: 5 * this.props.resolution,
         leftBound: 0,
@@ -33,9 +33,12 @@ export default class ActivityPlot extends Component {
       .range([height - padding, padding]);
 
     this.inSecondsElapsed = this.inSecondsElapsed.bind(this);
+    this.contains = this.contains.bind(this);
+    this.getRoundedUpperBound = this.getRoundedUpperBound.bind(this);
     this.goTo = this.goTo.bind(this);
     this.move = this.move.bind(this);
-    this.resetNavigation = this.resetNavigation.bind(this);
+    this.requiresScroll = this.requiresScroll.bind(this);
+    this.attach = this.attach.bind(this);
 
     this.panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (e, gesture) => true,
@@ -48,13 +51,19 @@ export default class ActivityPlot extends Component {
     });
   }
 
+  requiresScroll(time) {
+    return time > this.state.focus.rightBound;
+  }
+
+  getRoundedUpperBound(time) {
+    return Math.ceil(time / this.props.resolution) * this.props.resolution;
+  }
+
   componentWillReceiveProps(nextProps) {
     // Update the focused region if the playhead reaches/passes
     // the right bound of the plot
-    if (nextProps.elapsedTime > this.state.focus.rightBound) {
-      const rightBound =
-        Math.ceil(nextProps.elapsedTime / this.props.resolution) *
-        this.props.resolution;
+    if (this.requiresScroll(nextProps.elapsedTime)) {
+      const rightBound = this.getRoundedUpperBound(nextProps.elapsedTime);
       this.updateFocus({ rightBound });
     }
   }
@@ -62,6 +71,7 @@ export default class ActivityPlot extends Component {
   goTo(time) {
     let rightBound = time + this.state.focus.windowWidth / 2;
     let leftBound = time - this.state.focus.windowWidth / 2;
+    let detached = true;
 
     if (leftBound < 0) {
       leftBound = 0;
@@ -71,10 +81,11 @@ export default class ActivityPlot extends Component {
     if (rightBound > this.state.navigationFocus.rightBound) {
       rightBound = this.state.navigationFocus.rightBound;
       leftBound = rightBound - this.state.focus.windowWidth;
+      detached = false;
     }
 
     this.setState({
-      navigating: true,
+      detached,
       focus: {
         ...this.state.focus,
         leftBound,
@@ -83,8 +94,8 @@ export default class ActivityPlot extends Component {
     });
   }
 
-  resetNavigation() {
-    this.setState({ navigating: false });
+  attach() {
+    this.setState({ detached: false });
   }
 
   move(event, gesture) {
@@ -94,6 +105,7 @@ export default class ActivityPlot extends Component {
     const { dx } = gesture;
     let rightBound = xScale.invert(xScale(this.initial) - dx);
     let leftBound = rightBound - this.state.focus.windowWidth;
+    let detached = true;
 
     const upperBound =
       Math.ceil(this.props.elapsedTime / this.props.resolution) *
@@ -104,11 +116,12 @@ export default class ActivityPlot extends Component {
       rightBound = leftBound + this.state.focus.windowWidth;
     }
     if (rightBound > upperBound) {
+      detached = false;
       rightBound = upperBound;
       leftBound = upperBound - this.state.focus.windowWidth;
     }
     this.setState({
-      navigating: true,
+      detached,
       focus: { ...this.state.focus, leftBound, rightBound }
     });
     //this.updateFocus({ rightBound });
@@ -116,8 +129,10 @@ export default class ActivityPlot extends Component {
 
   updateFocus({ rightBound }) {
     const leftBound = rightBound - this.state.focus.windowWidth;
-    if (this.state.navigating) {
-      // TODO is not in editmode mode
+
+    // If in detached mode, only the PlotNavigation should update
+    // the focused region on the plot is adjusted manually
+    if (this.state.detached) {
       this.setState({
         navigationFocus: {
           ...this.state.navigationFocus,
@@ -135,6 +150,14 @@ export default class ActivityPlot extends Component {
         }
       });
     }
+  }
+
+  contains(timestamp) {
+    const secondsElapsed = this.inSecondsElapsed(timestamp);
+    return (
+      secondsElapsed >= this.state.focus.leftBound &&
+      secondsElapsed <= this.state.focus.rightBound
+    );
   }
 
   convertEventToSVG(event, x, y) {
@@ -169,10 +192,6 @@ export default class ActivityPlot extends Component {
     );
   }
 
-  getFlaggedEvents() {
-    return Object.values(this.props.flaggedEvents);
-  }
-
   computeXTicks() {
     const numTicks = this.state.focus.windowWidth / this.props.resolution + 1;
     let ticks = [];
@@ -180,17 +199,6 @@ export default class ActivityPlot extends Component {
       ticks.push(this.state.focus.leftBound + i * this.props.resolution);
     }
     return ticks;
-  }
-
-  computeXDomain(elapsedTime, windowWidth, resolution) {
-    if (elapsedTime <= windowWidth) {
-      return [0, windowWidth];
-    }
-
-    const upperBound = Math.ceil(elapsedTime / resolution) * resolution;
-    const lowerBound = upperBound - windowWidth;
-
-    return [lowerBound, upperBound];
   }
 
   inSecondsElapsed(timestamp) {
@@ -398,7 +406,7 @@ export default class ActivityPlot extends Component {
             navigationScale(this.state.navigationFocus.leftBound)
           }
         />
-        {this.state.navigating && (
+        {this.state.detached && (
           <Svg.G>
             <Svg.Text
               x={this.props.width - this.props.padding - 50}
@@ -408,7 +416,7 @@ export default class ActivityPlot extends Component {
               Reset
             </Svg.Text>
             <Svg.Rect
-              onPress={this.resetNavigation}
+              onPress={this.attach}
               x={this.props.width - this.props.padding - 54}
               y={this.yScale(97)}
               height={20}
