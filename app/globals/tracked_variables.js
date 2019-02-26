@@ -1,14 +1,15 @@
 // Tracked variables
 export const VESTIBULAR_DOMAIN = "VESTIBULAR_DOMAIN";
 export const HYPERAROUSAL_DOMAIN = "HYPERAROUSAL_DOMAIN";
-export const MOTOR_SYSTEM_DOMAIN = "HYPERAROUSAL_DOMAIN";
-export const SENSORY_DOMAIN = "HYPERAROUSAL_DOMAIN";
-export const COGNITIVE_DOMAIN = "HYPERAROUSAL_DOMAIN";
+export const MOTOR_SYSTEM_DOMAIN = "MOTOR_SYSTEM_DOMAIN";
+export const SENSORY_DOMAIN = "SENSORY_DOMAIN";
+export const COGNITIVE_DOMAIN = "COGNITIVE_DOMAIN";
 export const PAIN_LEVEL = "PAIN_LEVEL";
 export const PERCEIVED_EXERTION = "PERCEIVED_EXERTION";
 
 export default {
   VESTIBULAR_DOMAIN: {
+    domain: VESTIBULAR_DOMAIN,
     label: "Vestibular Domain",
     color: "#E69F00",
     levels: {
@@ -26,6 +27,7 @@ export default {
   },
 
   HYPERAROUSAL_DOMAIN: {
+    domain: HYPERAROUSAL_DOMAIN,
     label: "Hyperarousal Domain",
     color: "#56B4E9",
     levels: {
@@ -39,6 +41,7 @@ export default {
   },
 
   MOTOR_SYSTEM_DOMAIN: {
+    domain: MOTOR_SYSTEM_DOMAIN,
     label: "Motor Systems Domain",
     color: "#009E73",
     levels: {
@@ -51,6 +54,7 @@ export default {
   },
 
   SENSORY_DOMAIN: {
+    domain: SENSORY_DOMAIN,
     label: "Sensory Domain",
     color: "#F0E442",
     levels: {
@@ -62,6 +66,7 @@ export default {
   },
 
   COGNITIVE_DOMAIN: {
+    domain: COGNITIVE_DOMAIN,
     color: "#0072B2",
     label: "Cognitive domain",
     levels: {
@@ -75,6 +80,7 @@ export default {
   },
 
   PAIN_LEVEL: {
+    domain: PAIN_LEVEL,
     label: "Pain level",
     color: "#000000",
     levels: {
@@ -93,6 +99,7 @@ export default {
   },
 
   PERCEIVED_EXERTION: {
+    domain: PERCEIVED_EXERTION,
     label: "Perceived exertion",
     color: "#CC79A7",
     levels: {

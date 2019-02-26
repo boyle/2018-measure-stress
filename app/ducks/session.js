@@ -95,7 +95,58 @@ export default function reducer(state = defaultState, action = {}) {
           activityId: 0,
           startTimestamp: timestamp,
           elapsedTime: 0
-        })
+        }),
+        events: {
+          "01": {
+            valid: false,
+            type: "domain_variable",
+            domain: VESTIBULAR_DOMAIN,
+            value: 0,
+            timestamp
+          },
+          "02": {
+            valid: false,
+            type: "domain_variable",
+            domain: HYPERAROUSAL_DOMAIN,
+            value: 0,
+            timestamp
+          },
+          "03": {
+            valid: false,
+            type: "domain_variable",
+            domain: MOTOR_SYSTEM_DOMAIN,
+            value: 0,
+            timestamp
+          },
+          "04": {
+            valid: false,
+            type: "domain_variable",
+            domain: SENSORY_DOMAIN,
+            value: 0,
+            timestamp
+          },
+          "05": {
+            valid: false,
+            type: "domain_variable",
+            domain: COGNITIVE_DOMAIN,
+            value: 0,
+            timestamp
+          },
+          "06": {
+            valid: false,
+            type: "domain_variable",
+            domain: PAIN_LEVEL,
+            value: 0,
+            timestamp
+          },
+          "07": {
+            valid: false,
+            type: "domain_variable",
+            domain: PERCEIVED_EXERTION,
+            value: 0,
+            timestamp
+          }
+        }
       };
       return newState;
 

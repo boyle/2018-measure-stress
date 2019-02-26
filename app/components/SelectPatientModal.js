@@ -30,8 +30,8 @@ export default class SelectPatientModal extends Component {
     fetch(`${config.host}/api/v1/p`, { credentials: "same-origin" })
       .then(data => data.text())
       .then(text => {
-				const patients = text.split("<br/>");
-				patients.sort();
+        const patients = text.split("<br/>");
+        patients.sort();
         this.setState({ patientsList: patients, patientId: patients[0] });
       })
       .catch(err => {

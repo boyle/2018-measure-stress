@@ -36,6 +36,7 @@ import {
 import { showModal, hideModal } from "../ducks/ui.js";
 
 import ActivityModal from "../components/ActivityModal.js";
+import AppSelectionModal from "../components/AppSelectionModal.js";
 import CommentModal from "../components/CommentModal.js";
 import ActivityPlot from "../components/ActivityPlot.js";
 import AnnotationSlider from "../components/AnnotationSlider.js";
@@ -114,9 +115,9 @@ class Activity extends React.Component {
     this.startTicking();
   }
 
-  startActivity() {
+  startActivity(activityId) {
     // Modal to choose activity
-    const activityId = 20; // TODO use a modal
+    activityId = 20; // TODO use a modal
 
     this.props.updateSessionStatus(ACTIVITY_ONGOING);
     this.props.startActivity(activityId);
@@ -231,6 +232,12 @@ class Activity extends React.Component {
             onClose={() => this.props.hideModal()}
           />
         )}
+        {this.props.ui.modal.modalName === "AppSelectionModal" && (
+          <AppSelectionModal
+            onEndSession={() => this.endSession()}
+            onClose={() => this.props.hideModal()}
+          />
+        )}
         {this.props.ui.modal.modalName === "CommentModal" && (
           <CommentModal
             getElapsedTime={this.getElapsedTime}
@@ -243,7 +250,7 @@ class Activity extends React.Component {
           activityStatus={this.state.activityStatus}
           inEditMode={this.state.inEditMode}
           patientId={this.props.session.patientId}
-          onPressStart={this.handleActivityButton}
+          onPressStart={() => this.props.showModal("AppSelectionModal")}
           activityNumber={this.getCurrentActivityNumber()}
           elapsedTime={this.props.session.elapsedTime}
           onSave={() => this.props.showModal("ActivityModal")}

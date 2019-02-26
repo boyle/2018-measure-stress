@@ -5,6 +5,7 @@ import { Constants, Svg } from "expo";
 import { scaleLinear } from "d3-scale";
 import Variables from "../globals/tracked_variables.js";
 
+import DomainLine from "./DomainLine.js";
 import PlotNavigator from "../components/PlotNavigator.js";
 
 const yScaleLabels = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
@@ -163,7 +164,7 @@ export default class ActivityPlot extends Component {
   convertEventToSVG(event, x, y) {
     return (
       <Svg.G>
-        {y != this.yScale(0) && (
+        {/*y != this.yScale(0) && (
           <Svg.Line
             x1={x}
             y1={this.yScale(0)}
@@ -172,7 +173,7 @@ export default class ActivityPlot extends Component {
             stroke={`${Variables[event.domain].color}`}
             strokeWidth={2}
           />
-        )}
+        )*/}
 
         <Svg.Circle
           onPress={() => this.props.toggleEditRequired(event.eventId)}
@@ -406,6 +407,17 @@ export default class ActivityPlot extends Component {
             navigationScale(this.state.navigationFocus.leftBound)
           }
         />
+        {Object.values(Variables).map(domain => (
+          <DomainLine
+            inSecondsElapsed={this.inSecondsElapsed}
+            domain={domain.domain}
+            color={domain.color}
+            xScale={this.xScale}
+            yScale={this.yScale}
+            events={this.props.events}
+            elapsedTime={this.props.elapsedTime}
+          />
+        ))}
         {this.state.detached && (
           <Svg.G>
             <Svg.Text
