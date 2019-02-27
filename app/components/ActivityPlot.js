@@ -228,7 +228,7 @@ export default class ActivityPlot extends Component {
 
     return (
       <Svg
-        style={{ marginLeft: 90 }}
+        style={{ marginLeft: 50 }}
         height={this.props.height}
         width={this.props.width}
       >

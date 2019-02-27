@@ -98,7 +98,7 @@ class Activity extends React.Component {
     if (this.activityIsOngoing()) {
       this.promptForActivityEnd();
     } else {
-      this.startActivity();
+      this.props.showModal("AppSelectionModal");
     }
   }
 
@@ -116,11 +116,9 @@ class Activity extends React.Component {
   }
 
   startActivity(activityId) {
-    // Modal to choose activity
-    activityId = 20; // TODO use a modal
-
     this.props.updateSessionStatus(ACTIVITY_ONGOING);
     this.props.startActivity(activityId);
+    this.props.hideModal();
   }
 
   promptForActivityEnd() {
@@ -234,7 +232,9 @@ class Activity extends React.Component {
         )}
         {this.props.ui.modal.modalName === "AppSelectionModal" && (
           <AppSelectionModal
-            onEndSession={() => this.endSession()}
+            onAppSelected={appId => {
+              this.startActivity(appId);
+            }}
             onClose={() => this.props.hideModal()}
           />
         )}
@@ -250,7 +250,7 @@ class Activity extends React.Component {
           activityStatus={this.state.activityStatus}
           inEditMode={this.state.inEditMode}
           patientId={this.props.session.patientId}
-          onPressStart={() => this.props.showModal("AppSelectionModal")}
+          onPressStart={this.handleActivityButton}
           activityNumber={this.getCurrentActivityNumber()}
           elapsedTime={this.props.session.elapsedTime}
           onSave={() => this.props.showModal("ActivityModal")}

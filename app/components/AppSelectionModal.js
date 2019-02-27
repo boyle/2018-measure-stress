@@ -64,7 +64,7 @@ export default class AppSelectionModal extends Component {
         <Button
           disabled={!this.state.selectedApp}
           buttonStyle={styles.button}
-          onPress={() => this.props.onPatientSelected(this.state.patientId)} // TODO
+          onPress={appId => this.props.onAppSelected(appId)}
           title="Start"
         />
         <Button

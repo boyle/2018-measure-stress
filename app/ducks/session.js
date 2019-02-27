@@ -26,6 +26,7 @@ const UPDATE_SESSION_STATUS = "session/update_session_status";
 const TICK = "session/tick";
 const START_ACTIVITY = "session/start_activity";
 const STOP_ACTIVITY = "session/stop_activity";
+const SELECT_PATIENT = "session/select_patient";
 
 // Helpers
 function createActivity({ activityId, elapsedTime, startTimestamp }) {
@@ -89,13 +90,13 @@ export default function reducer(state = defaultState, action = {}) {
       newState = {
         ...state,
         startTimestamp: timestamp,
-        sessionId: 120, // TODO change
-        patientId: 20, // TODO change
+        sessionId: 120, // TODO: need to get a session id
         currentActivity: createActivity({
           activityId: 0,
           startTimestamp: timestamp,
           elapsedTime: 0
         }),
+        // Initial event at t = 0
         events: {
           "01": {
             valid: false,
@@ -148,6 +149,10 @@ export default function reducer(state = defaultState, action = {}) {
           }
         }
       };
+      return newState;
+
+    case SELECT_PATIENT:
+      newState = { ...state, patientId: action.payload };
       return newState;
 
     case START_ACTIVITY:
@@ -320,9 +325,15 @@ export function initializeSession() {
   };
 }
 
-export function startSession(patientId) {
+export function startSession() {
   return {
-    type: START_SESSION,
+    type: START_SESSION
+  };
+}
+
+export function selectPatient(patientId) {
+  return {
+    type: SELECT_PATIENT,
     payload: patientId
   };
 }
