@@ -392,6 +392,31 @@ export default class ActivityPlot extends Component {
             strokeWidth={3}
           />
         )}
+
+        {Object.values(Variables).map(domain => (
+          <Svg.G>
+            <Svg.ClipPath id={`${domain.domain}-clip`}>
+              <DomainLine
+                inSecondsElapsed={this.inSecondsElapsed}
+                domain={domain.domain}
+                color={domain.color}
+                xScale={this.xScale}
+                yScale={this.yScale}
+                events={this.props.events}
+                elapsedTime={this.props.elapsedTime}
+              />
+            </Svg.ClipPath>
+            <Svg.Rect
+              fill={domain.color}
+              x={this.props.padding}
+              y="0"
+              width={this.props.width - 2 * this.props.padding}
+              height={this.props.height}
+              clipPath={`url(#${domain.domain}-clip)`}
+            />
+          </Svg.G>
+        ))}
+
         <PlotNavigator
           goTo={this.goTo}
           inEditMode={true}
@@ -407,17 +432,7 @@ export default class ActivityPlot extends Component {
             navigationScale(this.state.navigationFocus.leftBound)
           }
         />
-        {Object.values(Variables).map(domain => (
-          <DomainLine
-            inSecondsElapsed={this.inSecondsElapsed}
-            domain={domain.domain}
-            color={domain.color}
-            xScale={this.xScale}
-            yScale={this.yScale}
-            events={this.props.events}
-            elapsedTime={this.props.elapsedTime}
-          />
-        ))}
+
         {this.state.detached && (
           <Svg.G>
             <Svg.Text
