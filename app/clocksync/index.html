@@ -1,34 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>SAANS App | Clock Sync</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
-		<script type="text/javascript" src="jquery.min.js"></script>
-		<script type="text/javascript" src="qrcode.min.js"></script>
-	</head>
-	<body>
+  <head>
+    <title>SAANS App | Clock Sync</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,user-scalable=no"
+    />
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="qrcode.min.js"></script>
+  </head>
+  <body>
+    <div style="text-align:center;">
+      <h1>
+        Scan the QR Code with the tablet's camera to synchronize the clocks
+      </h1>
+      <div id="qrcode" style="width:400px; height:400px; margin: 0 auto;"></div>
+      <div id="time-display"></div>
+    </div>
 
-		<div style="text-align:center;">
-			<h1>Scan the QR Code with the tablet's camera to synchronize the clocks</h1>
-			<div id="qrcode" style="width:400px; height:400px; margin: 0 auto;"></div>
-			<div id="time-display"></div>
-		</div>
+    <script type="text/javascript">
+      var qrcode = new QRCode(document.getElementById("qrcode"), {
+        width: 400,
+        height: 400
+      });
 
-		<script type="text/javascript">
-		var qrcode = new QRCode(document.getElementById("qrcode"), {
-			width : 400,
-			height : 400
-		});
+      function makeCode() {
+        var time = new Date();
+        var timeDisplay = document.getElementById("time-display");
+        timeDisplay.innerHTML = time.toISOString();
+        qrcode.makeCode(time.getTime().toString());
+      }
 
-		function makeCode () {		
-			var time = new Date();
-			var timeDisplay = document.getElementById("time-display");
-			timeDisplay.innerHTML = time.toISOString();
-			qrcode.makeCode(time.toString());
-		}
-
-		setInterval(makeCode, 1000)
-		</script>
-	</body>
+      setInterval(makeCode, 1000);
+    </script>
+  </body>
 </html>

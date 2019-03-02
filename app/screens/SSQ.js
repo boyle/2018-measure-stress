@@ -82,9 +82,8 @@ class SSQ extends React.Component {
     if (this.isFirstSSQ()) {
       this.props.navigation.navigate("Activity");
     } else {
-      console.log(this.props.session);
       this.props.initializeSession();
-      this.props.navigation.navigate("Home");
+      this.props.navigation.navigate("Summary");
     }
   }
 

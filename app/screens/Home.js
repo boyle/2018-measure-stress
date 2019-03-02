@@ -13,12 +13,13 @@ import { connect } from "react-redux";
 
 import { showModal, hideModal } from "../ducks/ui.js";
 import { addPatient } from "../ducks/user.js";
-import { startSession, selectPatient } from "../ducks/session.js";
+import { startSession, selectPatient, setOffset } from "../ducks/session.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import IconButton from "../components/IconButton.js";
 import NewPatientModal from "../components/NewPatientModal.js";
 import SelectPatientModal from "../components/SelectPatientModal.js";
+import SynchronizationModal from "../components/SynchronizationModal.js";
 
 function StatsCard({ statsName, statsValue }) {
   return (
@@ -56,6 +57,15 @@ class Home extends React.Component {
               onClose={this.props.hideModal}
             />
           )}
+          {this.props.ui.modal.modalName === "SynchronizationModal" && (
+            <SynchronizationModal
+              onOffsetComputed={offset => {
+                this.props.setOffset(offset);
+                this.props.showModal("SelectPatientModal");
+              }}
+              onClose={this.props.hideModal}
+            />
+          )}
           {this.props.ui.modal.modalName === "SelectPatientModal" && (
             <SelectPatientModal
               patientIdsList={this.props.user.patientIdsList}
@@ -90,7 +100,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.showModal("SelectPatientModal")}
+              action={() => this.props.showModal("SynchronizationModal")}
             />
             <IconButton
               disabled
@@ -211,7 +221,8 @@ function mapDispatchToProps(dispatch) {
     hideModal: () => dispatch(hideModal()),
     addPatient: patientId => dispatch(addPatient(patientId)),
     selectPatient: patientId => dispatch(selectPatient(patientId)),
-    startSession: patientId => dispatch(startSession(patientId))
+    startSession: patientId => dispatch(startSession(patientId)),
+    setOffset: offset => dispatch(setOffset(offset))
   };
 }
 

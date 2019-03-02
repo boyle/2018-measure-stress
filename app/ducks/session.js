@@ -27,6 +27,7 @@ const TICK = "session/tick";
 const START_ACTIVITY = "session/start_activity";
 const STOP_ACTIVITY = "session/stop_activity";
 const SELECT_PATIENT = "session/select_patient";
+const SET_OFFSET = "session/set_offset";
 
 // Helpers
 function createActivity({ activityId, elapsedTime, startTimestamp }) {
@@ -47,6 +48,7 @@ function getElapsedTime({ now, start }) {
 
 // DEFAULT STATE
 const defaultState = {
+  clocksOffset: null, // Offset between the tablet and the computer clocks
   startTimestamp: null, // Time at which the first SSQ is shown
   endTimestamp: null, // Time at which the last SSQ is submitted
   sessionId: null, // Integer
@@ -82,6 +84,13 @@ export default function reducer(state = defaultState, action = {}) {
     case INITIALIZE_SESSION:
       newState = {
         ...defaultState
+      };
+      return newState;
+
+    case SET_OFFSET:
+      newState = {
+        ...state,
+        clocksOffset: action.payload
       };
       return newState;
 
@@ -288,6 +297,13 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // ACTION CREATORS
+
+export function setOffset(offset) {
+  return {
+    type: SET_OFFSET,
+    payload: offset
+  };
+}
 
 export function startActivity(activityId) {
   return {

@@ -1,24 +1,50 @@
 import React, { Component } from "react";
 import { View, StyleSheet, Text, TextInput } from "react-native";
+import { BarCodeScanner, Permissions } from "expo";
 import { Overlay, Button } from "react-native-elements";
 
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
 
 export default class SynchronizationModal extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      hasCameraPermission: null
+    };
+    this.onQRDetected = this.onQRDetected.bind(this);
+  }
+
+  async componentDidMount() {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA);
+    this.setState({ hasCameraPermission: status === "granted" });
+  }
+
+  onQRDetected({ type, data }) {
+    const offsetInMillis = new Date().getTime() - parseInt(data);
+    this.props.onOffsetComputed(offsetInMillis);
+  }
+
   render() {
     return (
       <ModalContainer>
         <Text style={styles.title}>Please synchronize the clocks</Text>
-        <Text>
-          Move the tablet next to the computer, launch the Java program on the
-          computer and click on the button "Synchronize".
+        <Text style={{ textAlign: "center" }}>
+          Scan the QR code in the computer.
         </Text>
-        <Button
-          buttonStyle={styles.button}
-          onPress={this.attemptSynchronization}
-          title="Synchronize"
-        />
+        <View
+          style={{
+            marginLeft: "auto",
+            marginRight: "auto",
+            height: 400,
+            width: 400
+          }}
+        >
+          <BarCodeScanner
+            onBarCodeScanned={this.onQRDetected}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
         <Button
           buttonStyle={styles.button}
           onPress={this.props.onClose}
