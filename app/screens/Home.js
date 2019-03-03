@@ -83,7 +83,7 @@ class Home extends React.Component {
 
           <View style={styles.buttonsContainer}>
             <IconButton
-              iconName="face"
+              iconName="user"
               iconColor={iconColor}
               title="New Patient"
               buttonStyle={styles.button}
@@ -93,7 +93,7 @@ class Home extends React.Component {
               action={() => this.props.showModal("NewPatientModal")}
             />
             <IconButton
-              iconName="create"
+              iconName="plus-circle"
               iconColor={iconColor}
               title="New Session"
               buttonStyle={styles.button}
@@ -104,7 +104,7 @@ class Home extends React.Component {
             />
             <IconButton
               disabled
-              iconName="description"
+              iconName="file-alt"
               iconColor={iconColor}
               title="Review"
               buttonStyle={styles.button}
@@ -115,7 +115,7 @@ class Home extends React.Component {
             />
             <IconButton
               disabled
-              iconName="build"
+              iconName="cogs"
               iconColor={iconColor}
               title="Settings"
               buttonStyle={styles.button}
@@ -126,7 +126,7 @@ class Home extends React.Component {
             />
             <IconButton
               disabled
-              iconName="info"
+              iconName="info-circle"
               iconColor={iconColor}
               title="Help"
               buttonStyle={styles.button}

@@ -1,6 +1,8 @@
 import React, { Component } from "react";
-import { Image, TouchableOpacity, Text } from "react-native";
+import { View, Image, TouchableOpacity, Text } from "react-native";
 import { Icon } from "react-native-elements";
+
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 
 class IconButton extends Component {
   render() {
@@ -13,12 +15,21 @@ class IconButton extends Component {
           this.props.action ? this.props.action() : null;
         }}
       >
-        <Icon
-          name={this.props.iconName}
-          size={100}
-          color={this.props.iconColor}
-        />
-        <Text style={this.props.textStyle}>{this.props.title}</Text>
+        <View style={{ marginLeft: "auto", marginRight: "auto" }}>
+          <FontAwesomeIcon
+            size={100}
+            icon={this.props.iconName}
+            color={this.props.iconColor}
+          />
+          <Text
+            style={[
+              this.props.textStyle || { textAlign: "center" },
+              { marginTop: 10 }
+            ]}
+          >
+            {this.props.title}
+          </Text>
+        </View>
       </TouchableOpacity>
     );
   }

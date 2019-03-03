@@ -14,6 +14,8 @@ import {
   RESTING
 } from "../globals/constants.js";
 
+import { generateRandomNum } from "../utils.js";
+
 // ACTIONS
 const INITIALIZE_SESSION = "session/initialize_session";
 const LOG_EVENT = "session/log_event";
@@ -28,6 +30,8 @@ const START_ACTIVITY = "session/start_activity";
 const STOP_ACTIVITY = "session/stop_activity";
 const SELECT_PATIENT = "session/select_patient";
 const SET_OFFSET = "session/set_offset";
+const LOG_COMMON_EVENT = "session/log_common_event";
+const END_COMMON_EVENT = "session/end_common_event";
 
 // Helpers
 function createActivity({ activityId, elapsedTime, startTimestamp }) {
@@ -71,6 +75,7 @@ const defaultState = {
     startTimestamp: Date.now(),
     elapsedTime: 0
   }), // Patient at rest at session start
+  currentCommonEvent: null,
   activities: [], // Meta-data on the activities (eg. start, end, scenario, rest)
   events: {}, // Events identified by a unique ID
   editedEvents: {}
@@ -164,6 +169,28 @@ export default function reducer(state = defaultState, action = {}) {
       newState = { ...state, patientId: action.payload };
       return newState;
 
+    case LOG_COMMON_EVENT:
+      newState = {
+        ...state,
+        currentCommonEvent: {
+          eventId: generateRandomNum(),
+          timestamp,
+          type: "common_event",
+          event: action.payload
+        }
+      };
+      return newState;
+
+    case END_COMMON_EVENT:
+      newState = {
+        ...state,
+        events: {
+          ...state.events,
+          [state.currentCommonEvent.eventId]: state.currentCommonEvent
+        },
+        currentCommonEvent: null
+      };
+      return newState;
     case START_ACTIVITY:
       const precedingRestPeriod = {
         ...state.currentActivity,
@@ -332,6 +359,19 @@ export function logEvent(event, baseline) {
       event,
       baseline
     }
+  };
+}
+
+export function logCommonEvent(eventName) {
+  return {
+    type: LOG_COMMON_EVENT,
+    payload: eventName
+  };
+}
+
+export function endCommonEvent() {
+  return {
+    type: END_COMMON_EVENT
   };
 }
 

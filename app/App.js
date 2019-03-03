@@ -2,6 +2,25 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Provider } from "react-redux";
 import { createStackNavigator, createSwitchNavigator } from "react-navigation";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  faCheckSquare,
+  faCoffee,
+  faChalkboardTeacher,
+  faHeartbeat,
+  faMapMarker,
+  faChair,
+  faTshirt,
+  faYinYang,
+  faDoorClosed,
+  faTimesCircle,
+  faUser,
+  faPlusCircle,
+  faFileAlt,
+  faInfoCircle,
+  faCogs,
+  faLock
+} from "@fortawesome/free-solid-svg-icons";
 
 import store from "./store.js";
 
@@ -12,12 +31,29 @@ import SSQ from "./screens/SSQ.js";
 import Summary from "./screens/Summary.js";
 
 const Navigator = createStackNavigator({
+  Activity: { screen: Activity, navigationOptions: { header: null } },
+  Home: { screen: Home, navigationOptions: { header: null } },
   Login: { screen: Login, navigationOptions: { header: null } },
   Summary: { screen: Summary, navigationOptions: { header: null } },
-  Home: { screen: Home, navigationOptions: { header: null } },
-  Activity: { screen: Activity, navigationOptions: { header: null } },
   SSQ: { screen: SSQ, navigationOptions: { header: null } }
 });
+
+library.add(
+  faTimesCircle,
+  faDoorClosed,
+  faYinYang,
+  faChalkboardTeacher,
+  faHeartbeat,
+  faMapMarker,
+  faChair,
+  faTshirt,
+  faUser,
+  faPlusCircle,
+  faFileAlt,
+  faInfoCircle,
+  faCogs,
+  faLock
+);
 
 export default class App extends React.Component {
   render() {

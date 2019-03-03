@@ -6,9 +6,10 @@ import {
   TextInput,
   ToastAndroid,
   Alert,
-  Dimensions
+  Dimensions,
+  TouchableOpacity
 } from "react-native";
-import { Slider, Button } from "react-native-elements";
+import { Slider, Button, Icon } from "react-native-elements";
 import { scaleLinear } from "d3-scale";
 import { connect } from "react-redux";
 
@@ -31,7 +32,9 @@ import {
   logEvent,
   toggleEditRequired,
   tick,
-  updateSessionStatus
+  updateSessionStatus,
+  logCommonEvent,
+  endCommonEvent
 } from "../ducks/session.js";
 import { showModal, hideModal } from "../ducks/ui.js";
 
@@ -45,6 +48,7 @@ import Colors from "../globals/colors.js";
 import Variables from "../globals/tracked_variables.js";
 import IconButton from "../components/IconButton.js";
 import ActivityTopBar from "../components/ActivityTopBar.js";
+import CommonEvents from "../components/CommonEvents.js";
 
 class Activity extends React.Component {
   constructor(props) {
@@ -74,6 +78,7 @@ class Activity extends React.Component {
     this.sessionIsStarted = this.sessionIsStarted.bind(this);
     this.endSession = this.endSession.bind(this);
     this.getCurrentActivityNumber = this.getCurrentActivityNumber.bind(this);
+    this.commonEventOngoing = this.commonEventOngoing.bind(this);
 
     this.startSession();
   }
@@ -221,6 +226,10 @@ class Activity extends React.Component {
     });
   }
 
+  commonEventOngoing() {
+    return this.props.session.currentCommonEvent !== null;
+  }
+
   render() {
     return (
       <PageTemplate>
@@ -322,6 +331,42 @@ class Activity extends React.Component {
               ))}
           </View>
         )}
+        <View
+          style={{
+            alignItems: "center",
+            flexDirection: "row",
+            marginTop: -20,
+            marginLeft: "auto",
+            marginRight: 20
+          }}
+        >
+          {this.commonEventOngoing() && (
+            <Text style={{ fontSize: 26 }}>
+              {this.props.session.currentCommonEvent.event}
+            </Text>
+          )}
+          <Icon
+            raised
+            name={`${!this.commonEventOngoing() ? "plus" : "square"}`}
+            type="font-awesome"
+            color={`${!this.commonEventOngoing() ? Colors.dark : "red"}`}
+            onPress={() => {
+              !this.commonEventOngoing()
+                ? this.props.showModal("CommonEvents")
+                : this.props.endCommonEvent();
+            }}
+          />
+        </View>
+
+        {this.props.ui.modal.modalName === "CommonEvents" && (
+          <CommonEvents
+            onLog={event => {
+              this.props.logCommonEvent(event);
+              this.props.hideModal();
+            }}
+            onQuit={this.props.hideModal}
+          />
+        )}
       </PageTemplate>
     );
   }
@@ -376,7 +421,9 @@ function mapDispatchToProps(dispatch) {
     stopSession: () => dispatch(stopSession()),
     toggleEditRequired: eventId => dispatch(toggleEditRequired(eventId)),
     showModal: modalName => dispatch(showModal(modalName)),
-    hideModal: () => dispatch(hideModal())
+    hideModal: () => dispatch(hideModal()),
+    logCommonEvent: event => dispatch(logCommonEvent(event)),
+    endCommonEvent: () => dispatch(endCommonEvent())
   };
 }
 
