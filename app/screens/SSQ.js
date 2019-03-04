@@ -65,24 +65,12 @@ class SSQ extends React.Component {
     };
     this.props.saveSSQ(submittedForm);
 
-    const toastMessage = this.isFirstSSQ()
-      ? "Saved the SSQ."
-      : "Saved the session.";
-
-    /*
-    ToastAndroid.showWithGravity(
-      toastMessage,
-      ToastAndroid.LONG,
-      ToastAndroid.CENTER
-    );
-    */
-
     this.setState({ ...SSQVars.emptySSQForm });
 
     if (this.isFirstSSQ()) {
       this.props.navigation.navigate("Activity");
     } else {
-      this.props.initializeSession();
+      //this.props.initializeSession();
       this.props.navigation.navigate("Summary");
     }
   }

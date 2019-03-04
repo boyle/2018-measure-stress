@@ -47,6 +47,11 @@ export default class SynchronizationModal extends Component {
         </View>
         <Button
           buttonStyle={styles.button}
+          onPress={this.props.onSkip}
+          title="Skip"
+        />
+        <Button
+          buttonStyle={styles.button}
           onPress={this.props.onClose}
           title="Go back"
         />

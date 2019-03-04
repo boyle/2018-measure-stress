@@ -53,7 +53,7 @@ function getElapsedTime({ now, start }) {
 // DEFAULT STATE
 const defaultState = {
   clocksOffset: null, // Offset between the tablet and the computer clocks
-  startTimestamp: null, // Time at which the first SSQ is shown
+  startTimestamp: null, // Time at which the first SSQ is submitted
   endTimestamp: null, // Time at which the last SSQ is submitted
   sessionId: null, // Integer
   patientId: null, // Integer
@@ -174,7 +174,7 @@ export default function reducer(state = defaultState, action = {}) {
         ...state,
         currentCommonEvent: {
           eventId: generateRandomNum(),
-          timestamp,
+          start: timestamp,
           type: "common_event",
           event: action.payload
         }
@@ -182,11 +182,12 @@ export default function reducer(state = defaultState, action = {}) {
       return newState;
 
     case END_COMMON_EVENT:
+      const loggedEvent = { ...state.currentCommonEvent, stop: timestamp };
       newState = {
         ...state,
         events: {
           ...state.events,
-          [state.currentCommonEvent.eventId]: state.currentCommonEvent
+          [state.currentCommonEvent.eventId]: loggedEvent
         },
         currentCommonEvent: null
       };
@@ -304,7 +305,7 @@ export default function reducer(state = defaultState, action = {}) {
 
     case SAVE_SSQ:
       let type;
-      if (!state.preSSQ) {
+      if (!state.firstSSQ) {
         type = "firstSSQ";
       } else {
         type = "secondSSQ";

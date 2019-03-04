@@ -63,6 +63,7 @@ class Home extends React.Component {
                 this.props.setOffset(offset);
                 this.props.showModal("SelectPatientModal");
               }}
+              onSkip={() => this.props.showModal("SelectPatientModal")}
               onClose={this.props.hideModal}
             />
           )}
