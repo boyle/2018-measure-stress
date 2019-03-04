@@ -22,7 +22,8 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
+      "ios": {
+          bundleIdentifier: "saans-app",
       "supportsTablet": true
     }
   },
