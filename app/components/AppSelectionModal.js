@@ -51,9 +51,9 @@ export default class AppSelectionModal extends Component {
 
         <Picker
           selectedValue={this.state.selectedApp}
-          onValueChange={(itemValue, itemIndex) =>
-            this.setState({ selectedApp: itemIndex })
-          }
+          onValueChange={itemIndex => {
+            this.setState({ selectedApp: itemIndex });
+          }}
         >
           {this.state.activities.map((app, i) => {
             return (
@@ -64,7 +64,7 @@ export default class AppSelectionModal extends Component {
         <Button
           disabled={!this.state.selectedApp}
           buttonStyle={styles.button}
-          onPress={appId => this.props.onAppSelected(appId)}
+          onPress={() => this.props.onAppSelected(this.state.selectedApp)}
           title="Start"
         />
         <Button

@@ -21,6 +21,7 @@ class Summary extends React.Component {
   }
 
   componentDidMount() {
+    console.log(this.props.session);
     const { patientId } = this.props.session;
     fetch(`${config.host}/api/v1/p/${patientId}/1/annotations.json`, {
       credentials: "same-origin",
@@ -33,7 +34,6 @@ class Summary extends React.Component {
   }
 
   render() {
-    console.log(JSON.stringify(this.props.session));
     return (
       <PageTemplate>
         <Text>Session Summary</Text>
