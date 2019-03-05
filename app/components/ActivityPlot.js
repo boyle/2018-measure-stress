@@ -164,26 +164,6 @@ export default class ActivityPlot extends Component {
   convertEventToSVG(event, x, y) {
     return (
       <Svg.G>
-        {/*y != this.yScale(0) && (
-          <Svg.Line
-            x1={x}
-            y1={this.yScale(0)}
-            x2={x}
-            y2={y + 10}
-            stroke={`${Variables[event.domain].color}`}
-            strokeWidth={2}
-          />
-        )*/}
-
-        <Svg.Circle
-          onPress={() => this.props.toggleEditRequired(event.eventId)}
-          r={10}
-          cx={x}
-          cy={y}
-          stroke={`${Variables[event.domain].color}`}
-          fill="transparent"
-          strokeWidth={2}
-        />
         {event.editRequired && (
           <Svg.Text x={x} y={y - 15} fontSize={32} textAnchor="middle">
             ?
@@ -396,22 +376,23 @@ export default class ActivityPlot extends Component {
         {Object.values(Variables).map(domain => (
           <Svg.G>
             <Svg.ClipPath id={`${domain.domain}-clip`}>
-              <DomainLine
-                inSecondsElapsed={this.inSecondsElapsed}
-                domain={domain.domain}
-                color={domain.color}
-                xScale={this.xScale}
-                yScale={this.yScale}
-                events={this.props.events}
-                elapsedTime={this.props.elapsedTime}
+              <Svg.Rect
+                fill={domain.color}
+                x={this.props.padding}
+                y="0"
+                width={this.props.width - 2 * this.props.padding}
+                height={this.props.height}
               />
             </Svg.ClipPath>
-            <Svg.Rect
-              fill={domain.color}
-              x={this.props.padding}
-              y="0"
-              width={this.props.width - 2 * this.props.padding}
-              height={this.props.height}
+            <DomainLine
+              inSecondsElapsed={this.inSecondsElapsed}
+              toggleEditRequired={this.props.toggleEditRequired}
+              domain={domain.domain}
+              color={domain.color}
+              xScale={this.xScale}
+              yScale={this.yScale}
+              events={this.props.events}
+              elapsedTime={this.props.elapsedTime}
               clipPath={`url(#${domain.domain}-clip)`}
             />
           </Svg.G>

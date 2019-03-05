@@ -165,6 +165,18 @@ export default function reducer(state = defaultState, action = {}) {
       };
       return newState;
 
+    case STOP_SESSION:
+      const lastActivity = {
+        ...state.currentActivity,
+        endTimestamp: timestamp
+      };
+      newState = {
+        ...state,
+        endTimestamp: timestamp,
+        activities: [...state.activities, lastActivity]
+      };
+      return newState;
+
     case SELECT_PATIENT:
       newState = { ...state, patientId: action.payload };
       return newState;
