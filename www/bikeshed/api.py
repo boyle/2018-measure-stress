@@ -1,5 +1,6 @@
 import os
 import re
+import json
 from flask import (
     request, session, escape,
     send_from_directory, jsonify, Blueprint, current_app, abort
@@ -28,7 +29,7 @@ def listfiles(base):
 
 
 def responselist(ret):
-    if request.content_type == 'application/json':
+    if request.is_json:
         return jsonify(escape(ret))
     else:
         return '<br/>'.join(ret)
@@ -73,6 +74,7 @@ def patient_dir(patient, session):
         abort(404)
     return (path, 200)
 
+
 @bp.route('/v1/p/<int:patient>',
           methods=['GET', 'PUT'])
 def sessionlist(patient):
@@ -94,6 +96,18 @@ def datalist(patient, session):
     return responselist(files)
 
 
+def put_replace_file(path, fn):
+    code = 201  # created
+    if os.path.isfile(os.path.join(path, fn)):  # collision
+        code = 204 # replaced
+        i = 0
+        while os.path.isfile(os.path.join(path, fn + '.' + str(i))):
+            i += 1
+        os.rename(os.path.join(path, fn),
+                  os.path.join(path, fn + '.' + str(i)))
+    return code
+
+
 @bp.route('/v1/p/<int:patient>/<int:session>/<string:measure>',
           methods=['GET', 'PUT'])
 def returnfile(patient, session, measure):
@@ -101,30 +115,35 @@ def returnfile(patient, session, measure):
     code = 200
     fn = secure_filename(measure)
     pathfile = os.path.join(path, fn)
-    if request.method == 'PUT':
-        code = 201  # created
+    if request.method == 'GET':
+        if not os.path.isfile(pathfile):
+            abort(404)
+        if request.is_json:
+            with open(pathfile, 'r') as infile:
+                data = json.load(infile)
+            return jsonify(data)
+        else:
+            return send_from_directory(path, fn)
+
+    # must be PUT
+    if request.is_json:
+        if '.json' not in fn:
+            abort(422)
+        code = put_replace_file(path, fn)
+        data = request.get_json()
+        with open(pathfile, 'w') as outfile:
+            json.dump(data, outfile)
+    else: # form/html put
         if 'files' not in request.files:
             abort(422)
         filelist = request.files.getlist("files")
         if len(filelist) != 1:
             abort(422)
+        code = put_replace_file(path, fn)
         f = filelist[0]
-        if os.path.isfile(os.path.join(path, fn)):  # collision
-            code = 204
-            i = 0
-            while os.path.isfile(os.path.join(path, fn + '.' + str(i))):
-                i += 1
-            os.rename(os.path.join(path, fn),
-                      os.path.join(path, fn + '.' + str(i)))
         f.save(os.path.join(path, fn))
 
-    if not os.path.isfile(pathfile):
-        abort(404)
-
-    if code == 200:
-        return send_from_directory(path, fn)
-    else:
-        return ('', code)
+    return ('', code)
 
 
 @bp.route('/v1/ver')

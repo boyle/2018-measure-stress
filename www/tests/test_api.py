@@ -1,6 +1,7 @@
 import pytest
 import os
 import shutil
+import json
 from io import BytesIO
 
 
@@ -88,16 +89,23 @@ def test_dir_permissions(client, app, auth):
     ('/api/v1/p/1',            [b'1']),
     ('/api/v1/p/1/1',          [b'test.txt']),
     ('/api/v1/p/1/1/test.txt', [b'a test']),
+    ('/api/v1/p/1/1/test.json', [b'a test']),
     ('/api/v1/ver',            [b'web', b'app']),
     ('/api/v1/ver/web',        [b'0.0.0w']),
     ('/api/v1/ver/app',        [b'0.0.0a']),
 ))
 def test_api_returns(client, app, auth, path, outputs):
     remove_patient(app, 1)
-    load_patient_session(app, 1, 1, 'test.txt')
+    if '.json' in path:
+        load_patient_session(app, 1, 1, 'test.json', json.dumps({'data': str(outputs)}))
+    else:
+        load_patient_session(app, 1, 1, 'test.txt')
 
     auth.login()
-    response = client.get(path)
+    if '.json' in path:
+        response = client.get(path, content_type='application/json')
+    else:
+        response = client.get(path)
     assert response.status_code == 200
     for output in outputs:
         assert output in response.data
@@ -113,8 +121,11 @@ def test_api_returns(client, app, auth, path, outputs):
     ('/api/v1/p/1/1',          204),
     ('/api/v1/p/1/1/test.txt', 201),
     ('/api/v1/p/1/1/test.txt', 204),
-    ('/api/v1/p/1/1/test.txt', 422),
-    ('/api/v1/p/1/1/double.txt', 422),
+    ('/api/v1/p/1/1/test.txt', 422), # malformed form data
+    ('/api/v1/p/1/1/double.txt', 422), # multiple files
+    ('/api/v1/p/1/1/test.json', 201),
+    ('/api/v1/p/1/1/test.json', 204),
+    ('/api/v1/p/1/1/test.jsn', 422), # bad extension
     ('/api/v1/ver',            405),
     ('/api/v1/ver/web',        405),
     ('/api/v1/ver/app',        405),
@@ -123,8 +134,9 @@ def test_api_put(client, app, auth, path, code):
     remove_patient(app, 1)
     content = 'abc'
     if code == 204:
-        load_patient_session(app, 1, 1, 'test.txt', content)
-        load_patient_session(app, 1, 1, 'test.txt.0', content)
+        fn = base=os.path.basename(path)
+        load_patient_session(app, 1, 1, fn, content)
+        load_patient_session(app, 1, 1, fn+'.0', content)
         content = 'def'
 
     data = {'files': (BytesIO(content.encode('utf-8')), 'test.txt')}
@@ -134,11 +146,14 @@ def test_api_put(client, app, auth, path, code):
         data = {'asdf': 'ddd'}
 
     auth.login()
-    response = client.put(path, data=data, content_type='multipart/form-data')
+    if any(x in path for x in ['.json', '.jsn']):
+        response = client.put(path, json={'data': content})
+    else:
+        response = client.put(path, data=data, content_type='multipart/form-data')
     assert response.status_code == code
 
     if code < 400:
         response = client.get(path)
         assert response.status_code == 200
-        if '.txt' in path:
+        if any(x in path for x in ['.txt', '.json']):
             assert content.encode('utf-8') in response.data
