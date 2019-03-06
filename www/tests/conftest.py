@@ -1,5 +1,6 @@
 import os
 import tempfile
+import sys
 
 import pytest
 from bikeshed import create_app
@@ -7,7 +8,8 @@ from bikeshed.db import get_db, init_db
 
 from werkzeug.security import generate_password_hash
 
-with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
+dn = os.path.dirname(os.path.realpath(__file__)) + os.sep
+with open(os.path.join(dn, 'data.sql'), 'rb') as f:
     _data_sql = f.read().decode('utf8')
 
 

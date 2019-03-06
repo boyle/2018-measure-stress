@@ -22,9 +22,8 @@ def listsubdirs(base):
             os.listdir(base)
             if os.path.isdir(os.path.join(base, o))]
 
+
 def listfiles(base):
-    if not os.path.isdir(base):
-        abort(404)
     return [o for o in os.listdir(base)]
 
 
@@ -42,53 +41,8 @@ def apiversionlist():
 
 @bp.route('/v1')
 def apitypeslist():
-    return responselist(['p', 'u', 'ver'])
+    return responselist(['p', 'ver'])
 
-
-@bp.route('/v1/u')
-def userfiles():
-    base = current_app.config['USER_FOLDER']
-    path = os.path.join(base, str(session['user_id']))
-    files = listfiles(path)
-    regex = re.compile(r'\.[0-9]+$')
-    files = filter(lambda i: not regex.search(i), files)
-    return responselist(files)
-
-
-@bp.route('/v1/u/<string:userconfig>', methods=['GET', 'PUT'])
-def return_userfile(userconfig):
-    base = current_app.config['USER_FOLDER']
-    path = os.path.join(base, str(session['user_id']))
-    if not os.path.isdir(path):
-        abort(404)
-    code = 200
-    fn = secure_filename(userconfig)
-    pathfile = os.path.join(path, fn)
-
-    if request.method == 'PUT':
-        code = 201  # created
-        if 'files' not in request.files:
-            abort(422)
-        filelist = request.files.getlist("files")
-        if len(filelist) != 1:
-            abort(422)
-        f = filelist[0]
-        if os.path.isfile(os.path.join(path, fn)):  # collision
-            code = 204
-            i = 0
-            while os.path.isfile(os.path.join(path, fn + '.' + str(i))):
-                i += 1
-            os.rename(os.path.join(path, fn),
-                      os.path.join(path, fn + '.' + str(i)))
-        f.save(os.path.join(path, fn))
-
-    if not os.path.isfile(pathfile):
-        abort(404)
-
-    if code == 200:
-        return send_from_directory(path, fn)
-    else:
-        return ('', code)
 
 @bp.route('/v1/p')
 def patientlist():
