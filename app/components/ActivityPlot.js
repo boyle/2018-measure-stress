@@ -331,7 +331,7 @@ export default class ActivityPlot extends Component {
               </Svg.Text>
 
               {Object.values(this.props.events)
-                .filter(event => event.type === "comment")
+                .filter(event => event && event.type === "comment")
                 .map((event, i) => (
                   <Svg.G>
                     <Svg.Path
@@ -343,7 +343,7 @@ export default class ActivityPlot extends Component {
                 ))}
 
               {Object.values(this.props.events) // TODO: refactor
-                .filter(event => event.type === "domain_variable")
+                .filter(event => event && event.type === "domain_variable")
                 .map((event, i) => {
                   const x = this.xScale(this.inSecondsElapsed(event.timestamp));
                   const y = this.yScale(
@@ -385,6 +385,7 @@ export default class ActivityPlot extends Component {
               />
             </Svg.ClipPath>
             <DomainLine
+              editEvent={this.props.editEvent}
               inSecondsElapsed={this.inSecondsElapsed}
               toggleEditRequired={this.props.toggleEditRequired}
               domain={domain.domain}

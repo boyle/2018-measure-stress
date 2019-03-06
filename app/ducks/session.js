@@ -31,6 +31,8 @@ const STOP_ACTIVITY = "session/stop_activity";
 const SELECT_PATIENT = "session/select_patient";
 const SET_OFFSET = "session/set_offset";
 const LOG_COMMON_EVENT = "session/log_common_event";
+const LOG_EDITED_EVENT = "session/log_edited_event";
+const DELETE_EVENT = "session/delete_event";
 const END_COMMON_EVENT = "session/end_common_event";
 
 // Helpers
@@ -315,6 +317,27 @@ export default function reducer(state = defaultState, action = {}) {
 
       return newState;
 
+    case LOG_EDITED_EVENT:
+      newState = {
+        ...state,
+        editedEvents: {
+          ...state.editedEvents,
+          [action.payload.eventId]: action.payload
+        },
+        sliderValues: {
+          ...state.sliderValues,
+          [action.payload.domain]: action.payload.value
+        }
+      };
+      return newState;
+
+    case DELETE_EVENT:
+      newState = {
+        ...state,
+        editedEvents: { ...state.editedEvents, [action.payload]: undefined }
+      };
+      return newState;
+
     case SAVE_SSQ:
       let type;
       if (!state.firstSSQ) {
@@ -379,6 +402,20 @@ export function logCommonEvent(eventName) {
   return {
     type: LOG_COMMON_EVENT,
     payload: eventName
+  };
+}
+
+export function logEditedEvent(newEvent) {
+  return {
+    type: LOG_EDITED_EVENT,
+    payload: newEvent
+  };
+}
+
+export function deleteEvent(eventId) {
+  return {
+    type: DELETE_EVENT,
+    payload: eventId
   };
 }
 

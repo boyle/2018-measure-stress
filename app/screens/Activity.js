@@ -34,10 +34,13 @@ import {
   tick,
   updateSessionStatus,
   logCommonEvent,
-  endCommonEvent
+  endCommonEvent,
+  logEditedEvent,
+  deleteEvent
 } from "../ducks/session.js";
-import { showModal, hideModal } from "../ducks/ui.js";
+import { showModal, hideModal, editEvent } from "../ducks/ui.js";
 
+import EditBox from "../components/EditBox.js";
 import ActivityModal from "../components/ActivityModal.js";
 import AppSelectionModal from "../components/AppSelectionModal.js";
 import CommentModal from "../components/CommentModal.js";
@@ -233,6 +236,20 @@ class Activity extends React.Component {
   render() {
     return (
       <PageTemplate>
+        {this.props.ui.modal.modalName === "EditBox" && (
+          <EditBox
+            editedEvent={this.props.ui.editedEvent}
+            onLog={event => {
+              this.props.logEditedEvent(event);
+              this.props.hideModal();
+            }}
+            onDelete={eventId => {
+              this.props.deleteEvent(eventId);
+              this.props.hideModal();
+            }}
+            onClose={this.props.hideModal}
+          />
+        )}
         {this.props.ui.modal.modalName === "ActivityModal" && (
           <ActivityModal
             onEndSession={() => this.endSession()}
@@ -271,7 +288,10 @@ class Activity extends React.Component {
           resolution={5}
           refreshRate={10}
           sessionStart={this.props.session.startTimestamp}
-          events={this.props.session.events}
+          events={{
+            ...this.props.session.events,
+            ...this.props.session.editedEvents
+          }}
           activities={[
             ...this.props.session.activities,
             this.props.session.currentActivity
@@ -279,6 +299,7 @@ class Activity extends React.Component {
           activityStatus={this.state.activityStatus}
           toggleEditRequired={this.props.toggleEditRequired}
           elapsedTime={this.props.session.elapsedTime}
+          editEvent={this.props.editEvent}
         />
         <View style={styles.slidersContainer}>
           {Object.entries(Variables).map((variable, i) => {
@@ -287,16 +308,25 @@ class Activity extends React.Component {
             const levels = domainObj.levels;
             const levelsList = Object.values(levels);
 
+            const events = Object.values({
+              ...this.props.session.events,
+              ...this.props.session.editedEvents
+            }).filter(event => event !== undefined && event.domain === domain);
+            events.sort((a, b) => a.timestamp > b.timestamp);
+
+            const value =
+              events.length != 0 ? events[events.length - 1].value : 0;
+
             return (
               <AnnotationSlider
                 key={i}
                 sliderColor={Variables[domain].color}
                 domain={domain}
                 label={domainObj.label}
-                value={this.props.session.sliderValues[domain]}
+                value={value}
                 minIndex={0}
                 maxIndex={levelsList.length - 1}
-                valueLabel={levels[this.props.session.sliderValues[domain]]}
+                valueLabel={levels[value]}
                 onSlideComplete={this.onSlideComplete}
                 onSlideStart={this.onSlideStart}
                 onSlideDrag={this.onSlideDrag}
@@ -423,7 +453,10 @@ function mapDispatchToProps(dispatch) {
     showModal: modalName => dispatch(showModal(modalName)),
     hideModal: () => dispatch(hideModal()),
     logCommonEvent: event => dispatch(logCommonEvent(event)),
-    endCommonEvent: () => dispatch(endCommonEvent())
+    endCommonEvent: () => dispatch(endCommonEvent()),
+    editEvent: event => dispatch(editEvent(event)),
+    logEditedEvent: event => dispatch(logEditedEvent(event)),
+    deleteEvent: eventId => dispatch(deleteEvent(eventId))
   };
 }
 

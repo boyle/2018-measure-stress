@@ -6,13 +6,28 @@ import Variables from "../globals/tracked_variables.js";
 export default class DomainLine extends Component {
   constructor(props) {
     super(props);
+    this.lastTap = null;
+
+    this.doubleTap = this.doubleTap.bind(this);
+  }
+
+  doubleTap(event) {
+    const now = Date.now();
+    const DOUBLE_PRESS_DELAY = 300; // ms
+
+    if (this.lastTap && now - this.lastTap < DOUBLE_PRESS_DELAY) {
+      //this.props.toggleEditRequired(eventId);
+      this.props.editEvent(event);
+    } else {
+      this.lastTap = now;
+    }
   }
 
   render() {
     if (Object.keys(this.props.events).length === 0) return null;
     const divisor = Object.keys(Variables[this.props.domain].levels).length;
     let data = Object.values(this.props.events).filter(
-      event => event.domain === this.props.domain
+      event => event && event.domain === this.props.domain
     );
     data.sort((a, b) => a.timestamp > b.timestamp);
     data.push({
@@ -33,12 +48,12 @@ export default class DomainLine extends Component {
           clipPath={this.props.clipPath}
         />
         {Object.values(this.props.events)
-          .filter(event => event.domain === this.props.domain)
+          .filter(event => event && event.domain === this.props.domain)
           .map(event => (
             <Svg.Circle
               clipPath={this.props.clipPath}
               onPress={() => {
-                this.props.toggleEditRequired(event.eventId);
+                this.doubleTap(event);
               }}
               r={10}
               cx={this.props.xScale(

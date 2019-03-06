@@ -3,6 +3,7 @@ const SHOW_MODAL = "ui/show_modal";
 const HIDE_MODAL = "ui/hide_modal";
 const IS_LOADING = "ui/is_loading";
 const IS_DONE_LOADING = "ui/is_done_loading";
+const EDIT_EVENT = "ui/edit_event";
 
 // DEFAULT STATE
 const defaultState = {
@@ -10,6 +11,16 @@ const defaultState = {
   modal: {
     display: false,
     modalName: ""
+  },
+  editedEvent: null,
+  sliderValues: {
+    VESTIBULAR_DOMAIN: 0,
+    HYPERAROUSAL_DOMAIN: 0,
+    MOTOR_SYSTEM_DOMAIN: 0,
+    SENSORY_DOMAIN: 0,
+    COGNITIVE_DOMAIN: 0,
+    PAIN_LEVEL: 0,
+    PERCEIVED_EXERTION: 0
   }
 };
 
@@ -36,6 +47,14 @@ export default function reducer(state = defaultState, action = {}) {
       newState = { ...state, modal: { display: false, modalName: "" } };
       return newState;
 
+    case EDIT_EVENT:
+      newState = {
+        ...state,
+        modal: { modalName: "EditBox" },
+        editedEvent: action.payload
+      };
+      return newState;
+
     default:
       return state;
   }
@@ -56,4 +75,8 @@ export function isLoading() {
 
 export function isDoneLoading() {
   return { type: IS_DONE_LOADING };
+}
+
+export function editEvent(event) {
+  return { type: EDIT_EVENT, payload: event };
 }
