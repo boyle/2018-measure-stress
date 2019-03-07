@@ -61,7 +61,7 @@ class SSQ extends React.Component {
   saveForm() {
     const submittedForm = {
       ...this.state,
-      timestamp: new Date().toISOString()
+      timestamp: Date.now()
     };
     this.props.saveSSQ(submittedForm);
 

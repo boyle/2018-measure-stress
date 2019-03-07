@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Overlay, Button } from "react-native-elements";
 
+import API from "../api.js";
 import config from "../app.json";
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
@@ -27,16 +28,8 @@ export default class SelectPatientModal extends Component {
   }
 
   async componentWillMount() {
-    fetch(`${config.host}/api/v1/p`, { credentials: "same-origin" })
-      .then(data => data.text())
-      .then(text => {
-        const patients = text.split("<br/>");
-        patients.sort();
-        this.setState({ patientsList: patients, patientId: patients[0] });
-      })
-      .catch(err => {
-        // TODO handle
-      });
+    const patientsList = await API.getPatientsList();
+    this.setState({ patientsList, patientId: patientsList[0] });
   }
 
   handleChange(id) {

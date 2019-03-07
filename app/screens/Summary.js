@@ -11,6 +11,7 @@ import {
 import { Button, Card } from "react-native-elements";
 import { connect } from "react-redux";
 
+import API from "../api.js";
 import config from "../app.json";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
@@ -18,24 +19,21 @@ import PageTemplate from "../components/PageTemplate.js";
 class Summary extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      comments: ""
+    };
+
+    this.submitSession = this.submitSession.bind(this);
   }
 
   componentDidMount() {
-    console.log(this.props.session);
+    this.submitSession();
+  }
+
+  async submitSession() {
     const { patientId } = this.props.session;
-    fetch(`${config.host}/api/v1/p/${patientId}/1/annotations.json`, {
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "same-origin",
-      method: "PUT",
-      body: JSON.stringify(this.props.session)
-    })
-      .then(resp => console.log(resp))
-      .catch(err => {
-        console.log("error");
-        // TODO handle
-      });
+    const sessionId = await API.getSessionId(patientId);
+    await API.putSession(patientId, { ...this.props.session, sessionId });
   }
 
   render() {
