@@ -14,6 +14,7 @@ import Colors from "../globals/colors.js";
 import config from "../app.json";
 import { isLoading, isDoneLoading } from "../ducks/ui.js";
 import { loginSucceeded } from "../ducks/user.js";
+import API from "../api.js";
 
 class Login extends React.Component {
   constructor(props) {
@@ -52,36 +53,22 @@ class Login extends React.Component {
 
   async authenticate() {
     this.props.isLoading();
-    fetch(`${config.host}/auth/login`, {
-      credentials: "same-origin",
-      method: "post",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-CA,en-US;q=0.7,en;q=0.3"
-      },
-      body: `username=${
-        this.state.credentials.username
-      }&password=${encodeURIComponent(this.state.credentials.password)}`
-    })
-      .then(response => {
-        const { status } = response;
-
-        if (status === 200) {
-          this.clearForm();
-          this.props.isDoneLoading();
-          this.props.navigation.navigate("Home");
-        } else if (status === 401) {
-          this.displayAlert();
-          this.props.isDoneLoading();
-          this.clearForm();
-        }
-      })
-      .catch(err => {
+    const { username, password } = this.state.credentials;
+    try {
+      const response = await API.login(username, password);
+      if (response.status === 200) {
+        this.clearForm();
         this.props.isDoneLoading();
-        this.noNetworkAlert();
-      });
+        this.props.navigation.navigate("Home");
+      } else if (response.status === 401) {
+        this.displayAlert();
+        this.props.isDoneLoading();
+        this.clearForm();
+      }
+    } catch (err) {
+      this.props.isDoneLoading();
+      this.noNetworkAlert();
+    }
   }
 
   render() {
