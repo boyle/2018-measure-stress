@@ -14,8 +14,7 @@ export default class CommentModal extends Component {
   constructor(props) {
     super(props);
     if (props.editedComment) {
-      console.log(props.editedComment);
-      this.state = { ...this.props.editedComment };
+      this.state = { ...props.editedComment };
     } else {
       this.state = {
         eventId: generateRandomNum(),
