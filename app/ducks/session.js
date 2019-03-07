@@ -63,15 +63,6 @@ const defaultState = {
   secondSSQ: null,
   sessionStatus: RESTING,
   elapsedTime: 0,
-  sliderValues: {
-    VESTIBULAR_DOMAIN: 0,
-    HYPERAROUSAL_DOMAIN: 0,
-    MOTOR_SYSTEM_DOMAIN: 0,
-    SENSORY_DOMAIN: 0,
-    COGNITIVE_DOMAIN: 0,
-    PAIN_LEVEL: 0,
-    PERCEIVED_EXERTION: 0
-  },
   currentActivity: createActivity({
     activityId: 0,
     startTimestamp: Date.now(),
@@ -296,10 +287,6 @@ export default function reducer(state = defaultState, action = {}) {
         events: {
           ...state.events,
           [event.eventId]: event
-        },
-        sliderValues: {
-          ...state.sliderValues,
-          [event.domain]: event.value
         }
       };
 
@@ -323,10 +310,6 @@ export default function reducer(state = defaultState, action = {}) {
         editedEvents: {
           ...state.editedEvents,
           [action.payload.eventId]: action.payload
-        },
-        sliderValues: {
-          ...state.sliderValues,
-          [action.payload.domain]: action.payload.value
         }
       };
       return newState;

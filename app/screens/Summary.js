@@ -24,13 +24,18 @@ class Summary extends React.Component {
     console.log(this.props.session);
     const { patientId } = this.props.session;
     fetch(`${config.host}/api/v1/p/${patientId}/1/annotations.json`, {
+      headers: {
+        "Content-Type": "application/json"
+      },
       credentials: "same-origin",
       method: "PUT",
       body: JSON.stringify(this.props.session)
-    }).catch(err => {
-      console.log("error");
-      // TODO handle
-    });
+    })
+      .then(resp => console.log(resp))
+      .catch(err => {
+        console.log("error");
+        // TODO handle
+      });
   }
 
   render() {

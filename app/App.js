@@ -31,8 +31,8 @@ import SSQ from "./screens/SSQ.js";
 import Summary from "./screens/Summary.js";
 
 const Navigator = createStackNavigator({
-  Activity: { screen: Activity, navigationOptions: { header: null } },
   Login: { screen: Login, navigationOptions: { header: null } },
+  Activity: { screen: Activity, navigationOptions: { header: null } },
   Home: { screen: Home, navigationOptions: { header: null } },
   Summary: { screen: Summary, navigationOptions: { header: null } },
   SSQ: { screen: SSQ, navigationOptions: { header: null } }

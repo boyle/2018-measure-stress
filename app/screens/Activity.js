@@ -195,7 +195,13 @@ class Activity extends React.Component {
   }
 
   onSlideComplete(domain, value) {
-    const previousValue = this.props.session.sliderValues[domain];
+    const previousValues = Object.values({
+      ...this.props.session.events,
+      ...this.props.session.editedEvents
+    }).filter(event => event != undefined && event.domain === domain);
+    previousValues.sort((a, b) => a.timestamp > b.timestamp);
+
+    const previousValue = previousValues[previousValues.length - 1].value;
 
     // Only log the event if a change is made... but since slider
     // is done "sliding", the slider is no longer active.
