@@ -38,7 +38,7 @@ import {
   logEditedEvent,
   deleteEvent
 } from "../ducks/session.js";
-import { showModal, hideModal, editEvent } from "../ducks/ui.js";
+import { showModal, hideModal, editEvent, editComment } from "../ducks/ui.js";
 
 import EditBox from "../components/EditBox.js";
 import ActivityModal from "../components/ActivityModal.js";
@@ -272,6 +272,7 @@ class Activity extends React.Component {
         )}
         {this.props.ui.modal.modalName === "CommentModal" && (
           <CommentModal
+            editedComment={this.props.ui.editedComment}
             getElapsedTime={this.getElapsedTime}
             logEvent={this.logEvent}
             onClose={() => this.props.hideModal()}
@@ -306,6 +307,7 @@ class Activity extends React.Component {
           toggleEditRequired={this.props.toggleEditRequired}
           elapsedTime={this.props.session.elapsedTime}
           editEvent={this.props.editEvent}
+          editComment={this.props.editComment}
         />
         <View style={styles.slidersContainer}>
           {Object.entries(Variables).map((variable, i) => {
@@ -461,6 +463,7 @@ function mapDispatchToProps(dispatch) {
     logCommonEvent: event => dispatch(logCommonEvent(event)),
     endCommonEvent: () => dispatch(endCommonEvent()),
     editEvent: event => dispatch(editEvent(event)),
+    editComment: event => dispatch(editComment(event)),
     logEditedEvent: event => dispatch(logEditedEvent(event)),
     deleteEvent: eventId => dispatch(deleteEvent(eventId))
   };

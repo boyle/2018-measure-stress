@@ -4,6 +4,7 @@ const HIDE_MODAL = "ui/hide_modal";
 const IS_LOADING = "ui/is_loading";
 const IS_DONE_LOADING = "ui/is_done_loading";
 const EDIT_EVENT = "ui/edit_event";
+const EDIT_COMMENT = "ui/edit_comment";
 
 // DEFAULT STATE
 const defaultState = {
@@ -13,6 +14,7 @@ const defaultState = {
     modalName: ""
   },
   editedEvent: null,
+  editedComment: null,
   sliderValues: {
     VESTIBULAR_DOMAIN: 0,
     HYPERAROUSAL_DOMAIN: 0,
@@ -55,6 +57,14 @@ export default function reducer(state = defaultState, action = {}) {
       };
       return newState;
 
+    case EDIT_COMMENT:
+      newState = {
+        ...state,
+        modal: { modalName: "CommentModal" },
+        editedComment: action.payload
+      };
+      return newState;
+
     default:
       return state;
   }
@@ -79,4 +89,8 @@ export function isDoneLoading() {
 
 export function editEvent(event) {
   return { type: EDIT_EVENT, payload: event };
+}
+
+export function editComment(event) {
+  return { type: EDIT_COMMENT, payload: event };
 }

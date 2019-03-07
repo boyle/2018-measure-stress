@@ -13,14 +13,19 @@ const PATIENT = "PATIENT";
 export default class CommentModal extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      eventId: generateRandomNum(),
-      type: "comment",
-      elapsedTime: this.props.getElapsedTime(),
-      timestamp: Date.now(),
-      reportedBy: CLINICIAN,
-      comment: ""
-    };
+    if (props.editedComment) {
+      console.log(props.editedComment);
+      this.state = { ...this.props.editedComment };
+    } else {
+      this.state = {
+        eventId: generateRandomNum(),
+        type: "comment",
+        elapsedTime: this.props.getElapsedTime(),
+        timestamp: Date.now(),
+        reportedBy: CLINICIAN,
+        comment: ""
+      };
+    }
   }
 
   render() {
