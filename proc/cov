@@ -1,0 +1,9 @@
+#! /bin/bash
+[ -d venv ] || virtualenv venv
+source venv/bin/activate
+set -ex
+coverage run -m pytest
+coverage report
+coverage html
+set +ex
+echo "coverage report at file://$(pwd)/htmlcov/index.html"

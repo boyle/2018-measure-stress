@@ -1,0 +1,12 @@
+#! /bin/bash
+[ -d venv ] || python3 -m venv venv
+source ./venv/bin/activate
+set -ex
+[ ! -f requirements.txt ] || pip install -r requirements.txt
+pip check
+
+source venv/bin/activate
+
+pip list --outdated
+
+exec stress ${1:-run}
