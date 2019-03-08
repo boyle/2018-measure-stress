@@ -7,6 +7,12 @@ pip check
 
 source venv/bin/activate
 
-pip list --outdated
+pip list --outdated --format=columns
+# if this is failing:
+# TypeError: '>' not supported between instances of 'Version' and 'Version'
+# try re-installing a local (venv) version of pip:
+# $ source venv/bin/activate
+# $ pip install --force pip==9.0.0
+# $ pip install -U pip
 
-exec stress ${1:-run}
+exec python -m stress ${1:-run}
