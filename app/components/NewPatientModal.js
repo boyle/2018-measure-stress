@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { View, StyleSheet, Text, TextInput } from "react-native";
 import { Overlay, Button } from "react-native-elements";
 
+import API from '../api.js';
 import config from "../app.json";
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
@@ -25,27 +26,31 @@ export default class NewPatientModal extends Component {
     this.setState({ patientId: id });
   }
 
-  close() {
+	close() {
+	  this.props.onSave();
     this.props.onClose();
   }
 
-  attemptCreate() {
-    fetch(`${config.host}/api/v1/p/${this.state.patientId}`, {
-      credentials: "same-origin",
-      method: "PUT"
-    })
-      .then(data => data.text())
-      .then(text => {
-        this.setState({ success: true, buttonsDisabled: true });
+	async attemptCreate() {
+		const patientsList = await API.getPatientsList();
+
+		if(patientsList.includes(this.state.patientId)) {
+			this.setState({ failure: true, buttonsDisabled: true });
+        setTimeout(() => {
+					this.setState({ failure: false, patientId: '', buttonsDisabled: false });
+				}, 1000);
+
+			return;
+		}
+
+		const resp = await API.createPatient(this.state.patientId);
+		if(resp.status === 201) {
+			this.setState({ success: true, buttonsDisabled: true });
         setTimeout(() => {
           this.setState({ success: false });
           this.close();
         }, 1000);
-      })
-      .catch(err => {
-        console.log("error");
-        // TODO handle
-      });
+		}
   }
 
   render() {
@@ -69,7 +74,7 @@ export default class NewPatientModal extends Component {
           }}
         >
           {this.state.success && "Patient profile created."}
-          {this.state.failure && "Could not save patient."}
+          {this.state.failure && "Patient with this ID already exists."}
         </Text>
         <Button
           disabled={this.state.buttonsDisabled}

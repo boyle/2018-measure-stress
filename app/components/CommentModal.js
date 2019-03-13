@@ -61,8 +61,11 @@ export default class CommentModal extends Component {
             height: 200
           }}
         >
-          <TextInput
-            multiline={true}
+					<TextInput
+						ref={input => this.textInput = input}
+						onPress={() => this.refs.textInput.focus()}
+						multiline={true}
+						editable={true}
             numberOfLines={20}
             onChangeText={text => this.setState({ comment: text })}
             value={this.state.comment}
