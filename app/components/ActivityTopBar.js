@@ -54,12 +54,12 @@ export default class ActivityTopBar extends Component {
             title={`${!this.props.canStart ? "Stop" : "Start"}`}
             onPress={this.props.onPressStart}
           />
-          <Button
+          {/*<Button
             disabled={this.props.activityStatus != ACTIVITY_COMPLETED}
             buttonStyle={styles.button}
             icon={{ color: "white", name: "edit" }}
             title="Edit"
-          />
+            /> */}
           <Button
             buttonStyle={styles.button}
             onPress={this.props.onSave}

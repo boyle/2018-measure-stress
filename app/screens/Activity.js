@@ -280,7 +280,7 @@ class Activity extends React.Component {
         )}
         <ActivityTopBar
           canStart={this.isResting()}
-          activityStatus={this.state.activityStatus}
+          activityStatus={this.props.session.sessionStatus}
           inEditMode={this.state.inEditMode}
           patientId={this.props.session.patientId}
           onPressStart={this.handleActivityButton}

@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { Button, Card } from "react-native-elements";
 import { connect } from "react-redux";
-import { withNavigationFocus } from 'react-navigation';
+import { withNavigationFocus } from "react-navigation";
 
-import API from '../api.js';
+import API from "../api.js";
 import { showModal, hideModal } from "../ducks/ui.js";
 import { addPatient } from "../ducks/user.js";
 import { startSession, selectPatient, setOffset } from "../ducks/session.js";
@@ -34,39 +34,39 @@ function StatsCard({ statsName, statsValue }) {
 
 class Home extends React.Component {
   constructor(props) {
-		super(props);
-		this.state = {
-		  numPatients: 0,
-			numSessions: 0,
-		};
+    super(props);
+    this.state = {
+      numPatients: 0,
+      numSessions: 0
+    };
 
-		this.onPatientSelected = this.onPatientSelected.bind(this);
-		this.refreshStats = this.refreshStats.bind(this);
-	}
+    this.onPatientSelected = this.onPatientSelected.bind(this);
+    this.refreshStats = this.refreshStats.bind(this);
+  }
 
-	componentDidMount() {
-		this.focusListener = this.props.navigation.addListener(
+  componentDidMount() {
+    this.focusListener = this.props.navigation.addListener(
       "didFocus",
       this.refreshStats
     );
-	}
+  }
 
-	async refreshStats() {
-		const patients = (await API.getPatientsList());
-		let numSessions = 0;
-		for(let i = 0; i < patients.length; i++) { // need to use explicit for loop because of await
-			numSessions += (await API.getSessionsList(patients[i])).length;
-		}
-		this.setState({ numPatients: patients.length, numSessions });
-	}
+  async refreshStats() {
+    const patients = await API.getPatientsList();
+    let numSessions = 0;
+    for (let i = 0; i < patients.length; i++) {
+      // need to use explicit for loop because of await
+      numSessions += (await API.getSessionsList(patients[i])).length;
+    }
+    this.setState({ numPatients: patients.length, numSessions });
+  }
 
   onPatientSelected(patientId) {
     this.props.hideModal();
     this.props.selectPatient(patientId);
     this.props.startSession(patientId);
     this.props.navigation.navigate("SSQ");
-	}
-
+  }
 
   render() {
     const iconHeight = 140;
@@ -77,7 +77,7 @@ class Home extends React.Component {
         <View style={styles.container}>
           {this.props.ui.modal.modalName === "NewPatientModal" && (
             <NewPatientModal
-							onSave={this.refreshStats}
+              onSave={this.refreshStats}
               onClose={this.props.hideModal}
             />
           )}
@@ -98,11 +98,19 @@ class Home extends React.Component {
               onClose={this.props.hideModal}
             />
           )}
-          <Text style={styles.title}>Welcome, Francois!</Text>
+          <Text style={styles.title}>
+            Hi there! Ready to acquire some data?!
+          </Text>
           <Text>Here are some stats:</Text>
           <View style={styles.statsContainer}>
-            <StatsCard statsName="Sessions" statsValue={this.state.numSessions} />
-            <StatsCard statsName="Patients" statsValue={this.state.numPatients} />
+            <StatsCard
+              statsName="Sessions"
+              statsValue={this.state.numSessions}
+            />
+            <StatsCard
+              statsName="Patients"
+              statsValue={this.state.numPatients}
+            />
           </View>
 
           <View style={styles.buttonsContainer}>
@@ -125,8 +133,8 @@ class Home extends React.Component {
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
               action={() => this.props.showModal("SynchronizationModal")}
-						/>
-						{/*
+            />
+            {/*
             <IconButton
               disabled
               iconName="file-alt"
@@ -196,11 +204,11 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-around"
-	},
-	card: {
-	  height: 300,
-		width: 300,
-	},
+  },
+  card: {
+    height: 300,
+    width: 300
+  },
   button: {
     margin: 10,
     width: 200,
