@@ -15,9 +15,16 @@ class IconButton extends Component {
           this.props.action ? this.props.action() : null;
         }}
       >
-        <View style={{ marginLeft: "auto", marginRight: "auto" }}>
+        <View
+          style={{
+            textAlign: "center",
+            marginLeft: "auto",
+            marginRight: "auto"
+          }}
+        >
           <FontAwesomeIcon
             size={100}
+            style={{ marginLeft: "auto", marginRight: "auto" }}
             icon={this.props.iconName}
             color={this.props.iconColor}
           />

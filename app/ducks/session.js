@@ -34,6 +34,8 @@ const LOG_COMMON_EVENT = "session/log_common_event";
 const LOG_EDITED_EVENT = "session/log_edited_event";
 const DELETE_EVENT = "session/delete_event";
 const END_COMMON_EVENT = "session/end_common_event";
+const SET_SESSION_ID = "session/set_session_id";
+const UPDATE_SESSION_NOTES = "session/update_session_notes";
 
 // Helpers
 function createActivity({ activityId, elapsedTime, startTimestamp }) {
@@ -71,7 +73,8 @@ const defaultState = {
   currentCommonEvent: null,
   activities: [], // Meta-data on the activities (eg. start, end, scenario, rest)
   events: {}, // Events identified by a unique ID
-  editedEvents: {}
+  editedEvents: {},
+  sessionNotes: ""
 };
 
 // REDUCER
@@ -97,7 +100,7 @@ export default function reducer(state = defaultState, action = {}) {
       newState = {
         ...state,
         startTimestamp: timestamp,
-        sessionId: 120, // TODO: need to get a session id
+        sessionId: null, // TODO: need to get a session id
         currentActivity: createActivity({
           activityId: 0,
           startTimestamp: timestamp,
@@ -161,11 +164,13 @@ export default function reducer(state = defaultState, action = {}) {
     case STOP_SESSION:
       const lastActivity = {
         ...state.currentActivity,
-        endTimestamp: timestamp
+        endTimestamp: timestamp,
+        duration: timestamp - state.currentActivity.startTimestamp
       };
       newState = {
         ...state,
         endTimestamp: timestamp,
+        duration: timestamp - state.startTimestamp,
         activities: [...state.activities, lastActivity]
       };
       return newState;
@@ -201,6 +206,7 @@ export default function reducer(state = defaultState, action = {}) {
       const precedingRestPeriod = {
         ...state.currentActivity,
         endTimestamp: timestamp,
+        duration: timestamp - state.currentActivity.startTimestamp,
         endElapsedTime: getElapsedTime({
           now: timestamp,
           start: state.startTimestamp
@@ -226,7 +232,8 @@ export default function reducer(state = defaultState, action = {}) {
     case STOP_ACTIVITY:
       const currentActivity = {
         ...state.currentActivity,
-        endTimestamp: Date.now(),
+        endTimestamp: timestamp,
+        duration: timestamp - state.currentActivity.startTimestamp,
         endElapsedTime: (Date.now() - state.startTimestamp) / 1000
       };
 
@@ -266,6 +273,10 @@ export default function reducer(state = defaultState, action = {}) {
         elapsedTime
       };
 
+      return newState;
+
+    case UPDATE_SESSION_NOTES:
+      newState = { ...state, sessionNotes: action.payload };
       return newState;
 
     case UPDATE_SESSION_STATUS:
@@ -321,6 +332,13 @@ export default function reducer(state = defaultState, action = {}) {
       };
       return newState;
 
+    case SET_SESSION_ID:
+      newState = {
+        ...state,
+        sessionId: action.payload
+      };
+      return newState;
+
     case SAVE_SSQ:
       let type;
       if (!state.firstSSQ) {
@@ -343,6 +361,13 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // ACTION CREATORS
+
+export function setSessionId(sessionId) {
+  return {
+    type: SET_SESSION_ID,
+    payload: sessionId
+  };
+}
 
 export function setOffset(offset) {
   return {
@@ -399,6 +424,13 @@ export function deleteEvent(eventId) {
   return {
     type: DELETE_EVENT,
     payload: eventId
+  };
+}
+
+export function updateSessionNotes(notes) {
+  return {
+    type: UPDATE_SESSION_NOTES,
+    payload: notes
   };
 }
 
