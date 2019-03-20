@@ -13,7 +13,7 @@ import { connect } from "react-redux";
 import Colors from "../globals/colors.js";
 import config from "../app.json";
 import { isLoading, isDoneLoading } from "../ducks/ui.js";
-import { loginSucceeded } from "../ducks/user.js";
+import { loginSucceeded, setUsername } from "../ducks/user.js";
 import API from "../api.js";
 
 class Login extends React.Component {
@@ -57,6 +57,7 @@ class Login extends React.Component {
     try {
       const response = await API.login(username, password);
       if (response.status === 200) {
+        this.props.setUsername(this.state.credentials.username);
         this.clearForm();
         this.props.isDoneLoading();
         this.props.navigation.navigate("Home");
@@ -145,7 +146,8 @@ function mapStatetoProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     isLoading: () => dispatch(isLoading()),
-    isDoneLoading: () => dispatch(isDoneLoading())
+    isDoneLoading: () => dispatch(isDoneLoading()),
+    setUsername: username => dispatch(setUsername(username))
   };
 }
 

@@ -5,13 +5,13 @@ const LOGIN_FAILED = "user/login_failed";
 const LOGOUT = "user/logout";
 const ADD_PATIENT = "user/add_patient";
 const PATIENT_ADDED = "user/patient_added";
+const SET_USERNAME = "user/set_username";
 
 // DEFAULT STATE
 const defaultState = {
   guestAccount: false,
   loggedIn: false,
   name: "",
-    patientIdsList: ["test"],
   config: {}
 };
 
@@ -22,9 +22,15 @@ export default function reducer(state = defaultState, action = {}) {
     case LOGIN_SUCCEEDED:
       newState = { ...state, loggedIn: true, cookie: payload };
       return newState;
+    case SET_USERNAME:
+      newState = { ...state, username: action.payload };
+      return newState;
 
-  case ADD_PATIENT:
-      newState = { ...state, patientIdsList: [...state.patientIdsList, action.payload] };
+    case ADD_PATIENT:
+      newState = {
+        ...state,
+        patientIdsList: [...state.patientIdsList, action.payload]
+      };
       return newState;
     default:
       newState = { ...state };
@@ -34,6 +40,12 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // ACTION CREATORS
+export function setUsername(username) {
+  return {
+    type: SET_USERNAME,
+    payload: username
+  };
+}
 export function loginSucceeded(cookie) {
   return {
     type: LOGIN_SUCCEEDED,
@@ -48,12 +60,12 @@ export function patientAdded() {
 }
 
 export function addPatient(patientId) {
-    return {
-        type: ADD_PATIENT,
-        payload: patientId
-    }
+  return {
+    type: ADD_PATIENT,
+    payload: patientId
+  };
   //return function(dispatch) {
-    // make call to server
-    // dispatch(patientAdded());
+  // make call to server
+  // dispatch(patientAdded());
   //};
 }

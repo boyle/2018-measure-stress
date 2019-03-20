@@ -12,6 +12,7 @@ import { Button, Card } from "react-native-elements";
 import { connect } from "react-redux";
 import { withNavigationFocus } from "react-navigation";
 
+import { FileSystem } from "expo";
 import API from "../api.js";
 import { showModal, hideModal } from "../ducks/ui.js";
 import { addPatient } from "../ducks/user.js";
@@ -51,14 +52,38 @@ class Home extends React.Component {
     );
   }
 
+  async pushLocalFiles() {
+    // TODO
+    /*
+    const localFiles = await FileSystem.readDirectoryAsync(
+      FileSystem.documentDirectory
+    );
+    for (let i = 0; i < localFiles.length; i++) {
+      let fileUrl = `${FileSystem.documentDirectory}/${localFiles[i]}`;
+      try {
+        let content = JSON.parse(await readAsStringAsync(fileUrl));
+        await API.putSession(content);
+        await FileSystem.deleteAsync(fileUrl);
+      } catch (e) {
+        console.log(e);
+      }
+        this.refreshStats();
+    }
+    */
+  }
+
   async refreshStats() {
+    const numLocalFiles = (await FileSystem.readDirectoryAsync(
+      FileSystem.documentDirectory
+    )).length;
+
     const patients = await API.getPatientsList();
     let numSessions = 0;
     for (let i = 0; i < patients.length; i++) {
       // need to use explicit for loop because of await
       numSessions += (await API.getSessionsList(patients[i])).length;
     }
-    this.setState({ numPatients: patients.length, numSessions });
+    this.setState({ numPatients: patients.length, numSessions, numLocalFiles });
   }
 
   onPatientSelected(patientId) {
@@ -98,19 +123,23 @@ class Home extends React.Component {
               onClose={this.props.hideModal}
             />
           )}
-          <Text style={styles.title}>
-            Hi there! Ready to acquire some data?!
-          </Text>
-          <Text>Here are some stats:</Text>
-          <View style={styles.statsContainer}>
-            <StatsCard
-              statsName="Sessions"
-              statsValue={this.state.numSessions}
-            />
-            <StatsCard
-              statsName="Patients"
-              statsValue={this.state.numPatients}
-            />
+          <Text style={styles.title}>Hi, {this.props.user.username}!</Text>
+          <View style={styles.statsBox}>
+            <Text style={styles.title}>Current Progress</Text>
+            <View style={styles.statsContainer}>
+              <StatsCard
+                statsName="Sessions"
+                statsValue={this.state.numSessions}
+              />
+              <StatsCard
+                statsName="Patients"
+                statsValue={this.state.numPatients}
+              />
+              <StatsCard
+                statsName="Files on device"
+                statsValue={this.state.numLocalFiles}
+              />
+            </View>
           </View>
 
           <View style={styles.buttonsContainer}>
@@ -187,6 +216,7 @@ class Home extends React.Component {
 
 const styles = StyleSheet.create({
   title: {
+    textAlign: "center",
     fontSize: 30,
     fontWeight: "bold",
     color: `${Colors.dark}`
@@ -242,6 +272,13 @@ const styles = StyleSheet.create({
   statsName: {
     textAlign: "center",
     fontSize: 32
+  },
+  statsBox: {
+    width: "75%",
+    padding: 20,
+    borderWidth: 2,
+    stroke: `${Colors.dark}`,
+    borderRadius: 8
   }
 });
 
