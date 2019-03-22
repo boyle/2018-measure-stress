@@ -4,6 +4,7 @@ import { PanResponder, Animated } from "react-native";
 import { Constants, Svg } from "expo";
 import { scaleLinear } from "d3-scale";
 import Variables from "../globals/tracked_variables.js";
+import Colors from "../globals/colors.js";
 
 import DomainLine from "./DomainLine.js";
 import PlotNavigator from "../components/PlotNavigator.js";
@@ -401,6 +402,49 @@ export default class ActivityPlot extends Component {
             />
           </Svg.G>
         ))}
+
+        <Svg.ClipPath id="common-events-clip">
+          <Svg.Rect
+            x={this.props.padding}
+            y="0"
+            width={this.props.width - 2 * this.props.padding}
+            height={this.props.height}
+          />
+        </Svg.ClipPath>
+        {Object.values({
+          ...this.props.events,
+          current: this.props.currentCommonEvent
+        })
+          .filter(event => event && event.type === "common_event")
+          .map((event, i) => {
+            const startX = this.xScale(this.inSecondsElapsed(event.start));
+            const endX = event.end
+              ? this.xScale(this.inSecondsElapsed(event.end))
+              : this.xScale(this.props.elapsedTime);
+
+            return (
+              <Svg.G>
+                <Svg.Rect
+                  clipPath={"url(#common-events-clip)"}
+                  x={startX}
+                  y={30}
+                  width={endX - startX}
+                  height={20}
+                  fill={`${Colors.dark}`}
+                  stroke="black"
+                  strokeWidth={1}
+                />
+                <Svg.Text
+                  y={45}
+                  x={startX}
+                  clipPath={"url(#common-events-clip)"}
+                  fill="white"
+                >
+                  {event.event}
+                </Svg.Text>
+              </Svg.G>
+            );
+          })}
 
         <PlotNavigator
           goTo={this.goTo}

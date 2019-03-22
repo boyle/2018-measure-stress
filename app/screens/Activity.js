@@ -299,6 +299,7 @@ class Activity extends React.Component {
             ...this.props.session.events,
             ...this.props.session.editedEvents
           }}
+          currentCommonEvent={this.props.session.currentCommonEvent}
           activities={[
             ...this.props.session.activities,
             this.props.session.currentActivity

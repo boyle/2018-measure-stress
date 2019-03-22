@@ -191,7 +191,7 @@ export default function reducer(state = defaultState, action = {}) {
       return newState;
 
     case END_COMMON_EVENT:
-      const loggedEvent = { ...state.currentCommonEvent, stop: timestamp };
+      const loggedEvent = { ...state.currentCommonEvent, end: timestamp };
       newState = {
         ...state,
         events: {
