@@ -115,7 +115,6 @@ export default class SelectPatientModal extends Component {
 }
 
 const styles = StyleSheet.create({
-  textInput: {},
   title: {
     textAlign: "center",
     fontWeight: "bold",

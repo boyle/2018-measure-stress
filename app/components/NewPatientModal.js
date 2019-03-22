@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { View, StyleSheet, Text, TextInput } from "react-native";
 import { Overlay, Button } from "react-native-elements";
 
-import API from '../api.js';
+import API from "../api.js";
 import config from "../app.json";
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
@@ -26,31 +26,34 @@ export default class NewPatientModal extends Component {
     this.setState({ patientId: id });
   }
 
-	close() {
-	  this.props.onSave();
+  close() {
     this.props.onClose();
   }
 
-	async attemptCreate() {
-		const patientsList = await API.getPatientsList();
+  async attemptCreate() {
+    const patientsList = await API.getPatientsList();
 
-		if(patientsList.includes(this.state.patientId)) {
-			this.setState({ failure: true, buttonsDisabled: true });
-        setTimeout(() => {
-					this.setState({ failure: false, patientId: '', buttonsDisabled: false });
-				}, 1000);
+    if (patientsList.includes(this.state.patientId)) {
+      this.setState({ failure: true, buttonsDisabled: true });
+      setTimeout(() => {
+        this.setState({
+          failure: false,
+          patientId: "",
+          buttonsDisabled: false
+        });
+      }, 1000);
 
-			return;
-		}
+      return;
+    }
 
-		const resp = await API.createPatient(this.state.patientId);
-		if(resp.status === 201) {
-			this.setState({ success: true, buttonsDisabled: true });
-        setTimeout(() => {
-          this.setState({ success: false });
-          this.close();
-        }, 1000);
-		}
+    const resp = await API.createPatient(this.state.patientId);
+    if (resp.status === 201) {
+      this.setState({ success: true, buttonsDisabled: true });
+      setTimeout(() => {
+        this.setState({ success: false });
+        this.close();
+      }, 1000);
+    }
   }
 
   render() {
@@ -62,7 +65,17 @@ export default class NewPatientModal extends Component {
         </Text>
         <TextInput
           value={this.state.patientId}
-          style={styles.textInput}
+          style={{
+            borderWidth: 0.5,
+            borderStyle: "solid",
+            borderColor: `${Colors.dark}`,
+            borderRadius: 8,
+            marginLeft: "auto",
+            marginRight: "auto",
+            width: 100,
+            padding: 10,
+            marginTop: 20
+          }}
           placeholder="Patient ID"
           onChangeText={text => this.setState({ patientId: text })}
           underlineColorAndroid={`${Colors.dark}`}
