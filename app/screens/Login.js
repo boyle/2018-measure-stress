@@ -86,6 +86,7 @@ class Login extends React.Component {
             <TextInput
               value={this.state.credentials.username}
               style={styles.textInput}
+              autoCapitalize="none"
               placeholder="Username"
               onChangeText={text =>
                 this.setState({
@@ -99,6 +100,7 @@ class Login extends React.Component {
             />
             <TextInput
               value={this.state.credentials.password}
+              autoCapitalize="none"
               secureTextEntry
               style={styles.textInput}
               placeholder="Password"

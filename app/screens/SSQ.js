@@ -71,14 +71,12 @@ class SSQ extends React.Component {
       this.props.navigation.navigate("Activity");
     } else {
       this.props.navigation.navigate("Summary");
-
-      //this.props.initializeSession();
-      //this.props.navigation.navigate("Home");
     }
   }
 
   scrollToTop() {
     this.scrollViewRef.scrollTo({ y: 0 });
+    this.y = 0;
   }
 
   render() {
@@ -90,6 +88,7 @@ class SSQ extends React.Component {
         </Text>
         <View style={styles.cardsContainer}>
           <ScrollView
+            onScroll={event => (this.y = event.nativeEvent.contentOffset.y)}
             ref={ref => {
               this.scrollViewRef = ref;
             }}
@@ -100,14 +99,20 @@ class SSQ extends React.Component {
                 <ButtonGroup
                   textStyle={{ color: `${Colors.dark}` }}
                   selectedTextStyle={{ color: `${Colors.dark}` }}
-                  onPress={index =>
+                  onPress={index => {
                     this.setState({
                       symptoms: {
                         ...this.state.symptoms,
                         [symptom.index]: index
                       }
-                    })
-                  }
+                    });
+                    if (
+                      symptom.index <
+                      Object.keys(SSQVars.symptoms).length - 6
+                    ) {
+                      this.scrollViewRef.scrollTo({ y: this.y + 130 }); // height of a card is about 130 px
+                    }
+                  }}
                   selectedIndex={this.state.symptoms[symptom.index]}
                   selectedButtonStyle={{
                     backgroundColor: `${buttonColor[

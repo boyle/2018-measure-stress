@@ -100,7 +100,6 @@ export default function reducer(state = defaultState, action = {}) {
       newState = {
         ...state,
         startTimestamp: timestamp,
-        sessionId: null, // TODO: need to get a session id
         currentActivity: createActivity({
           activityId: 0,
           startTimestamp: timestamp,

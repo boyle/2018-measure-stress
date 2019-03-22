@@ -42,9 +42,9 @@ export default {
     sessions.sort();
     return sessions;
   },
-  putSession: async (patientId, session) => {
+  putSession: async session => {
     return await fetch(
-      `${api}/p/${patientId}/${session.sessionId}/annotations.json`,
+      `${api}/p/${session.patientId}/${session.sessionId}/annotations.json`,
       {
         headers: {
           "Content-Type": "application/json"

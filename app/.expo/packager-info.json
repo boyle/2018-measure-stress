@@ -1,9 +1,9 @@
 {
-  "devToolsPort": 19003,
+  "devToolsPort": 19002,
   "expoServerPort": 19000,
   "packagerPort": 19001,
-  "packagerPid": 1651,
+  "packagerPid": 24553,
   "expoServerNgrokUrl": "https://ia-by2.francoischarih.app.exp.direct",
   "packagerNgrokUrl": "https://packager.ia-by2.francoischarih.app.exp.direct",
-  "ngrokPid": 1671
+  "ngrokPid": 24578
 }

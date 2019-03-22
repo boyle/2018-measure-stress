@@ -19,11 +19,11 @@ export default class SelectPatientModal extends Component {
     super(props);
     this.state = {
       patientsList: [],
-      patientId: null
+      patientId: null,
+      sessionId: ""
     };
 
     this.handleChange = this.handleChange.bind(this);
-    this.attemptCreate = this.attemptCreate.bind(this);
     this.close = this.close.bind(this);
   }
 
@@ -40,19 +40,18 @@ export default class SelectPatientModal extends Component {
     this.props.onClose();
   }
 
-  attemptCreate() {
-    this.setState({ success: true, buttonsDisabled: true });
-    setTimeout(() => {
-      this.setState({ success: false });
-      this.close();
-    }, 1000);
+  isAcceptableSessionId() {
+    const { sessionId } = this.state;
+    return !isNaN(parseInt(sessionId)) && sessionId >= 0 && sessionId < 1000;
   }
 
   render() {
     return (
       <ModalContainer>
         <Text style={styles.title}>Select a patient</Text>
-        <Text>Please select the patient who is undergoing therapy today.</Text>
+        <Text style={{ textAlign: "center" }}>
+          Please select the patient who is undergoing therapy today.
+        </Text>
 
         <Picker
           selectedValue={this.state.patientId}
@@ -69,10 +68,39 @@ export default class SelectPatientModal extends Component {
           ))}
         </Picker>
 
+        <Text style={{ textAlign: "center" }}>
+          Please specify the session ID:
+        </Text>
+        <TextInput
+          style={{
+            borderWidth: 0.5,
+            borderStyle: "solid",
+            borderColor: `${Colors.dark}`,
+            borderRadius: 8,
+            marginLeft: "auto",
+            marginRight: "auto",
+            width: 100,
+            padding: 10,
+            margin: 10
+          }}
+          onChangeText={text => this.setState({ sessionId: text })}
+          value={this.state.sessionId}
+        />
+        {this.state.sessionId != "" && !this.isAcceptableSessionId() && (
+          <Text style={{ color: "red", textAlign: "center" }}>
+            Session ID must be a number between 1 and 1000.
+          </Text>
+        )}
+
         <Button
-          disabled={!this.state.patientId}
+          disabled={!this.state.patientId || !this.isAcceptableSessionId()}
           buttonStyle={styles.button}
-          onPress={() => this.props.onPatientSelected(this.state.patientId)}
+          onPress={() =>
+            this.props.onPatientSelected(
+              this.state.patientId,
+              this.state.sessionId
+            )
+          }
           title="Select"
         />
         <Button
@@ -87,6 +115,7 @@ export default class SelectPatientModal extends Component {
 }
 
 const styles = StyleSheet.create({
+  textInput: {},
   title: {
     textAlign: "center",
     fontWeight: "bold",

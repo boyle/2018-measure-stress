@@ -2,6 +2,14 @@ export function generateRandomNum() {
   return Date.now().toString() + ("" + Math.random()).substring(2, 5);
 }
 
+export function generateSessionId() {
+  return (
+    Date.now()
+      .toString()
+      .substring() + ("" + Math.random()).substring(2, 7)
+  );
+}
+
 export function millisToHMS(s) {
   function pad(n, z) {
     z = z || 2;

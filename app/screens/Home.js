@@ -6,7 +6,8 @@ import {
   View,
   Image,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from "react-native";
 import { Button, Card } from "react-native-elements";
 import { connect } from "react-redux";
@@ -16,7 +17,12 @@ import { FileSystem } from "expo";
 import API from "../api.js";
 import { showModal, hideModal } from "../ducks/ui.js";
 import { addPatient } from "../ducks/user.js";
-import { startSession, selectPatient, setOffset } from "../ducks/session.js";
+import {
+  startSession,
+  selectPatient,
+  setOffset,
+  setSessionId
+} from "../ducks/session.js";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import IconButton from "../components/IconButton.js";
@@ -27,7 +33,8 @@ import SynchronizationModal from "../components/SynchronizationModal.js";
 function StatsCard({ statsName, statsValue }) {
   return (
     <Card style={styles.card}>
-      <Text style={styles.statsValue}>{statsValue}</Text>
+      {!statsValue && <ActivityIndicator size="large" />}
+      {statsValue && <Text style={styles.statsValue}>{statsValue}</Text>}
       <Text style={styles.stateName}>{statsName}</Text>
     </Card>
   );
@@ -37,45 +44,51 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      numPatients: 0,
-      numSessions: 0
+      numPatients: null,
+      numSessions: null,
+      numLocalFiles: null
     };
 
     this.onPatientSelected = this.onPatientSelected.bind(this);
-    this.refreshStats = this.refreshStats.bind(this);
+    this.pushLocalFiles = this.pushLocalFiles.bind(this);
+    this.countLocalFiles = this.countLocalFiles.bind(this);
+    this.refresh = this.refresh.bind(this);
   }
 
   componentDidMount() {
     this.focusListener = this.props.navigation.addListener(
       "didFocus",
-      this.refreshStats
+      this.refresh
     );
+    this.pushLocalFiles();
   }
 
   async pushLocalFiles() {
-    // TODO
-    /*
     const localFiles = await FileSystem.readDirectoryAsync(
       FileSystem.documentDirectory
     );
     for (let i = 0; i < localFiles.length; i++) {
       let fileUrl = `${FileSystem.documentDirectory}/${localFiles[i]}`;
       try {
-        let content = JSON.parse(await readAsStringAsync(fileUrl));
+        let content = JSON.parse(await FileSystem.readAsStringAsync(fileUrl));
         await API.putSession(content);
         await FileSystem.deleteAsync(fileUrl);
       } catch (e) {
         console.log(e);
       }
-        this.refreshStats();
+      this.refresh();
     }
-    */
   }
 
-  async refreshStats() {
+  async countLocalFiles() {
     const numLocalFiles = (await FileSystem.readDirectoryAsync(
       FileSystem.documentDirectory
     )).length;
+    this.setState({ numLocalFiles: `${numLocalFiles}` });
+  }
+
+  async refresh() {
+    this.countLocalFiles();
 
     const patients = await API.getPatientsList();
     let numSessions = 0;
@@ -83,12 +96,13 @@ class Home extends React.Component {
       // need to use explicit for loop because of await
       numSessions += (await API.getSessionsList(patients[i])).length;
     }
-    this.setState({ numPatients: patients.length, numSessions, numLocalFiles });
+    this.setState({ numPatients: patients.length, numSessions });
   }
 
-  onPatientSelected(patientId) {
+  onPatientSelected(patientId, sessionId) {
     this.props.hideModal();
     this.props.selectPatient(patientId);
+    this.props.setSessionId(sessionId);
     this.props.startSession(patientId);
     this.props.navigation.navigate("SSQ");
   }
@@ -296,7 +310,8 @@ function mapDispatchToProps(dispatch) {
     addPatient: patientId => dispatch(addPatient(patientId)),
     selectPatient: patientId => dispatch(selectPatient(patientId)),
     startSession: patientId => dispatch(startSession(patientId)),
-    setOffset: offset => dispatch(setOffset(offset))
+    setOffset: offset => dispatch(setOffset(offset)),
+    setSessionId: sessionId => dispatch(setSessionId(sessionId))
   };
 }
 

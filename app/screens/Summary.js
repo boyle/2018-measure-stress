@@ -12,7 +12,7 @@ import {
 import { FileSystem } from "expo";
 import { Button, Card } from "react-native-elements";
 import { connect } from "react-redux";
-import { setSessionId, updateSessionNotes } from "../ducks/session.js";
+import { initializeSession, updateSessionNotes } from "../ducks/session.js";
 
 import { millisToHMS } from "../utils.js";
 import API from "../api.js";
@@ -49,20 +49,38 @@ class Summary extends React.Component {
 
   componentDidMount() {}
 
-  async submitSession() {
-    const { patientId } = this.props.session;
-    const sessionId = await API.getSessionId(patientId);
-    this.props.setSessionId(sessionId);
+  async saveSessionOnDevice(session) {
+    let fileName = `/p${session.patientId}s${
+      session.sessionId
+    }_annotations.json`;
     try {
-      await API.putSession(patientId, this.props.session);
+      // If a file with the same name exists, create a new file and append the word
+      // "updated"
+      const existingFiles = await FileSystem.readDirectoryAsync(
+        FileSystem.documentDirectory
+      );
+      if (existingFiles.includes(fileName)) {
+        fileName = fileName.replace(".json", "") + "_updated" + ".json";
+      }
+      await FileSystem.writeAsStringAsync(
+        FileSystem.documentDirectory + fileName,
+        JSON.stringify(this.props.session)
+      );
     } catch (e) {
       console.log(e);
-      await FileSystem.writeAsStringAsync(
-        FileSystem.documentDirectory + "/session.json",
-        JSON.stringify(this.props.session)
-      ); // Save locally
+    }
+  }
+
+  async submitSession() {
+    const { patientId } = this.props.session;
+    try {
+      await API.putSession(this.props.session);
+    } catch (e) {
+      console.log(e);
+      this.saveSessionOnDevice(this.props.session);
     }
     this.props.navigation.navigate("Home");
+    this.props.initializeSession();
   }
 
   render() {
@@ -110,10 +128,10 @@ class Summary extends React.Component {
           }}
           activities={[...session.activities, session.currentActivity]}
           activityStatus={this.state.activityStatus}
-          toggleEditRequired={this.props.toggleEditRequired}
+          toggleEditRequired={null}
           elapsedTime={session.elapsedTime}
-          editEvent={this.props.editEvent}
-          editComment={this.props.editComment}
+          editEvent={() => null}
+          editComment={null}
         />
         <Text style={styles.smallTitle}>Activities</Text>
         <View style={styles.activitiesView}>
@@ -187,8 +205,8 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    setSessionId: id => dispatch(setSessionId(id)),
-    updateSessionNotes: notes => dispatch(updateSessionNotes(notes))
+    updateSessionNotes: notes => dispatch(updateSessionNotes(notes)),
+    initializeSession: () => dispatch(initializeSession())
   };
 }
 
