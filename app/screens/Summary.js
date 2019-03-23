@@ -7,7 +7,8 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
+  Alert
 } from "react-native";
 import { FileSystem } from "expo";
 import { Button, Card } from "react-native-elements";
@@ -77,6 +78,17 @@ class Summary extends React.Component {
       await API.putSession(this.props.session);
     } catch (e) {
       console.log(e);
+      Alert.alert(
+        "Internet connection unavailable",
+        "The tablet could not connect to the remote server. The session data will be stored on the device and uploaded to the server once a connection is available.",
+        [
+          {
+            text: "OK",
+            onPress: () => null
+          }
+        ],
+        { cancelable: true, onDismiss: () => {} }
+      );
       this.saveSessionOnDevice(this.props.session);
     }
     this.props.navigation.navigate("Home");

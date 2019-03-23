@@ -36,10 +36,13 @@ class SSQ extends React.Component {
   }
 
   componentDidMount() {
+    this.scrollToTop();
+    /*
     this.focusListener = this.props.navigation.addListener(
       "didFocus",
       this.scrollToTop
     );
+    */
   }
 
   isFirstSSQ() {
