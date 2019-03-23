@@ -23,24 +23,36 @@ export default {
       method: "PUT"
     });
   },
-  getSessionId: async patientId => {
-    const resp = await fetch(`${api}/p/${patientId}`, {
-      credentials: "same-origin"
-    });
-    const list = await resp.text();
-    const sessions = list.split("<br/>");
-    if (sessions[0] === "") return 1; // API returns what eventually gives this array [""] for a new patient
-    sessions.sort();
-    return parseInt(sessions[sessions.length - 1]) + 1;
-  },
   getSessionsList: async patientId => {
-    const resp = await fetch(`${api}/p/${patientId}`, {
-      credentials: "same-origin"
-    });
-    const list = await resp.text();
-    const sessions = list.split("<br/>");
-    sessions.sort();
-    return sessions;
+    try {
+      const resp = await fetch(`${api}/p/${patientId}`, {
+        credentials: "same-origin"
+      });
+      const list = await resp.text();
+      const sessions = list.split("<br/>");
+      sessions.sort();
+      return sessions;
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  },
+  getSession: async (patientId, sessionId) => {
+    console.log(`${api}/p/${patientId}/${sessionId}/annotations.json`);
+    try {
+      const resp = await fetch(
+        `${api}/p/${patientId}/${sessionId}/annotations.json`,
+        {
+          credentials: "same-origin"
+        }
+      );
+      const session = await resp.json();
+      return session;
+    } catch (err) {
+      console.log("here");
+      console.log(err);
+      throw err;
+    }
   },
   putSession: async session => {
     return await fetch(

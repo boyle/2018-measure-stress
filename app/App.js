@@ -19,7 +19,8 @@ import {
   faFileAlt,
   faInfoCircle,
   faCogs,
-  faLock
+  faLock,
+  faSearch
 } from "@fortawesome/free-solid-svg-icons";
 
 import store from "./store.js";
@@ -31,7 +32,7 @@ import SSQ from "./screens/SSQ.js";
 import Summary from "./screens/Summary.js";
 import Review from "./screens/Review.js";
 
-const Navigator = createStackNavigator({
+const Navigator = createSwitchNavigator({
   Login: { screen: Login, navigationOptions: { header: null } },
   Review: { screen: Review, navigationOptions: { header: null } },
   SSQ: { screen: SSQ, navigationOptions: { header: null } },
@@ -54,7 +55,8 @@ library.add(
   faFileAlt,
   faInfoCircle,
   faCogs,
-  faLock
+  faLock,
+  faSearch
 );
 
 export default class App extends React.Component {

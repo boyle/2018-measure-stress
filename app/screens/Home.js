@@ -27,6 +27,7 @@ import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
 import IconButton from "../components/IconButton.js";
 import NewPatientModal from "../components/NewPatientModal.js";
+import InitializeSessionModal from "../components/InitializeSessionModal.js";
 import SelectPatientModal from "../components/SelectPatientModal.js";
 import SynchronizationModal from "../components/SynchronizationModal.js";
 
@@ -126,14 +127,22 @@ class Home extends React.Component {
                 this.props.setOffset(offset);
                 this.props.showModal("SelectPatientModal");
               }}
-              onSkip={() => this.props.showModal("SelectPatientModal")}
+              onSkip={() => this.props.showModal("InitializeSessionModal")}
+              onClose={this.props.hideModal}
+            />
+          )}
+          {this.props.ui.modal.modalName === "InitializeSessionModal" && (
+            <InitializeSessionModal
+              onPatientSelected={this.onPatientSelected}
               onClose={this.props.hideModal}
             />
           )}
           {this.props.ui.modal.modalName === "SelectPatientModal" && (
             <SelectPatientModal
-              patientIdsList={this.props.user.patientIdsList}
-              onPatientSelected={this.onPatientSelected}
+              onPatientSelected={patientId => {
+                this.props.hideModal();
+                this.props.navigation.navigate("Review", { patientId });
+              }}
               onClose={this.props.hideModal}
             />
           )}
@@ -176,6 +185,16 @@ class Home extends React.Component {
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
               action={() => this.props.showModal("SynchronizationModal")}
+            />
+            <IconButton
+              iconName="search"
+              iconColor={iconColor}
+              title="Review"
+              buttonStyle={styles.button}
+              iconHeight={iconHeight}
+              iconWidth={iconWidth}
+              textStyle={styles.buttonTitle}
+              action={() => this.props.showModal("SelectPatientModal")}
             />
             {/*
             <IconButton
@@ -274,7 +293,7 @@ const styles = StyleSheet.create({
     width: "100%",
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     flexWrap: "wrap"
   },
   statsValue: {
