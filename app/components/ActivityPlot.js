@@ -53,6 +53,12 @@ export default class ActivityPlot extends Component {
     });
   }
 
+  componentDidMount() {
+    if (this.props.review) {
+      this.updateFocus({ rightBound: this.props.elapsedTime });
+    }
+  }
+
   requiresScroll(time) {
     return time > this.state.focus.rightBound;
   }

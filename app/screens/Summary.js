@@ -116,6 +116,7 @@ class Summary extends React.Component {
           </Text>
         </View>
         <ActivityPlot
+          review={true}
           height={300}
           width={700}
           padding={50}

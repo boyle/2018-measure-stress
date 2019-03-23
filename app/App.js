@@ -29,9 +29,11 @@ import Home from "./screens/Home.js";
 import Activity from "./screens/Activity.js";
 import SSQ from "./screens/SSQ.js";
 import Summary from "./screens/Summary.js";
+import Review from "./screens/Review.js";
 
 const Navigator = createStackNavigator({
   Login: { screen: Login, navigationOptions: { header: null } },
+  Review: { screen: Review, navigationOptions: { header: null } },
   SSQ: { screen: SSQ, navigationOptions: { header: null } },
   Summary: { screen: Summary, navigationOptions: { header: null } },
   Activity: { screen: Activity, navigationOptions: { header: null } },
