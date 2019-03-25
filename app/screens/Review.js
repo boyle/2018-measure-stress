@@ -20,6 +20,7 @@ import Apps from "../globals/apps.js";
 import config from "../app.json";
 import Colors from "../globals/colors.js";
 import PageTemplate from "../components/PageTemplate.js";
+import PlotLegend from "../components/PlotLegend.js";
 import ActivityPlot from "../components/ActivityPlot.js";
 
 function ActivityCard(activityNumber, activity) {
@@ -509,6 +510,7 @@ class Review extends React.Component {
           editEvent={() => null}
           editComment={() => null}
         />
+        <PlotLegend />
         <Text style={styles.smallTitle}>Activities</Text>
         <View style={styles.activitiesView}>
           <ScrollView>
@@ -520,6 +522,7 @@ class Review extends React.Component {
         <Text style={styles.smallTitle}>Session notes</Text>
         <TextInput
           multiline
+          editable={false}
           style={styles.textInput}
           value={session.sessionNotes}
           onChangeText={this.props.updateSessionNotes}
@@ -560,7 +563,7 @@ const styles = StyleSheet.create({
     marginRight: "auto",
     marginBottom: 20,
     width: "75%",
-    height: 200,
+    height: 150,
     borderRadius: 8,
     borderStroke: "black",
     borderStrokeWidth: 2

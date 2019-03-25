@@ -100,7 +100,7 @@ export default {
 
   PERCEIVED_EXERTION: {
     domain: PERCEIVED_EXERTION,
-    label: "Perceived exertion",
+    label: "Exertion (perceived)",
     color: "#CC79A7",
     levels: {
       0: "Level 6",

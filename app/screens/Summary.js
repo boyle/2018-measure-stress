@@ -17,6 +17,7 @@ import { initializeSession, updateSessionNotes } from "../ducks/session.js";
 
 import { millisToHMS } from "../utils.js";
 import API from "../api.js";
+import PlotLegend from "../components/PlotLegend.js";
 import Apps from "../globals/apps.js";
 import config from "../app.json";
 import Colors from "../globals/colors.js";
@@ -146,6 +147,7 @@ class Summary extends React.Component {
           editEvent={() => null}
           editComment={null}
         />
+        <PlotLegend />
         <Text style={styles.smallTitle}>Activities</Text>
         <View style={styles.activitiesView}>
           <ScrollView>
@@ -197,7 +199,7 @@ const styles = StyleSheet.create({
     marginRight: "auto",
     marginBottom: 20,
     width: "75%",
-    height: 200,
+    height: 150,
     borderRadius: 8,
     borderStroke: "black",
     borderStrokeWidth: 2
