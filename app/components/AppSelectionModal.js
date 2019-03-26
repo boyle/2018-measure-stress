@@ -5,21 +5,37 @@ import {
   Text,
   TextInput,
   FlatList,
-  Picker
+  Picker,
+  ScrollView,
+  TouchableOpacity
 } from "react-native";
-import { Overlay, Button } from "react-native-elements";
+import { Overlay, Button, Card } from "react-native-elements";
 
 import config from "../app.json";
 import Apps from "../globals/apps.js";
 import ModalContainer from "./ModalContainer.js";
 import Colors from "../globals/colors.js";
 
+function ActivityCard({ activity, onPress, selected }) {
+  const selectedStyle = selected ? { backgroundColor: `${Colors.dark}` } : null;
+  return (
+    <TouchableOpacity
+      style={[styles.activityButton, selectedStyle]}
+      onPress={onPress}
+    >
+      <Text style={{ color: selected ? "white" : "black" }}>
+        {activity.name}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 export default class AppSelectionModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
       searchString: "",
-      selectedApp: 1,
+      selectedApp: null,
       activities: Object.values(Apps)
     };
 
@@ -47,22 +63,32 @@ export default class AppSelectionModal extends Component {
         <TextInput
           onChangeText={this.handleChange}
           value={this.state.searchString}
+          style={{
+            borderWidth: 0.5,
+            borderStyle: "solid",
+            borderColor: `${Colors.dark}`,
+            borderRadius: 8,
+            marginLeft: "auto",
+            marginRight: "auto",
+            width: "75%",
+            padding: 10,
+            margin: 10
+          }}
         />
 
-        <Picker
-          selectedValue={this.state.selectedApp}
-          onValueChange={itemIndex => {
-            this.setState({ selectedApp: itemIndex });
-          }}
-        >
-          {this.state.activities.map((app, i) => {
-            return (
-              <Picker.Item key={`app-${i}`} label={`${app.name}`} value={i} />
-            );
-          })}
-        </Picker>
+        <View style={styles.activitiesView}>
+          <ScrollView>
+            {this.state.activities.map((activity, i) => (
+              <ActivityCard
+                selected={activity.id === this.state.selectedApp}
+                activity={activity}
+                onPress={() => this.setState({ selectedApp: activity.id })}
+              />
+            ))}
+          </ScrollView>
+        </View>
         <Button
-          disabled={!this.state.selectedApp}
+          disabled={this.state.selectedApp === null}
           buttonStyle={styles.button}
           onPress={() => this.props.onAppSelected(this.state.selectedApp)}
           title="Start"
@@ -95,5 +121,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginLeft: "auto",
     marginRight: "auto"
+  },
+  activitiesView: {
+    width: "75%",
+    height: 100,
+    marginLeft: "auto",
+    marginRight: "auto"
+  },
+  activityButton: {
+    width: "100%",
+    backgroundColor: "white",
+    padding: 10,
+    margin: 5,
+    borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: "#d6d7da"
   }
 });

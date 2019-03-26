@@ -5,7 +5,7 @@ import { Constants, Svg } from "expo";
 import { scaleLinear } from "d3-scale";
 import Variables from "../globals/tracked_variables.js";
 import Colors from "../globals/colors.js";
-
+import Apps from "../globals/apps.js";
 import DomainLine from "./DomainLine.js";
 import PlotNavigator from "../components/PlotNavigator.js";
 
@@ -219,6 +219,14 @@ export default class ActivityPlot extends Component {
         height={this.props.height}
         width={this.props.width}
       >
+        <Svg.ClipPath id="plot-clip">
+          <Svg.Rect
+            x={this.props.padding}
+            y="0"
+            width={this.props.width - 2 * this.props.padding}
+            height={this.props.height}
+          />
+        </Svg.ClipPath>
         <Svg.Rect
           {...this.panResponder.panHandlers}
           x={this.props.padding}
@@ -231,36 +239,32 @@ export default class ActivityPlot extends Component {
         {this.props.activities
           .filter(activity => !activity.resting)
           .map(activity => {
-            const crossesYAxis =
-              this.inSecondsElapsed(activity.startTimestamp) <=
-              this.state.focus.leftBound;
-            const isCompleted = activity.endTimestamp;
-
-            let leftBound = Math.max(
-              this.inSecondsElapsed(activity.startTimestamp),
-              this.state.focus.leftBound
-            );
-
-            let rightBound = !isCompleted
-              ? Math.min(this.props.elapsedTime, this.state.focus.rightBound)
-              : Math.min(
-                  this.inSecondsElapsed(activity.endTimestamp),
-                  this.state.focus.rightBound
-                );
-
-            const diff = this.xScale(rightBound) - this.xScale(leftBound);
-            const width = diff >= 0 ? diff : 0;
+            const start = this.inSecondsElapsed(activity.startTimestamp);
+            const end = activity.endTimestamp
+              ? this.inSecondsElapsed(activity.endTimestamp)
+              : this.props.elapsedTime;
+            const width = this.xScale(end) - this.xScale(start);
 
             return (
-              <Svg.Rect
-                x={this.xScale(leftBound)}
-                y={this.yScale(100)}
-                height={this.yScale(0) - this.yScale(100)}
-                width={width}
-                fill="blue"
-                opacity={0.1}
-                {...this.panResponder.panHandlers}
-              />
+              <Svg.G>
+                <Svg.Rect
+                  clipPath={`url(#plot-clip)`}
+                  x={this.xScale(start)}
+                  y={this.yScale(100)}
+                  height={this.yScale(0) - this.yScale(100)}
+                  width={width}
+                  fill="blue"
+                  opacity={0.1}
+                  {...this.panResponder.panHandlers}
+                />
+                <Svg.Text
+                  x={this.xScale(start) + 5}
+                  y={this.yScale(100) + 15}
+                  clipPath={"url(#plot-clip)"}
+                >
+                  {Apps[activity.activityId].name}
+                </Svg.Text>
+              </Svg.G>
             );
           })}
         {/* X-axis*/}
