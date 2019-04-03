@@ -5,6 +5,7 @@ const IS_LOADING = "ui/is_loading";
 const IS_DONE_LOADING = "ui/is_done_loading";
 const EDIT_EVENT = "ui/edit_event";
 const EDIT_COMMENT = "ui/edit_comment";
+const SET_APP_VERSION = "ui/set_app_version";
 
 // DEFAULT STATE
 const defaultState = {
@@ -63,7 +64,15 @@ export default function reducer(state = defaultState, action = {}) {
         modal: { modalName: "CommentModal" },
         editedComment: action.payload
       };
-      return newState;
+			return newState;
+
+		case SET_APP_VERSION:
+			newState = {
+				 ...state,
+			  appVersion: action.payload,
+			};
+
+			return newState;
 
     default:
       return state;
@@ -71,6 +80,13 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // ACTION CREATORS
+//
+export function setVersion(version) {
+	return {
+	  type: SET_APP_VERSION,
+		payload: version
+	};
+}
 export function showModal(modalName) {
   return { type: SHOW_MODAL, modalName };
 }
@@ -94,3 +110,4 @@ export function editEvent(event) {
 export function editComment(event) {
   return { type: EDIT_COMMENT, payload: event };
 }
+

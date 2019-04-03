@@ -15,7 +15,7 @@ import { withNavigationFocus } from "react-navigation";
 
 import { FileSystem } from "expo";
 import API from "../api.js";
-import { showModal, hideModal } from "../ducks/ui.js";
+import { showModal, hideModal, setVersion } from "../ducks/ui.js";
 import { addPatient } from "../ducks/user.js";
 import {
   startSession,
@@ -56,13 +56,15 @@ class Home extends React.Component {
     this.refresh = this.refresh.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.focusListener = this.props.navigation.addListener(
       "didFocus",
       this.refresh
-    );
+		);
+	const appVersion = await API.getAppVersion();
+		this.props.setVersion(appVersion);
     this.pushLocalFiles();
-  }
+	}
 
   async pushLocalFiles() {
     const localFiles = await FileSystem.readDirectoryAsync(
@@ -108,7 +110,7 @@ class Home extends React.Component {
     this.props.navigation.navigate("SSQ");
   }
 
-  render() {
+	render() {
     const iconHeight = 140;
     const iconWidth = 140;
     const iconColor = `${Colors.lighter}`;
@@ -148,7 +150,7 @@ class Home extends React.Component {
           )}
           <Text style={styles.title}>Hi, {this.props.user.username}!</Text>
           <View style={styles.statsBox}>
-            <Text style={styles.title}>Current Progress</Text>
+            <Text style={styles.title}>Project Progress</Text>
             <View style={styles.statsContainer}>
               <StatsCard
                 statsName="Sessions"
@@ -241,7 +243,8 @@ class Home extends React.Component {
               action={() => this.props.navigation.navigate("Login")}
             />
           </View>
-        </View>
+				</View>
+				<Text style={styles.version}>Version {this.props.ui.appVersion}</Text>
       </PageTemplate>
     );
   }
@@ -312,7 +315,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     stroke: `${Colors.dark}`,
     borderRadius: 8
-  }
+	},
+	version: {
+	  textAlign: "center",
+		margin: 10
+	}
 });
 
 function mapStateToProps(state) {
@@ -330,7 +337,8 @@ function mapDispatchToProps(dispatch) {
     selectPatient: patientId => dispatch(selectPatient(patientId)),
     startSession: patientId => dispatch(startSession(patientId)),
     setOffset: offset => dispatch(setOffset(offset)),
-    setSessionId: sessionId => dispatch(setSessionId(sessionId))
+		setSessionId: sessionId => dispatch(setSessionId(sessionId)),
+		setVersion: appVersion => dispatch(setVersion(appVersion))
   };
 }
 

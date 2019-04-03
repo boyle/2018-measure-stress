@@ -36,7 +36,8 @@ import {
   logCommonEvent,
   endCommonEvent,
   logEditedEvent,
-  deleteEvent
+	deleteEvent,
+	setAppVersion
 } from "../ducks/session.js";
 import { showModal, hideModal, editEvent, editComment } from "../ducks/ui.js";
 
@@ -84,7 +85,11 @@ class Activity extends React.Component {
     this.commonEventOngoing = this.commonEventOngoing.bind(this);
 
     this.startSession();
-  }
+	}
+
+	componentDidMount() {
+	  this.props.setAppVersion(this.props.ui.appVersion);
+	}
 
   getTime() {
     return Date.now(); // time in ms since epoch
@@ -467,7 +472,8 @@ function mapDispatchToProps(dispatch) {
     editEvent: event => dispatch(editEvent(event)),
     editComment: event => dispatch(editComment(event)),
     logEditedEvent: event => dispatch(logEditedEvent(event)),
-    deleteEvent: eventId => dispatch(deleteEvent(eventId))
+    deleteEvent: eventId => dispatch(deleteEvent(eventId)),
+    setAppVersion: appVersion => dispatch(setAppVersion(appVersion))
   };
 }
 

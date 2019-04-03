@@ -12,7 +12,7 @@ import { Card, Divider, Button, Input, Overlay } from "react-native-elements";
 import { connect } from "react-redux";
 import Colors from "../globals/colors.js";
 import config from "../app.json";
-import { isLoading, isDoneLoading } from "../ducks/ui.js";
+import { isLoading, isDoneLoading, setAppVersion } from "../ducks/ui.js";
 import { loginSucceeded, setUsername } from "../ducks/user.js";
 import API from "../api.js";
 
@@ -27,7 +27,7 @@ class Login extends React.Component {
     };
 
     this.authenticate = this.authenticate.bind(this);
-  }
+	}
 
   displayAlert() {
     Alert.alert(
@@ -121,7 +121,7 @@ class Login extends React.Component {
               disabled={this.props.ui.isLoading}
               onPress={this.authenticate}
               buttonStyle={styles.button}
-            />
+						/>
             <Divider />
             <Text style={styles.errorText}>
               If you experience network-related issues, you may log in as...
@@ -141,15 +141,16 @@ class Login extends React.Component {
 
 function mapStatetoProps(state) {
   return {
-    ui: state.ui
+		ui: state.ui,
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return {
+	return {
     isLoading: () => dispatch(isLoading()),
     isDoneLoading: () => dispatch(isDoneLoading()),
-    setUsername: username => dispatch(setUsername(username))
+		setUsername: username => dispatch(setUsername(username)),
+		setAppVersion: appVersion => dispatch(setAppVersion(appVersion))
   };
 }
 

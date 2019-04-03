@@ -2,6 +2,12 @@ const api = "https://saans.ca/api/v1";
 const host = "https://saans.ca/";
 
 export default {
+	getAppVersion: async () => {
+		const resp = await fetch(`${api}/ver/app`, {
+      credentials: "same-origin",
+    });
+	  return await resp.text();
+	},
   login: async (username, password) => {
     const form = new FormData();
     form.append("username", username);
