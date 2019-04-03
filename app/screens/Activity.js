@@ -119,7 +119,7 @@ class Activity extends React.Component {
   }
 
   startSession() {
-    this.props.startSession();
+    this.props.startSession(this.props.user.username);
     this.startTicking();
   }
 
@@ -444,7 +444,8 @@ const styles = StyleSheet.create({
 function mapStateToProps(state) {
   return {
     session: state.session,
-    ui: state.ui
+		ui: state.ui,
+		user: state.user
   };
 }
 
@@ -456,7 +457,7 @@ function mapDispatchToProps(dispatch) {
     updateSessionStatus: status => dispatch(updateSessionStatus(status)),
     logActivity: activity => dispatch(logActivity(activity)),
     logEvent: (event, baseline) => dispatch(logEvent(event, baseline)),
-    startSession: timestamp => dispatch(startSession(startSession)),
+    startSession: annotatorId => dispatch(startSession(annotatorId)),
     stopSession: () => dispatch(stopSession()),
     toggleEditRequired: eventId => dispatch(toggleEditRequired(eventId)),
     showModal: modalName => dispatch(showModal(modalName)),

@@ -98,7 +98,8 @@ export default function reducer(state = defaultState, action = {}) {
     // This happends when the SSQ is submitted
     case START_SESSION:
       newState = {
-        ...state,
+				...state,
+				annotatorId: action.payload,
         startTimestamp: timestamp,
         currentActivity: createActivity({
           activityId: 0,
@@ -445,9 +446,10 @@ export function initializeSession() {
   };
 }
 
-export function startSession() {
+export function startSession(annotatorId) {
   return {
-    type: START_SESSION
+		type: START_SESSION,
+		payload: annotatorId
   };
 }
 
