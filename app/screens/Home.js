@@ -127,7 +127,7 @@ class Home extends React.Component {
             <SynchronizationModal
               onOffsetComputed={offset => {
                 this.props.setOffset(offset);
-                this.props.showModal("SelectPatientModal");
+                this.props.showModal("InitializeSessionModal");
               }}
               onSkip={() => this.props.showModal("InitializeSessionModal")}
               onClose={this.props.hideModal}
