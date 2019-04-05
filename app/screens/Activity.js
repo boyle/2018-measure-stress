@@ -7,8 +7,9 @@ import {
   ToastAndroid,
   Alert,
   Dimensions,
-  TouchableOpacity
+	TouchableOpacity,
 } from "react-native";
+import { KeepAwake } from "expo"; 
 import { Slider, Button, Icon } from "react-native-elements";
 import { scaleLinear } from "d3-scale";
 import { connect } from "react-redux";
@@ -246,7 +247,8 @@ class Activity extends React.Component {
 
   render() {
     return (
-      <PageTemplate>
+			<PageTemplate>
+				<KeepAwake />
         {this.props.ui.modal.modalName === "EditBox" && (
           <EditBox
             editedEvent={this.props.ui.editedEvent}
