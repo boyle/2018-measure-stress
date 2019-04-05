@@ -27,7 +27,7 @@ class Login extends React.Component {
     };
 
     this.authenticate = this.authenticate.bind(this);
-	}
+  }
 
   displayAlert() {
     Alert.alert(
@@ -121,7 +121,7 @@ class Login extends React.Component {
               disabled={this.props.ui.isLoading}
               onPress={this.authenticate}
               buttonStyle={styles.button}
-						/>
+            />
             <Divider />
             <Text style={styles.errorText}>
               If you experience network-related issues, you may log in as...
@@ -141,16 +141,16 @@ class Login extends React.Component {
 
 function mapStatetoProps(state) {
   return {
-		ui: state.ui,
+    ui: state.ui
   };
 }
 
 function mapDispatchToProps(dispatch) {
-	return {
+  return {
     isLoading: () => dispatch(isLoading()),
     isDoneLoading: () => dispatch(isDoneLoading()),
-		setUsername: username => dispatch(setUsername(username)),
-		setAppVersion: appVersion => dispatch(setAppVersion(appVersion))
+    setUsername: username => dispatch(setUsername(username)),
+    setAppVersion: appVersion => dispatch(setAppVersion(appVersion))
   };
 }
 
