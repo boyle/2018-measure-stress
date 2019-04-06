@@ -14,8 +14,9 @@ import { connect } from "react-redux";
 import { withNavigationFocus } from "react-navigation";
 
 import { FileSystem } from "expo";
+import app from "../app.json";
 import API from "../api.js";
-import { showModal, hideModal, setVersion } from "../ducks/ui.js";
+import { showModal, hideModal } from "../ducks/ui.js";
 import { addPatient } from "../ducks/user.js";
 import {
   startSession,
@@ -60,11 +61,8 @@ class Home extends React.Component {
     this.focusListener = this.props.navigation.addListener(
       "didFocus",
       this.refresh
-		);
-	const appVersion = await API.getAppVersion();
-		this.props.setVersion(appVersion);
-    this.pushLocalFiles();
-	}
+    );
+  }
 
   async pushLocalFiles() {
     const localFiles = await FileSystem.readDirectoryAsync(
@@ -110,7 +108,7 @@ class Home extends React.Component {
     this.props.navigation.navigate("SSQ");
   }
 
-	render() {
+  render() {
     const iconHeight = 140;
     const iconWidth = 140;
     const iconColor = `${Colors.lighter}`;
@@ -243,8 +241,8 @@ class Home extends React.Component {
               action={() => this.props.navigation.navigate("Login")}
             />
           </View>
-				</View>
-				<Text style={styles.version}>Version {this.props.ui.appVersion}</Text>
+        </View>
+        <Text style={styles.version}>Version {app.expo.version}</Text>
       </PageTemplate>
     );
   }
@@ -315,11 +313,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     stroke: `${Colors.dark}`,
     borderRadius: 8
-	},
-	version: {
-	  textAlign: "center",
-		margin: 10
-	}
+  },
+  version: {
+    textAlign: "center",
+    margin: 10
+  }
 });
 
 function mapStateToProps(state) {
@@ -337,8 +335,7 @@ function mapDispatchToProps(dispatch) {
     selectPatient: patientId => dispatch(selectPatient(patientId)),
     startSession: patientId => dispatch(startSession(patientId)),
     setOffset: offset => dispatch(setOffset(offset)),
-		setSessionId: sessionId => dispatch(setSessionId(sessionId)),
-		setVersion: appVersion => dispatch(setVersion(appVersion))
+    setSessionId: sessionId => dispatch(setSessionId(sessionId))
   };
 }
 

@@ -15,7 +15,7 @@ import {
 } from "../globals/constants.js";
 
 import { generateRandomNum } from "../utils.js";
-import app from '../app.json';
+import app from "../app.json";
 
 // ACTIONS
 const INITIALIZE_SESSION = "session/initialize_session";
@@ -36,7 +36,6 @@ const LOG_EDITED_EVENT = "session/log_edited_event";
 const DELETE_EVENT = "session/delete_event";
 const END_COMMON_EVENT = "session/end_common_event";
 const SET_SESSION_ID = "session/set_session_id";
-const SET_APP_VERSION = "session/set_app_version";
 const UPDATE_SESSION_NOTES = "session/update_session_notes";
 
 // Helpers
@@ -58,7 +57,7 @@ function getElapsedTime({ now, start }) {
 
 // DEFAULT STATE
 const defaultState = {
-  appVersion: null,
+  appVersion: app.expo.version,
   clocksOffset: null, // Offset between the tablet and the computer clocks
   startTimestamp: null, // Time at which the first SSQ is submitted
   endTimestamp: null, // Time at which the last SSQ is submitted
@@ -101,8 +100,8 @@ export default function reducer(state = defaultState, action = {}) {
     // This happends when the SSQ is submitted
     case START_SESSION:
       newState = {
-				...state,
-				annotatorId: action.payload,
+        ...state,
+        annotatorId: action.payload,
         startTimestamp: timestamp,
         currentActivity: createActivity({
           activityId: 0,
@@ -176,11 +175,7 @@ export default function reducer(state = defaultState, action = {}) {
         duration: timestamp - state.startTimestamp,
         activities: [...state.activities, lastActivity]
       };
-			return newState;
-
-	  case SET_APP_VERSION:
-		  newState = {...state, appVersion: action.payload };
-			return newState;
+      return newState;
 
     case SELECT_PATIENT:
       newState = { ...state, patientId: action.payload };
@@ -455,8 +450,8 @@ export function initializeSession() {
 
 export function startSession(annotatorId) {
   return {
-		type: START_SESSION,
-		payload: annotatorId
+    type: START_SESSION,
+    payload: annotatorId
   };
 }
 
@@ -505,12 +500,5 @@ export function updateSessionStatus(status) {
 export function tick() {
   return {
     type: TICK
-  };
-}
-
-export function setAppVersion(appVersion) {
-  return {
-		type: SET_APP_VERSION,
-		payload: appVersion
   };
 }
