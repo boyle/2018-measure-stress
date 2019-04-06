@@ -7,9 +7,9 @@ import {
   ToastAndroid,
   Alert,
   Dimensions,
-	TouchableOpacity,
+  TouchableOpacity
 } from "react-native";
-import { KeepAwake } from "expo"; 
+import { KeepAwake } from "expo";
 import { Slider, Button, Icon } from "react-native-elements";
 import { scaleLinear } from "d3-scale";
 import { connect } from "react-redux";
@@ -37,8 +37,7 @@ import {
   logCommonEvent,
   endCommonEvent,
   logEditedEvent,
-	deleteEvent,
-	setAppVersion
+  deleteEvent
 } from "../ducks/session.js";
 import { showModal, hideModal, editEvent, editComment } from "../ducks/ui.js";
 
@@ -86,11 +85,7 @@ class Activity extends React.Component {
     this.commonEventOngoing = this.commonEventOngoing.bind(this);
 
     this.startSession();
-	}
-
-	componentDidMount() {
-	  this.props.setAppVersion(this.props.ui.appVersion);
-	}
+  }
 
   getTime() {
     return Date.now(); // time in ms since epoch
@@ -247,8 +242,8 @@ class Activity extends React.Component {
 
   render() {
     return (
-			<PageTemplate>
-				<KeepAwake />
+      <PageTemplate>
+        <KeepAwake />
         {this.props.ui.modal.modalName === "EditBox" && (
           <EditBox
             editedEvent={this.props.ui.editedEvent}
@@ -451,8 +446,8 @@ const styles = StyleSheet.create({
 function mapStateToProps(state) {
   return {
     session: state.session,
-		ui: state.ui,
-		user: state.user
+    ui: state.ui,
+    user: state.user
   };
 }
 
@@ -474,8 +469,7 @@ function mapDispatchToProps(dispatch) {
     editEvent: event => dispatch(editEvent(event)),
     editComment: event => dispatch(editComment(event)),
     logEditedEvent: event => dispatch(logEditedEvent(event)),
-    deleteEvent: eventId => dispatch(deleteEvent(eventId)),
-    setAppVersion: appVersion => dispatch(setAppVersion(appVersion))
+    deleteEvent: eventId => dispatch(deleteEvent(eventId))
   };
 }
 
