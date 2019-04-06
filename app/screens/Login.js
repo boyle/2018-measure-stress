@@ -12,7 +12,7 @@ import { Card, Divider, Button, Input, Overlay } from "react-native-elements";
 import { connect } from "react-redux";
 import Colors from "../globals/colors.js";
 import config from "../app.json";
-import { isLoading, isDoneLoading, setAppVersion } from "../ducks/ui.js";
+import { isLoading, isDoneLoading } from "../ducks/ui.js";
 import { loginSucceeded, setUsername } from "../ducks/user.js";
 import API from "../api.js";
 
@@ -149,8 +149,7 @@ function mapDispatchToProps(dispatch) {
   return {
     isLoading: () => dispatch(isLoading()),
     isDoneLoading: () => dispatch(isDoneLoading()),
-    setUsername: username => dispatch(setUsername(username)),
-    setAppVersion: appVersion => dispatch(setAppVersion(appVersion))
+    setUsername: username => dispatch(setUsername(username))
   };
 }
 
