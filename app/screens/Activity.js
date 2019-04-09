@@ -285,6 +285,7 @@ class Activity extends React.Component {
           activityStatus={this.props.session.sessionStatus}
           inEditMode={this.state.inEditMode}
           patientId={this.props.session.patientId}
+          sessionId={this.props.session.sessionId}
           onPressStart={this.handleActivityButton}
           activityNumber={this.getCurrentActivityNumber()}
           elapsedTime={this.props.session.elapsedTime}

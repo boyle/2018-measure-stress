@@ -163,6 +163,7 @@ class Summary extends React.Component {
           value={session.sessionNotes}
           onChangeText={this.props.updateSessionNotes}
         />
+
         <Button
           title="Save"
           buttonStyle={styles.button}
