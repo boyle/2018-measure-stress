@@ -53,6 +53,7 @@ import Variables from "../globals/tracked_variables.js";
 import IconButton from "../components/IconButton.js";
 import ActivityTopBar from "../components/ActivityTopBar.js";
 import CommonEvents from "../components/CommonEvents.js";
+import SSQ from "./SSQ.js";
 
 class Activity extends React.Component {
   constructor(props) {
@@ -62,7 +63,8 @@ class Activity extends React.Component {
       focusedRegion: null,
       activeSliderDomain: null,
       activeSliderValue: null,
-      activeSliderStart: null
+			activeSliderStart: null,
+			showSSQ: false,
     };
 
     // For every tracked domain, initialize the current value to 0
@@ -176,7 +178,7 @@ class Activity extends React.Component {
     this.props.stopSession();
     this.stopTicking();
     this.props.hideModal();
-    this.props.navigation.navigate("SSQ");
+    this.props.navigation.navigate("Summary");
   }
 
   logEvent(event) {
@@ -242,7 +244,7 @@ class Activity extends React.Component {
 
   render() {
     return (
-      <PageTemplate>
+			<PageTemplate>
         <KeepAwake />
         {this.props.ui.modal.modalName === "EditBox" && (
           <EditBox
@@ -281,11 +283,13 @@ class Activity extends React.Component {
           />
         )}
         <ActivityTopBar
-          canStart={this.isResting()}
+					canStart={this.isResting()}
+					session={this.props.session}
           activityStatus={this.props.session.sessionStatus}
           inEditMode={this.state.inEditMode}
           patientId={this.props.session.patientId}
-          sessionId={this.props.session.sessionId}
+					sessionId={this.props.session.sessionId}
+					triggerSSQ={() => this.setState({ showSSQ: true })}
           onPressStart={this.handleActivityButton}
           activityNumber={this.getCurrentActivityNumber()}
           elapsedTime={this.props.session.elapsedTime}
@@ -408,7 +412,9 @@ class Activity extends React.Component {
             }}
             onQuit={this.props.hideModal}
           />
-        )}
+ )}
+
+ {this.state.showSSQ && <SSQ onHide={() => this.setState({ showSSQ: false })} />}
       </PageTemplate>
     );
   }

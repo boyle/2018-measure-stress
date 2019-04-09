@@ -105,7 +105,7 @@ class Home extends React.Component {
     this.props.selectPatient(patientId);
     this.props.setSessionId(sessionId);
     this.props.startSession(patientId);
-    this.props.navigation.navigate("SSQ");
+    this.props.navigation.navigate("Activity");
   }
 
   render() {

@@ -68,13 +68,10 @@ class SSQ extends React.Component {
     };
     this.props.saveSSQ(submittedForm);
 
-    this.setState({...SSQVars.emptySSQForm});
+		this.setState({...SSQVars.emptySSQForm});
 
-    if (this.isFirstSSQ()) {
-      this.props.navigation.navigate('Activity');
-    } else {
-      this.props.navigation.navigate('Summary');
-    }
+		this.props.onHide();
+
   }
 
   scrollToTop() {
@@ -84,7 +81,7 @@ class SSQ extends React.Component {
 
   render() {
     return (
-      <PageTemplate>
+      <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: "white" }}>
         <Text style={styles.title}>Simulation Sickness Questionnaire</Text>
         <Text style={styles.sessionLabel}>
           {this.isFirstSSQ() ? 'Pre' : 'Post'}-session
@@ -121,14 +118,21 @@ class SSQ extends React.Component {
               </Card>
             ))}
           </ScrollView>
-        </View>
+				</View>
+				<View style={{ marginTop: 20, display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
         <Button
           title="Save"
           disabled={!this.formIsFilled()}
           buttonStyle={styles.button}
           onPress={() => this.saveForm()}
-        />
-      </PageTemplate>
+				/>
+				<Button
+          title="Close"
+          buttonStyle={styles.button}
+          onPress={this.props.onHide}
+				/>
+			</View>
+      </View>
     );
   }
 }

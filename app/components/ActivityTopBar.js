@@ -52,18 +52,20 @@ export default class ActivityTopBar extends Component {
               name: `${!this.props.canStart ? "pause" : "play-arrow"}`
             }}
             title={`${!this.props.canStart ? "Stop" : "Start"}`}
-            onPress={this.props.onPressStart}
+						onPress={this.props.onPressStart}
+						disabled={!this.props.session.firstSSQ}
           />
-          {/*<Button
-            disabled={this.props.activityStatus != ACTIVITY_COMPLETED}
+          <Button
             buttonStyle={styles.button}
             icon={{ color: "white", name: "edit" }}
-            title="Edit"
-            /> */}
+						title="SSQ"
+						onPress={this.props.triggerSSQ}
+						disabled={this.props.session.secondSSQ}
+            /> 
           <Button
             buttonStyle={styles.button}
             onPress={this.props.onSave}
-            disabled={this.props.activityStatus === ACTIVITY_ONGOING}
+            disabled={this.props.activityStatus === ACTIVITY_ONGOING || !this.props.session.secondSSQ}
             icon={{ color: "white", name: "save" }}
             title="Save"
           />
