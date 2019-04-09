@@ -128,7 +128,41 @@ class Summary extends React.Component {
             {session.activities.filter(act => !act.resting).length}
           </Text>
         </View>
-        <ActivityPlot
+        
+				<View style={{ display: "flex", flexDirection: "row", justifyContent: "space-around", marginBottom: 20}}>
+				<View style={{ width: "40%" }}>
+        <Text style={styles.smallTitle}>Activities</Text>
+        <View style={{
+					  borderWidth: 1,
+						borderStyle: "solid",
+						borderColor: `${Colors.dark}`,
+						borderRadius: 8,
+						height: 300
+					}}>
+          <ScrollView>
+            {session.activities
+              .filter(act => !act.resting)
+              .map((act, i) => ActivityCard(i + 1, act))}
+          </ScrollView>
+				</View>
+			</View>
+			<View style={{ width: "40%" }}>
+        <Text style={styles.smallTitle}>Session notes</Text>
+        <TextInput
+          multiline
+					style={{
+					  borderWidth: 1,
+						borderStyle: "solid",
+						borderColor: `${Colors.dark}`,
+						borderRadius: 8,
+						height: 300
+					}}
+          value={session.sessionNotes}
+          onChangeText={this.props.updateSessionNotes}
+				/>
+			</View>
+		</View>
+<ActivityPlot
           review={true}
           height={300}
           width={700}
@@ -147,22 +181,7 @@ class Summary extends React.Component {
           editEvent={() => null}
           editComment={null}
         />
-        <PlotLegend />
-        <Text style={styles.smallTitle}>Activities</Text>
-        <View style={styles.activitiesView}>
-          <ScrollView>
-            {session.activities
-              .filter(act => !act.resting)
-              .map((act, i) => ActivityCard(i + 1, act))}
-          </ScrollView>
-        </View>
-        <Text style={styles.smallTitle}>Session notes</Text>
-        <TextInput
-          multiline
-          style={styles.textInput}
-          value={session.sessionNotes}
-          onChangeText={this.props.updateSessionNotes}
-        />
+				<PlotLegend />
 
         <Button
           title="Save"

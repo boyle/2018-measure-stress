@@ -34,9 +34,9 @@ import Review from "./screens/Review.js";
 
 const Navigator = createSwitchNavigator({
   Login: { screen: Login, navigationOptions: { header: null } },
+  Summary: { screen: Summary, navigationOptions: { header: null } },
   Review: { screen: Review, navigationOptions: { header: null } },
   SSQ: { screen: SSQ, navigationOptions: { header: null } },
-  Summary: { screen: Summary, navigationOptions: { header: null } },
   Activity: { screen: Activity, navigationOptions: { header: null } },
   Home: { screen: Home, navigationOptions: { header: null } }
 });
