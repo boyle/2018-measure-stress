@@ -1,32 +1,32 @@
-import React from "react";
-import { BackHandler } from "react-native";
+import React from 'react';
+import {BackHandler} from 'react-native';
 import {
   StyleSheet,
   Text,
   View,
   Image,
   TextInput,
-  ScrollView
-} from "react-native";
-import { Button, Card, ButtonGroup, CheckBox } from "react-native-elements";
-import { connect } from "react-redux";
+  ScrollView,
+} from 'react-native';
+import {Button, Card, ButtonGroup, CheckBox} from 'react-native-elements';
+import {connect} from 'react-redux';
 
-import { initializeSession, saveSSQ } from "../ducks/session.js";
-import Colors from "../globals/colors.js";
-import PageTemplate from "../components/PageTemplate.js";
-import SSQVars from "../globals/ssq.js";
+import {initializeSession, saveSSQ} from '../ducks/session.js';
+import Colors from '../globals/colors.js';
+import PageTemplate from '../components/PageTemplate.js';
+import SSQVars from '../globals/ssq.js';
 
 const buttonColor = {
-  0: "green",
-  1: "yellow",
-  2: "orange",
-  3: "red"
+  0: 'green',
+  1: 'yellow',
+  2: 'orange',
+  3: 'red',
 };
 
 class SSQ extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { ...SSQVars.emptySSQForm };
+    this.state = {...SSQVars.emptySSQForm};
 
     this.saveForm = this.saveForm.bind(this);
     this.formIsFilled = this.formIsFilled.bind(this);
@@ -55,7 +55,7 @@ class SSQ extends React.Component {
 
   formIsFilled() {
     const allQuestionsAnswered = Object.values(this.state.symptoms).every(
-      answer => answer != null
+      answer => answer != null,
     );
 
     return allQuestionsAnswered;
@@ -64,21 +64,21 @@ class SSQ extends React.Component {
   saveForm() {
     const submittedForm = {
       ...this.state,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     this.props.saveSSQ(submittedForm);
 
-    this.setState({ ...SSQVars.emptySSQForm });
+    this.setState({...SSQVars.emptySSQForm});
 
     if (this.isFirstSSQ()) {
-      this.props.navigation.navigate("Activity");
+      this.props.navigation.navigate('Activity');
     } else {
-      this.props.navigation.navigate("Summary");
+      this.props.navigation.navigate('Summary');
     }
   }
 
   scrollToTop() {
-    this.scrollViewRef.scrollTo({ y: 0 });
+    this.scrollViewRef.scrollTo({y: 0});
     this.y = 0;
   }
 
@@ -87,43 +87,36 @@ class SSQ extends React.Component {
       <PageTemplate>
         <Text style={styles.title}>Simulation Sickness Questionnaire</Text>
         <Text style={styles.sessionLabel}>
-          {this.isFirstSSQ() ? "Pre" : "Post"}-session
+          {this.isFirstSSQ() ? 'Pre' : 'Post'}-session
         </Text>
         <View style={styles.cardsContainer}>
           <ScrollView
             onScroll={event => (this.y = event.nativeEvent.contentOffset.y)}
             ref={ref => {
               this.scrollViewRef = ref;
-            }}
-          >
+            }}>
             {SSQVars.symptoms.map((symptom, i) => (
               <Card key={`symptom-${i}`}>
                 <Text style={styles.symptom}>{symptom.label}</Text>
                 <ButtonGroup
-                  textStyle={{ color: `${Colors.dark}` }}
-                  selectedTextStyle={{ color: `${Colors.dark}` }}
+                  textStyle={{color: `${Colors.dark}`}}
+                  selectedTextStyle={{color: `${Colors.dark}`}}
                   onPress={index => {
                     this.setState({
                       symptoms: {
                         ...this.state.symptoms,
-                        [symptom.index]: index
-                      }
+                        [symptom.index]: index,
+                      },
                     });
-                    if (
-                      symptom.index <
-                      Object.keys(SSQVars.symptoms).length - 6
-                    ) {
-                      this.scrollViewRef.scrollTo({ y: this.y + 130 }); // height of a card is about 130 px
-                    }
                   }}
                   selectedIndex={this.state.symptoms[symptom.index]}
                   selectedButtonStyle={{
                     backgroundColor: `${buttonColor[
                       this.state.symptoms[symptom.index]
-                    ] || "white"}`
+                    ] || 'white'}`,
                   }}
-                  buttons={["None", "Slight", "Moderate", "Severe"]}
-                  containerStyle={{ height: 50 }}
+                  buttons={['None', 'Slight', 'Moderate', 'Severe']}
+                  containerStyle={{height: 50}}
                 />
               </Card>
             ))}
@@ -142,86 +135,86 @@ class SSQ extends React.Component {
 
 const styles = StyleSheet.create({
   title: {
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 30,
-    fontWeight: "bold",
-    color: `${Colors.dark}`
+    fontWeight: 'bold',
+    color: `${Colors.dark}`,
   },
   container: {
     flex: 1,
     padding: 30,
-    flexDirection: "column",
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "space-around"
+    flexDirection: 'column',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'space-around',
   },
   cardsContainer: {
-    height: "80%"
+    height: '80%',
   },
   statsContainer: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-around"
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   symptom: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: `${Colors.dark}`,
-    textAlign: "center"
+    textAlign: 'center',
   },
   button: {
     backgroundColor: `${Colors.dark}`,
-    width: "50%",
-    marginLeft: "auto",
-    marginRight: "auto"
+    width: '50%',
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   buttonIcon: {
     width: 150,
-    height: 150
+    height: 150,
   },
   buttonTitle: {
-    textAlign: "center",
-    color: "white",
-    fontSize: 24
+    textAlign: 'center',
+    color: 'white',
+    fontSize: 24,
   },
   buttonsContainer: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flexWrap: "wrap"
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
   },
   statsValue: {
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 42,
-    fontWeight: "bold",
-    color: `${Colors.dark}`
+    fontWeight: 'bold',
+    color: `${Colors.dark}`,
   },
   statsName: {
-    textAlign: "center",
-    fontSize: 32
+    textAlign: 'center',
+    fontSize: 32,
   },
   sessionLabel: {
-    textAlign: "center"
-  }
+    textAlign: 'center',
+  },
 });
 
 function mapStateToProps(state) {
   return {
     user: state.user,
-    session: state.session
+    session: state.session,
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     saveSSQ: ssq => dispatch(saveSSQ(ssq)),
-    initializeSession: () => dispatch(initializeSession())
+    initializeSession: () => dispatch(initializeSession()),
   };
 }
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(SSQ);
