@@ -30,7 +30,7 @@ export default class ActivityTopBar extends Component {
             ? "Rest period"
             : "Activity " + this.props.activityNumber}
         </Text>
-        <Text style={styles.time}>Patient: {this.props.patientId}</Text>
+        <Text style={styles.time}>Patient {this.props.patientId} | Session {this.props.sessionId}</Text>
         <Text style={styles.time}>
           Date: {new Date().toISOString().substring(0, 10)}
         </Text>
