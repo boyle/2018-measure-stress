@@ -58,7 +58,7 @@ export default class ActivityTopBar extends Component {
           <Button
             buttonStyle={styles.button}
             icon={{ color: "white", name: "edit" }}
-						title="SSQ"
+						title={`SSQ #${!this.props.session.firstSSQ ? 1 : 2}`}
 						onPress={this.props.triggerSSQ}
 						disabled={this.props.session.secondSSQ}
             /> 
