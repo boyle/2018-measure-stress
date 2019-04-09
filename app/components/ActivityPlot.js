@@ -344,14 +344,14 @@ export default class ActivityPlot extends Component {
               {Object.values(this.props.events)
                 .filter(event => event && event.type === "comment")
                 .map((event, i) => (
-                  <Svg.G onPress={() => this.props.editComment(event)}>
+                  <Svg.G onPress={() => this.props.editComment(event)} clipPath="url(#plot-clip)">
                     <Svg.Path
                       transform={`translate(${this.xScale(event.elapsedTime) -
                         5},${this.yScale(100) - 10})scale(0.05)`}
                       d="M352,0H32v512h448V128L352,0z M352,45.25L434.75,128H352V45.25z M448,480H64V32h256v128h128V480z M288,128H96V96h192V128z    M96,192h320v32H96V192z M96,288h320v32H96V288z M96,384h320v32H96V384z"
                       fill="transparent"
                       stroke="black"
-                      strokeWidth={2}
+											strokeWidth={2}
                     />
                   </Svg.G>
                 ))}
