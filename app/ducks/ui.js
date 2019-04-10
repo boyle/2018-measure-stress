@@ -47,7 +47,7 @@ export default function reducer(state = defaultState, action = {}) {
       return newState;
 
     case HIDE_MODAL:
-      newState = { ...state, modal: { display: false, modalName: "" } };
+      newState = { ...state, modal: { display: false, modalName: "" }, editedComment: null };
       return newState;
 
     case EDIT_EVENT:

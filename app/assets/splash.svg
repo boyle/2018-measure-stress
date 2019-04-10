@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 22.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 1536 2048" style="enable-background:new 0 0 1536 2048;" xml:space="preserve">
+<style type="text/css">
+	.st0{opacity:0.99;fill:#002B94;enable-background:new    ;}
+	.st1{fill:none;stroke:#FFFFFF;stroke-width:30;stroke-opacity:0.9855;}
+	.st2{opacity:0.99;fill:none;stroke:#FFFFFF;stroke-width:30;stroke-opacity:0.9855;enable-background:new    ;}
+	.st3{font-family:'MyriadPro-Regular';}
+	.st4{font-size:12px;}
+	.st5{fill:#FFFFFF;}
+	.st6{font-size:225.2563px;}
+	.st7{font-size:96.4962px;}
+</style>
+<rect id="rect861" class="st0" width="1536" height="2048"/>
+<path id="path832" inkscape:connector-curvature="0" sodipodi:nodetypes="ccaaccacac" class="st1" d="M303.2,1238.5l-38.1-562.9
+	c0,0,196.9,29.3,296.1,35.2c150.2,8.9,301.1,5.4,451.5,0c96-3.4,287.3-20.5,287.3-20.5l-49.8,557c0,0-110.7-61.3-170.9-78.9
+	c-97.3-28.4-301.1-41.3-301.1-41.3s-202.9,7.7-300,34C416.6,1177.8,303.2,1238.5,303.2,1238.5L303.2,1238.5z"/>
+<ellipse id="path828" class="st2" cx="766" cy="1463.3" rx="350.1" ry="137.9"/>
+<g id="g845" transform="matrix(1.1568249,0,0,1.1568249,193.58539,-20.030391)">
+	<path id="path836" inkscape:connector-curvature="0" sodipodi:nodetypes="cccc" class="st1" d="M292.3,1369.2l47.8-278l59.2-300.5
+		l100.7-2.3"/>
+	<path id="path838" inkscape:connector-curvature="0" sodipodi:nodetypes="cacac" class="st1" d="M192.1,1290.1
+		c0,0,3.6-85.2,12.6-126.8c7.7-35.7,35.2-103.7,35.2-103.7s33.1-79.8,54.6-117.2c30.5-53.3,104.8-151.8,104.8-151.8"/>
+	<path id="path840" inkscape:connector-curvature="0" class="st1" d="M239.9,1059.6l97.9,27.1"/>
+</g>
+<g id="g853" transform="matrix(-1.1568249,0,0,1.1568249,-80.168475,-20.030391)">
+	<path id="path847" inkscape:connector-curvature="0" sodipodi:nodetypes="cccc" class="st1" d="M-937.3,1369.2l46.1-278l57.1-300.5
+		l100.2-2.3"/>
+	<path id="path849" inkscape:connector-curvature="0" sodipodi:nodetypes="cacac" class="st1" d="M-1034,1290.1
+		c0,0,3.5-85.2,12.2-126.8c7.5-35.7,33.9-103.7,33.9-103.7s32-79.8,52.7-117.2c29.5-53.3,101.1-151.8,101.1-151.8"/>
+	<path id="path851" inkscape:connector-curvature="0" class="st1" d="M-987.9,1059.6l94.5,27.1"/>
+</g>
+<text transform="matrix(1 0 0 1 508.5947 1748.4053)" class="st3 st4">S</text>
+<text transform="matrix(1 0 0 1 438.9707 446.8291)" class="st5 st3 st6">SAANS</text>
+<text transform="matrix(1 0 0 1 439 562.313)" class="st5 st3 st7">Annotation App</text>
+</svg>
