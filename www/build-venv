@@ -1,0 +1,22 @@
+#! /bin/bash
+set -ex
+[ -d venv ] || virtualenv --python=python3.6 venv
+source venv/bin/activate
+[ -f venv/bin/node ] ||  nodeenv -p
+
+# version check
+python --version
+pip --version
+node --version
+npm --version
+
+[ venv/bin/pytest -nt requirements ] || pip install -r requirements.txt
+touch venv/bin/pytest
+[ node_modules -nt package.json ] || npm install
+touch node_modules
+
+pip check
+
+pip list --outdated
+npm outdated
+npm audit

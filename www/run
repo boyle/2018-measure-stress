@@ -1,23 +1,6 @@
 #! /bin/bash
-[ -d venv ] || virtualenv --python=python3.6 venv
 source ./venv/bin/activate
-set -ex
-[ ! -f requirements.txt ] || pip install -r requirements.txt
-nodeenv -p
-
-# version check
-python --version
-pip --version
-node --version
-npm --version
-
-npm install
-
 export FLASK_APP="bikeshed"
 export FLASK_ENV=development
 #export FLASK_DEBUG=true
-
-pip check
-pip list --outdated
-
 exec flask ${1:-run}

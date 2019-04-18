@@ -1,5 +1,4 @@
 #! /bin/bash
-[ -d venv ] || virtualenv venv
 source venv/bin/activate
 set -ex
-python -m pytest $*
+exec python -m pytest $*

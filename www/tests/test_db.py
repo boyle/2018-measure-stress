@@ -23,6 +23,36 @@ def test_init_db_command(runner, monkeypatch):
         Recorder.called = True
 
     monkeypatch.setattr('bikeshed.db.init_db', fake_init_db)
-    result = runner.invoke(args=['init-db'])
+    result = runner.invoke(args=['initdb'])
     assert 'Initialized' in result.output
     assert Recorder.called
+    assert result.exit_code == 0
+
+    result = runner.invoke(args=['users'])
+    assert '#1 test'  in result.output
+    assert '#2 other' in result.output
+    assert '#3 test1' not in result.output
+    assert '#4 test2' not in result.output
+    assert result.exit_code == 0
+
+    result = runner.invoke(args=['adduser'], input='test1\nasdf1\n')
+    assert 'Added user' in result.output
+    assert result.exit_code == 0
+
+    result = runner.invoke(args=['users'])
+    assert '#1 test'  in result.output
+    assert '#2 other' in result.output
+    assert '#3 test1' in result.output
+    assert '#4 test2' not in result.output
+    assert result.exit_code == 0
+
+    result = runner.invoke(args=['adduser'], input='test2\nasdf2\n')
+    assert 'Added user' in result.output
+    assert result.exit_code == 0
+
+    result = runner.invoke(args=['users'])
+    assert '#1 test'  in result.output
+    assert '#2 other' in result.output
+    assert '#3 test1' in result.output
+    assert '#4 test2' in result.output
+    assert result.exit_code == 0
