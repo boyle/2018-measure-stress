@@ -14,7 +14,7 @@ def create_app(test_config=None):
         # TODO was UPLOAD_FOLDER = '/var/www/rawdata/db/'
         UPLOAD_FOLDER = os.path.join(app.instance_path, 'data'),
         USER_FOLDER = os.path.join(app.instance_path, 'user'),
-        MAX_CONTENT_LENGTH = 500 * 1024 * 1024, # 500 MB
+        MAX_CONTENT_LENGTH = 6000 * 1024 * 1024, # 6 GB
         WEBSITE_VERSION = '0.0.0w',
         APPLICATION_VERSION = '0.0.0a',
     )
