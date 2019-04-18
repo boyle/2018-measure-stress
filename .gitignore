@@ -14,3 +14,13 @@ build/
 www/config.py
 www/slack.cfg
 www/.well-known
+www/node_modules
+www/bikeshed/static/css/agency.css
+www/bikeshed/static/css/agency.min.css
+www/bikeshed/static/js/agency.js
+www/bikeshed/static/js/agency.min.js
+www/bikeshed/static/js/contact_me.js
+www/bikeshed/static/js/contact_me.min.js
+www/bikeshed/static/js/jqBootstrapValidation.js
+www/bikeshed/static/js/jqBootstrapValidation.min.js
+www/bikeshed/static/vendor/

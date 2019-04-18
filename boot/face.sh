@@ -30,7 +30,7 @@ chown www-data:www-data /var/www/html
 cp -r ${REPO_DIR}/www/* /var/www/html/
 
 echo "--- enable dynamic pages via python/flask/jinja2/... ---"
-apt-get -y install python3-dev python3-pip python-virtualenv python3-venv
+apt-get -y install python3-dev python3-pip python-virtualenv python3-venv npm
 python3 --version
 pip3 --version
 pip3 install --upgrade flipflop
