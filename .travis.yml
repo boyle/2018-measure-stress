@@ -1,42 +1,41 @@
-#matrix:
-#  include:
+#language: node_js ## node_js can be accessed from the python docker image
 language: python
 python:
   - "3.6"
   - "3.5"
   - "3.4"
   - "2.7"
+node_js:
+  - '11'
+#  - '9'
+#  - '10'
 
 install:
   - pip install -r www/requirements.txt
   - pip install coveralls
+  - cd ${TRAVIS_BUILD_DIR}/www
+  - npm install
+  - cd ${TRAVIS_BUILD_DIR}/app
+  - npm install
 
 script:
   - cd ${TRAVIS_BUILD_DIR}/www
   - coverage run -m pytest
   - coverage report
+  - cd ${TRAVIS_BUILD_DIR}/app
+  - npm test
 
 after_success:
+  - cd ${TRAVIS_BUILD_DIR}/www
   - coveralls
 
-#    - language: node_js
-#      node_js:
-#        - '9'
-#        - '10'
-#        - '11'
-#
-#      before_install:
-#        - cd ${TRAVIS_BUILD_DIR}/app
-#        - npm install
-#
-#      cache:
-#        yarn: true
-#        directories:
-#          - 'node_modules'
-#
-#      script:
-#        - cd ${TRAVIS_BUILD_DIR}/app
-#        - npm test
+cache:
+  pip: true
+  yarn: true
+  directories:
+    - $HOME/virtualenv/python2.7.9/lib/python2.7/site-packages
+    - www/node_modules
+    - app/node_modules
 
 notifications:
     slack: cimvhr-saans:Sor7cjZ280ryRSYs2byWUYm6
