@@ -9,7 +9,7 @@
         "whatever"
     ],
     "dependencies": {
-        "startbootstrap-agency": "5.0.2"
+        "startbootstrap-agency": "5.0.7"
     },
     "devDependencies": {},
     "scripts": {
