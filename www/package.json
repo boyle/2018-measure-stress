@@ -9,10 +9,12 @@
         "whatever"
     ],
     "dependencies": {
-        "startbootstrap-agency": "5.0.7"
+        "flowjs": "1.0.0",
+        "startbootstrap-agency": "5.0.7",
+        "popper.js": "1.15.0"
     },
     "devDependencies": {},
     "scripts": {
-        "postinstall": "./postinstall_bootstrap"
+        "postinstall": "./npm-postinstall"
     }
 }
