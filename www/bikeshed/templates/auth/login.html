@@ -1,12 +1,26 @@
 {% extends 'base.html' %}
 {% block contenttitle %}Log In{% endblock %}
 {% block content %}
+  <div class="col-md-8 offset-md-2 text-left">
   <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
+     <div class="form-row text-left">
+        <div class="form-group col-md-6">
+           <label for="username">Username</label>
+           <input name="username" id="username" class="form-control" placeholder="username" required>
+        </div>
+        <div class="form-group col-md-6">
+           <label for="password">Password</label>
+           <input type="password" name="password" id="password" class="form-control" placeholder="password" required>
+        </div>
+     </div>
+     <div class="form-row text-left">
+        <div class="form-group col-md-6">
+           <button type="submit" class="btn btn-primary">Sign In</button>
+        </div>
+        <div class="form-group col-md-6">
+           <a href="{{ url_for('auth.register') }}"><button class="btn btn-secondary">Register as a New User</button>
+        </div>
+      </div>
   </form>
-  <p><a href="{{ url_for('auth.register') }}">No username? Register as a new user.</a>
+  </div>
 {% endblock %}
