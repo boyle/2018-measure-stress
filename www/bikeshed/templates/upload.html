@@ -11,8 +11,23 @@
             <div class="flow-error">
                Sorry, your browser does not support drag &amp; drop file uploads.
             </div>
+            <div class="col-md-8 offset-md-2">
+              <form enctype="text/plain" method="POST" action="/uploadchunks/">
+                <div class="form-row">
+                <div class="form-group col-md-5">
+                    <!-- MAX_FILE_SIZE must precede the file input field -->
+                    <label for="patient">Patient</label>
+                    <input id="patient" type="number" step=1 min=0 max=1000 class="form-control" placeholder="111">
+                </div>
+                <div class="form-group col-md-5 offset-md-2">
+                    <label for="session">Session</label>
+                      <input id="session" type="number" step=1 min=1 max=1000 class="form-control" placeholder="222">
+                </div>
+                </div>
+              </form>
+            </div>
             <!-- The below classes are used when doing drag and drop functionality -->
-            <div class="col-md-8 offset-md-2 btn btn-primary flow-drop flow-browse"
+            <div class="col-md-8 offset-md-2 btn btn-primary btn-block flow-drop flow-browse"
                  ondragenter="jQuery(this).addClass('flow-dragover');"
                  ondragend="jQuery(this).removeClass('flow-dragover');"
                  ondrop="jQuery(this).removeClass('flow-dragover');">
@@ -21,16 +36,30 @@
                  <a class="flow-browse"><u>select from your computer</u></a> or
                  <a class="flow-browse-image"><u>select images</u></a> -->
             </div>
+            <div class="col-md-8 offset-md-2 pt-2 flow-progress">
+                <a href="#" onclick="r.upload(); return(false);" class="progress-resume-link">
+                   <button class="btn btn-primary btn-block" type="button">
+                      <i class="ml-3 mr-3 fas fa-redo"/></i>
+                      Resume Upload
+                   </button>
+                </a>
+                <a href="#" onclick="r.pause(); return(false);" class="progress-pause-link">
+                   <button class="btn btn-primary btn-block" type="button">
+                      <i class="ml-3 mr-3 fas fa-cog fa-spin"></i>
+                      Uploading...
+                      <i class="ml-3 mr-3 fas fa-pause-circle fa-inverse"/></i>
+                   </button>
+                </a>
+            </div>
             <div class="col-md-8 offset-md-2 mt-5">
                 <ul class="flow-list"></ul>
             </div>
-            <div class="col-md-8 offset-md-2 mt-2 flow-progress">
-              <div class="progress-pause" nowrap="nowrap">
-                <div id="flow-active" class="spinner-border mr-1" role="status"></div>
-                <a href="#" onclick="r.upload(); return(false);" class="progress-resume-link"><i class="fas fa-redo"/></i></a>
-                <a href="#" onclick="r.pause(); return(false);" class="progress-pause-link"><i class="fas fa-pause-circle"/></i></a>
-                <!--  <a href="#" onclick="r.cancel(); return(false);" class="progress-cancel-link"><i class="fas fa-times-circle"/></i></a> -->
-              </div>
+            <div class="col-md-8 offset-md-2 pt-2 flow-clear">
+              <a href="#" onclick="r.cancel(); return(false);" class="progress-cancel-link">
+                <button class="btn btn-primary btn-block" type="button">
+                  <i class="fas fa-times-circle fa-inverse"/></i> clear upload list
+                </button>
+              </a>
             </div>
 
           </div>
@@ -81,6 +110,7 @@
           // Flow.js isn't supported, fall back on a different method
           $('.flow-error').hide();
           $('.flow-progress').hide();
+          $('.flow-clear').hide();
           //$('.flow-progress').hide();
           if (!r.support) {
             $('.flow-error').show();
@@ -119,6 +149,7 @@
             $self.find('.flow-file-name').text(file.name);
             $self.find('.flow-file-size').text(readablizeBytes(file.size));
             $self.find('.flow-file-download').attr('href', '/download/' + file.uniqueIdentifier).hide();
+            $self.find('.flow-file-resume').hide();
             $self.find('.flow-file-pause').on('click', function () {
               file.pause();
               $self.find('.flow-file-pause').hide();
@@ -135,12 +166,14 @@
             });
           });
           r.on('filesSubmitted', function(file) {
+            $('.flow-clear').hide();
             r.upload();
           });
           r.on('complete', function(){
             // Hide pause/resume when the upload has completed
             //$('.flow-progress .progress-resume-link, .flow-progress .progress-pause-link').hide();
             $('.flow-progress').hide();
+            $('.flow-clear').show();
           });
           r.on('fileSuccess', function(file,message){
             var $self = $('.flow-file-'+file.uniqueIdentifier);
@@ -152,7 +185,8 @@
           });
           r.on('fileError', function(file, message){
             // Reflect that the file upload has resulted in error
-             $('.flow-file-'+file.uniqueIdentifier+' .flow-file-progress').html('<span class="alert alert-danger">file could not be uploaded: '+message+'</span>');
+            $('.flow-file-'+file.uniqueIdentifier+' .flow-file-progress').html('<br><span class="ml-2 bg-danger text-white">file could not be uploaded: '+message+'</span>');
+            $self.find('.flow-file-pause, .flow-file-resume, .flow-file-cancel').remove();
           });
           r.on('fileProgress', function(file){
             // Handle progress for both the file and the overall upload
@@ -178,15 +212,18 @@
               $('.flow-file-pause').hide();
               $('.flow-progress .progress-resume-link').show();
               $('.flow-progress .progress-pause-link').hide();
+              $('.flow-clear').show();
             },
             cancel: function() {
               r.cancel();
               $('.flow-file').remove();
               $('.flow-progress').hide();
+              $('.flow-clear').hide();
             },
             upload: function() {
               $('.flow-file-pause').show();
               $('.flow-file-resume').hide();
+              $('.flow-clear').hide();
               r.resume();
             },
             flow: r
