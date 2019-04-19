@@ -1,15 +1,224 @@
 {% extends "base.html" %}
 {% block contenttitle %}Data Upload{% endblock %}
 {% block content %}
-<!-- The data encoding type, enctype, MUST be specified as below -->
-<form enctype="multipart/form-data" method="POST" action="/upload/">
-    <!-- MAX_FILE_SIZE must precede the file input field -->
-    <input type="hidden" name="MAX_FILE_SIZE" value="500000000" />
-    <input name="files" type="file" multiple=""/><br/>
-    <label for="patient">Patient ID:</label>
-    <input name="patient" type="number" step=1 min=0 max=1000 /><br/>
-    <label for="session">Session Number:</label>
-    <input name="session" type="number" step=1 min=1 max=1000 /><br/>
-    <input type="submit" value="Upload" />
-</form>
+    <section id="new">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-8 offset-md-2 text-left">
+            <h2 class="section-heading text-uppercase">Flow.js Chunked Data Upload</h2>
+            <!-- When you run the code, the below line will get display on the browser -->
+            <!-- If there is an error while uploading; it will display this error message -->
+            <div class="flow-error">
+               Sorry, your browser does not support drag &amp; drop file uploads.
+            </div>
+            <!-- The below classes are used when doing drag and drop functionality -->
+            <div class="col-md-8 offset-md-2 btn btn-primary flow-drop flow-browse"
+                 ondragenter="jQuery(this).addClass('flow-dragover');"
+                 ondragend="jQuery(this).removeClass('flow-dragover');"
+                 ondrop="jQuery(this).removeClass('flow-dragover');">
+               Drag &amp; Drop files here <i class="fas fa-bullseye"/></i> to Upload <br/> or click to select files.
+                 <!-- <a class="flow-browse-folder"><u>select folder</u></a> or
+                 <a class="flow-browse"><u>select from your computer</u></a> or
+                 <a class="flow-browse-image"><u>select images</u></a> -->
+            </div>
+            <div class="col-md-8 offset-md-2 mt-5">
+                <ul class="flow-list"></ul>
+            </div>
+            <div class="col-md-8 offset-md-2 mt-2 flow-progress">
+              <div class="progress-pause" nowrap="nowrap">
+                <div id="flow-active" class="spinner-border mr-1" role="status"></div>
+                <a href="#" onclick="r.upload(); return(false);" class="progress-resume-link"><i class="fas fa-redo"/></i></a>
+                <a href="#" onclick="r.pause(); return(false);" class="progress-pause-link"><i class="fas fa-pause-circle"/></i></a>
+                <!--  <a href="#" onclick="r.cancel(); return(false);" class="progress-cancel-link"><i class="fas fa-times-circle"/></i></a> -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="old">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-4 offset-md-4 text-left">
+            <h2 class="section-heading text-uppercase">Old Method</h2>
+            <form enctype="multipart/form-data" method="POST" action="/upload/">
+              <div class="form-group">
+                  <!-- MAX_FILE_SIZE must precede the file input field -->
+                  <input type="hidden" id="MAX_FILE_SIZE" value="1000000000">
+                  <label for="patient">Patient ID:</label>
+                  <input id="patient" type="number" step=1 min=0 max=1000 class="form-control">
+              </div>
+              <div class="form-group">
+                  <label for="session">Session Number:</label>
+                    <input id="session" type="number" step=1 min=1 max=1000 class="form-control">
+              </div>
+              <div class="form-group">
+                      <input id="files" type="file" multiple="" class="form-control-file">
+              </div>
+              <div class="form-group">
+                      <button type="submit" class="btn btn-primary">Upload</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+{% endblock %}
+{% block scripts %}
+    <!-- javascript -->
+    <script src="{{ url_for('static', filename='js/flow.min.js') }}"></script>
+
+    <script>
+           (function () {
+          var r = new Flow({
+            target: '/uploadchunk/',
+            chunkSize: 1024*1024,
+            testChunks: false
+          });
+          // Flow.js isn't supported, fall back on a different method
+          $('.flow-error').hide();
+          $('.flow-progress').hide();
+          //$('.flow-progress').hide();
+          if (!r.support) {
+            $('.flow-error').show();
+            return ;
+          }
+          // Show a place for dropping/selecting files
+          $('.flow-drop').show();
+          r.assignDrop($('.flow-drop')[0]);
+          r.assignBrowse($('.flow-browse')[0]);
+          r.assignBrowse($('.flow-browse-folder')[0], true);
+          r.assignBrowse($('.flow-browse-image')[0], false, false, {accept: 'image/*'});
+          // Handle file add event
+          r.on('fileAdded', function(file){
+            // Show progress bar
+            $('.flow-progress, .flow-list').show();
+            // Add the file to the list
+            $('.flow-list').append(
+              '<li class="flow-file flow-file-'+file.uniqueIdentifier+'">' +
+              '<span class="flow-file-name"></span> ' +
+              '(<span class="flow-file-size"></span>) ' +
+              '<span class="flow-file-progress"></span> ' +
+              '<a href="" class="flow-file-download" target="_blank">' +
+              'Download' +
+              '</a> ' +
+              '<span class="flow-file-pause">' +
+              ' <i class="fas fa-pause-circle"/></i>' +
+              '</span>' +
+              '<span class="flow-file-resume">' +
+              ' <i class="fas fa-redo"/></i>' +
+              '</span>' +
+              '<span class="flow-file-cancel">' +
+              ' <i class="fas fa-times-circle"/></i>' +
+              '</span>'
+            );
+            var $self = $('.flow-file-'+file.uniqueIdentifier);
+            $self.find('.flow-file-name').text(file.name);
+            $self.find('.flow-file-size').text(readablizeBytes(file.size));
+            $self.find('.flow-file-download').attr('href', '/download/' + file.uniqueIdentifier).hide();
+            $self.find('.flow-file-pause').on('click', function () {
+              file.pause();
+              $self.find('.flow-file-pause').hide();
+              $self.find('.flow-file-resume').show();
+            });
+            $self.find('.flow-file-resume').on('click', function () {
+              file.resume();
+              $self.find('.flow-file-pause').show();
+              $self.find('.flow-file-resume').hide();
+            });
+            $self.find('.flow-file-cancel').on('click', function () {
+              file.cancel();
+              $self.remove();
+            });
+          });
+          r.on('filesSubmitted', function(file) {
+            r.upload();
+          });
+          r.on('complete', function(){
+            // Hide pause/resume when the upload has completed
+            //$('.flow-progress .progress-resume-link, .flow-progress .progress-pause-link').hide();
+            $('.flow-progress').hide();
+          });
+          r.on('fileSuccess', function(file,message){
+            var $self = $('.flow-file-'+file.uniqueIdentifier);
+            // Reflect that the file upload has completed
+            // $self.find('.flow-file-progress').text('(completed)');
+            $self.find('.flow-file-progress').text(' ');
+            $self.find('.flow-file-pause, .flow-file-resume, .flow-file-cancel').remove();
+            // $self.find('.flow-file-download').attr('href', '/download/' + file.uniqueIdentifier).show();
+          });
+          r.on('fileError', function(file, message){
+            // Reflect that the file upload has resulted in error
+             $('.flow-file-'+file.uniqueIdentifier+' .flow-file-progress').html('<span class="alert alert-danger">file could not be uploaded: '+message+'</span>');
+          });
+          r.on('fileProgress', function(file){
+            // Handle progress for both the file and the overall upload
+            $('.flow-file-'+file.uniqueIdentifier+' .flow-file-progress')
+              .html(Math.floor(file.progress()*100) + '% '
+                + readablizeBytes(file.averageSpeed) + '/s '
+                + secondsToStr(file.timeRemaining()) + ' remaining') ;
+            $('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
+          });
+          r.on('uploadStart', function(){
+            // Show pause, hide resume
+            $('.flow-progress .progress-resume-link').hide();
+            $('.flow-progress .progress-pause-link').show();
+          });
+          r.on('catchAll', function() {
+            console.log.apply(console, arguments);
+          });
+          window.r = {
+            pause: function () {
+              r.pause();
+              // Show resume, hide pause
+              $('.flow-file-resume').show();
+              $('.flow-file-pause').hide();
+              $('.flow-progress .progress-resume-link').show();
+              $('.flow-progress .progress-pause-link').hide();
+            },
+            cancel: function() {
+              r.cancel();
+              $('.flow-file').remove();
+              $('.flow-progress').hide();
+            },
+            upload: function() {
+              $('.flow-file-pause').show();
+              $('.flow-file-resume').hide();
+              r.resume();
+            },
+            flow: r
+          };
+        })();
+        function readablizeBytes(bytes) {
+          var s = ['B', 'kB', 'MB', 'GB', 'TB', 'PB'];
+          var e = Math.floor(Math.log(bytes) / Math.log(1024));
+          return (bytes / Math.pow(1024, e)).toFixed(0) + " " + s[e];
+        }
+        function secondsToStr (temp) {
+          function numberEnding (number) {
+            return (number > 1) ? 's' : '';
+          }
+          var years = Math.floor(temp / 31536000);
+          if (years) {
+            return years + ' year' + numberEnding(years);
+          }
+          var days = Math.floor((temp %= 31536000) / 86400);
+          if (days) {
+            return days + ' day' + numberEnding(days);
+          }
+          var hours = Math.floor((temp %= 86400) / 3600);
+          if (hours) {
+            return hours + ' hour' + numberEnding(hours);
+          }
+          var minutes = Math.floor((temp %= 3600) / 60);
+          if (minutes) {
+            return minutes + ' minute' + numberEnding(minutes);
+          }
+          var seconds = temp % 60;
+          return seconds + ' second' + numberEnding(seconds);
+        }
+    </script>
 {% endblock %}

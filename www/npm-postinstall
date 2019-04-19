@@ -3,3 +3,4 @@ set -ex
 cp node_modules/startbootstrap-agency/css/* bikeshed/static/css/
 cp node_modules/startbootstrap-agency/js/* bikeshed/static/js/
 cp -r node_modules/startbootstrap-agency/vendor bikeshed/static/
+cp node_modules/\@flowjs/flow.js/dist/{flow.js,flow.min.js}  bikeshed/static/js/

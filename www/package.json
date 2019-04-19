@@ -9,9 +9,9 @@
         "whatever"
     ],
     "dependencies": {
-        "flowjs": "1.0.0",
-        "startbootstrap-agency": "5.0.7",
-        "popper.js": "1.15.0"
+        "@flowjs/flow.js": "2.13.1",
+        "popper.js": "1.15.0",
+        "startbootstrap-agency": "5.0.7"
     },
     "devDependencies": {},
     "scripts": {
