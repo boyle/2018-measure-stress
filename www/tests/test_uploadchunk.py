@@ -27,7 +27,7 @@ def test_redirect(client, auth):
 
 def test_get(client, auth):
     auth.login()
-    assert client.get('/uploadchunk/').status_code == 200
+    assert client.get('/uploadchunk/').status_code == 500
 
 def test_post(client, auth):
     auth.login()

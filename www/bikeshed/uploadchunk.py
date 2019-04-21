@@ -22,15 +22,23 @@ def before_request():
 def uploadchunk():
     if request.method == 'GET':
         print('GET:  ' + str(request.args.get('')))
+        return ('GET not implemented', 500)
     else:
-        flowChunkNumber = int(request.form.get('flowChunkNumber'))
-        flowTotalChunks = int(request.form.get('flowTotalChunks'))
-        flowChunkSize = int(request.form.get('flowChunkSize'))
-        flowCurrentChunkSize = int( request.form.get('flowCurrentChunkSize'))
-        flowTotalSize = int(request.form.get('flowTotalSize'))
-        flowRelativePath = str(request.form.get('flowRelativePath'))
-        flowFilename = str(request.form.get('flowFilename'))
-        flowIdentifier = str(request.form.get('flowIdentifier'))
+        flowChunkNumber = int(request.form.get('flowChunkNumber','1'))
+        flowTotalChunks = int(request.form.get('flowTotalChunks','1'))
+        flowChunkSize = int(request.form.get('flowChunkSize','1'))
+        flowCurrentChunkSize = int( request.form.get('flowCurrentChunkSize','1'))
+        flowTotalSize = int(request.form.get('flowTotalSize','-1'))
+        flowRelativePath = request.form.get('flowRelativePath')
+        flowFilename = request.form.get('flowFilename')
+        flowIdentifier = request.form.get('flowIdentifier')
+
+        #if not flowFilename:
+        #    return ('missing filename', 400)
+        #if not flowRelativePath:
+        #    return ('missing path', 400)
+        #if not flowIdentifier:
+        #    return ('missing UUID', 400)
 
         print('POST: chunk#%d/%d, (%dB/chunk, currently %dB/chunk, %dB total) %s/%s UUID:%s'%(
             flowChunkNumber, flowTotalChunks,
