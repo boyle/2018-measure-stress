@@ -51,7 +51,7 @@
                    </button>
                 </a>
             </div>
-            <div class="col-md-8 offset-md-2 mt-5">
+            <div class="col-md-10 offset-md-2 mt-5">
                 <ul class="flow-list"></ul>
             </div>
             <div class="col-md-8 offset-md-2 pt-2 flow-clear">
@@ -191,9 +191,14 @@
           r.on('fileProgress', function(file){
             // Handle progress for both the file and the overall upload
             $('.flow-file-'+file.uniqueIdentifier+' .flow-file-progress')
-              .html(Math.floor(file.progress()*100) + '% '
-                + readablizeBytes(file.averageSpeed) + '/s '
-                + secondsToStr(file.timeRemaining()) + ' remaining') ;
+              .html('<div class="progress"><div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'
+                + Math.floor(file.progress()*100)
+                + '">'
+                + Math.floor(file.progress()*100) + '%'
+                + ' (' + readablizeBytes(file.averageSpeed) + '/s) '
+                + secondsToStr(file.timeRemaining()) + ' left'
+                + '</div></div>'
+              ) ;
             $('.progress-bar').css({width:Math.floor(r.progress()*100) + '%'});
           });
           r.on('uploadStart', function(){
@@ -248,14 +253,14 @@
           }
           var hours = Math.floor((temp %= 86400) / 3600);
           if (hours) {
-            return hours + ' hour' + numberEnding(hours);
+            return hours + ' hr' + numberEnding(hours);
           }
           var minutes = Math.floor((temp %= 3600) / 60);
           if (minutes) {
-            return minutes + ' minute' + numberEnding(minutes);
+            return minutes + ' min' + numberEnding(minutes);
           }
           var seconds = temp % 60;
-          return seconds + ' second' + numberEnding(seconds);
+          return seconds + ' sec' + numberEnding(seconds);
         }
     </script>
 {% endblock %}
