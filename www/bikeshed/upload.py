@@ -48,14 +48,14 @@ def store_file(patient, session, filelist):
 @login_required
 def upload():
     if request.method == 'POST':
-        if 'files' not in request.files:
+        if 'file' not in request.files:
 #            flash('File not transmitted.');
             return 'no files' #redirect(request.url)
         if ('patient' not in request.form) or (request.form['patient'] == ''):
             return 'no patient ID'
         if ('session' not in request.form) or (request.form['session'] == ''):
             return 'no session number'
-        filelist = request.files.getlist("files")
+        filelist = request.files.getlist("file")
         return store_file(request.form['patient'], request.form['session'], filelist)
     else: # GET
         return render_template('upload.html')

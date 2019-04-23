@@ -24,6 +24,7 @@ def uploadchunk():
         print('GET:  ' + str(request.args.get('')))
         return ('GET not implemented', 500)
     else:
+
         flowChunkNumber = int(request.form.get('flowChunkNumber','1'))
         flowTotalChunks = int(request.form.get('flowTotalChunks','1'))
         flowChunkSize = int(request.form.get('flowChunkSize','1'))
