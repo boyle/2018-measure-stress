@@ -111,13 +111,26 @@ def test_good_post(client, auth, app):
         content_type='multipart/form-data',
         data = data
     )
-    assert response.status_code == 200
+    assert response.status_code == 200 # TODO should report 400 (bad filename)
     #assert b'../..: skipped' in response.data
     #assert b'upload completed' in response.data
     base = app.config['UPLOAD_FOLDER']
     path = os.path.join(base, str(patient), str(session))
     assert not os.path.isfile(os.path.join(path, 'test.txt.1'))
 
+    data = {'patient': patient, 'session': session}
+    data = {key: str(value) for key, value in data.items()} # int to str
+    data['file'] = [(io.BytesIO(b'a test'), 'test.txt'), (io.BytesIO(b'a test 2'), 'test2.txt')]
+    response = client.post(
+        '/upload/',
+        content_type='multipart/form-data',
+        data = data
+    )
+    assert response.status_code == 200
+    assert os.path.isfile(os.path.join(path, 'test.txt.1'))
+    assert os.path.isfile(os.path.join(path, 'test2.txt'))
+    assert not os.path.isfile(os.path.join(path, 'test.txt.2'))
+    assert not os.path.isfile(os.path.join(path, 'test2.txt.0'))
 
 def test_flowjs_login_required(client, auth):
     auth.logout()
@@ -151,3 +164,12 @@ def test_flowjs_post(client, auth):
     data = {key: str(value) for key, value in data.items()} # int to str
     data['file'] = (io.BytesIO(b'a test'), 'test.txt')
     assert client.post('/upload/', data = data).status_code == 200
+
+def test_flowjs_post_too_many_files(client, auth):
+    auth.login()
+    data = {'patient': 1, 'session': 1, 'flowTotalChunks': 2}
+    data = {key: str(value) for key, value in data.items()} # int to str
+    data['file'] = [(io.BytesIO(b'a test'), 'test.txt'), (io.BytesIO(b'a test 2'), 'test2.txt')]
+    assert client.post('/upload/',
+                       content_type='multipart/form-data',
+                       data = data).status_code == 400
