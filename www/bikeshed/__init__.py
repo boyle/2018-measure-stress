@@ -76,9 +76,6 @@ def create_app(test_config=None):
     from . import upload
     app.register_blueprint(upload.bp)
 
-    from . import uploadchunk
-    app.register_blueprint(uploadchunk.bp)
-
     from . import api
     app.register_blueprint(api.bp)
 

@@ -12,16 +12,16 @@
                Sorry, your browser does not support drag &amp; drop file uploads.
             </div>
             <div class="col-md-8 offset-md-2">
-              <form enctype="text/plain" method="POST" action="/uploadchunks/">
+              <form id="flowExtra" enctype="text/plain" method="POST" action="/upload/">
                 <div class="form-row">
                 <div class="form-group col-md-5">
                     <!-- MAX_FILE_SIZE must precede the file input field -->
                     <label for="patient">Patient</label>
-                    <input id="patient" type="number" step=1 min=0 max=1000 class="form-control" placeholder="111">
+                    <input name="patient" type="number" step=1 min=0 max=1000 class="form-control" placeholder="000">
                 </div>
                 <div class="form-group col-md-5 offset-md-2">
                     <label for="session">Session</label>
-                      <input id="session" type="number" step=1 min=1 max=1000 class="form-control" placeholder="222">
+                      <input name="session" type="number" step=1 min=1 max=1000 class="form-control" placeholder="000">
                 </div>
                 </div>
               </form>
@@ -72,19 +72,19 @@
         <div class="row">
           <div class="col-sm-4 offset-md-4 text-left">
             <h2 class="section-heading text-uppercase">Old Method</h2>
-            <form enctype="multipart/form-data" method="POST" action="/upload/">
+            <form id="oldUpload" enctype="multipart/form-data" method="POST" action="/upload/">
               <div class="form-group">
                   <!-- MAX_FILE_SIZE must precede the file input field -->
                   <input type="hidden" id="MAX_FILE_SIZE" value="1000000000">
                   <label for="patient">Patient ID:</label>
-                  <input id="patient" type="number" step=1 min=0 max=1000 class="form-control">
+                  <input name="patient" type="number" step=1 min=0 max=1000 class="form-control">
               </div>
               <div class="form-group">
                   <label for="session">Session Number:</label>
-                    <input id="session" type="number" step=1 min=1 max=1000 class="form-control">
+                    <input name="session" type="number" step=1 min=1 max=1000 class="form-control">
               </div>
               <div class="form-group">
-                      <input id="file" type="file" multiple="" class="form-control-file">
+                      <input name="file" type="file" multiple="" class="form-control-file">
               </div>
               <div class="form-group">
                       <button type="submit" class="btn btn-primary">Upload</button>
@@ -103,9 +103,21 @@
     <script>
            (function () {
           var r = new Flow({
-            target: '/uploadchunk/',
+            target: '/upload/',
             chunkSize: 1024*1024,
-            testChunks: false
+            testChunks: false,
+            query: function (flowFile, flowChunk) {
+               if (! flowFile.myParams ) {
+                  patient = $('#flowExtra input[name="patient"]').val()
+                  session = $('#flowExtra input[name="session"]').val()
+                  console.log('patient#%d session#%d', patient, session);
+                  flowFile.myParams = {
+                     'patient': patient,
+                     'session': session
+                  };
+               }
+               return flowFile.myParams;
+            }
           });
           // Flow.js isn't supported, fall back on a different method
           $('.flow-error').hide();
@@ -184,8 +196,9 @@
             // $self.find('.flow-file-download').attr('href', '/download/' + file.uniqueIdentifier).show();
           });
           r.on('fileError', function(file, message){
+            var $self = $('.flow-file-'+file.uniqueIdentifier);
             // Reflect that the file upload has resulted in error
-            $('.flow-file-'+file.uniqueIdentifier+' .flow-file-progress').html('<br><span class="ml-2 bg-danger text-white">file could not be uploaded: '+message+'</span>');
+            $self.find('.flow-file-progress').html('<br><span class="ml-2 bg-danger text-white">file could not be uploaded: '+message+'</span>');
             $self.find('.flow-file-pause, .flow-file-resume, .flow-file-cancel').remove();
           });
           r.on('fileProgress', function(file){
