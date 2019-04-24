@@ -5,36 +5,50 @@
       <div class="container">
         <div class="row">
           <div class="col-md-8 offset-md-2 text-left">
-            <h2 class="section-heading text-uppercase">Flow.js Chunked Data Upload</h2>
+            <!-- h2 class="section-heading text-uppercase">Flow.js Chunked Data Upload</h2 -->
             <!-- When you run the code, the below line will get display on the browser -->
             <!-- If there is an error while uploading; it will display this error message -->
             <div class="flow-error">
                Sorry, your browser does not support drag &amp; drop file uploads.
             </div>
             <div class="col-md-8 offset-md-2">
-              <form id="flowExtra" enctype="text/plain" method="POST" action="/upload/">
+              <form id="flow-form" class="needs-validation" method="none" novalidate>
                 <div class="form-row">
                 <div class="form-group col-md-5">
                     <!-- MAX_FILE_SIZE must precede the file input field -->
                     <label for="patient">Patient</label>
-                    <input name="patient" type="number" step=1 min=0 max=1000 class="form-control" placeholder="000">
+                    <input name="patient" type="number" step=1 min=0 max=1000 class="form-control" placeholder="000" required>
+                      <div class="invalid-feedback">A patient number is required: 0&ndash;999.</div>
+                      <!-- div class="valid-feedback">Looks good.</div -->
                 </div>
                 <div class="form-group col-md-5 offset-md-2">
                     <label for="session">Session</label>
-                      <input name="session" type="number" step=1 min=1 max=1000 class="form-control" placeholder="000">
+                      <input name="session" type="number" step=1 min=1 max=1000 class="form-control" placeholder="000" required>
+                      <div class="invalid-feedback">A session number is required: 0&ndash;999.</div>
+                      <!-- div class="valid-feedback">Looks good.</div -->
+                </div>
+                <!-- The below classes are used when doing drag and drop functionality -->
+                <div id="upload-new" class="form-group col-md-12">
+                <div class="btn btn-primary btn-block disabled" id="flow-submit"
+                     ondragenter="jQuery(this).addClass('flow-dragover');"
+                     ondragend="jQuery(this).removeClass('flow-dragover');"
+                     ondrop="jQuery(this).removeClass('flow-dragover');">
+                   Drag &amp; Drop files here <i class="fas fa-bullseye"/></i> to Upload <br/> or click to select files.
+                     <!-- <a class="flow-browse-folder"><u>select folder</u></a> or
+                     <a class="flow-browse"><u>select from your computer</u></a> or
+                     <a class="flow-browse-image"><u>select images</u></a> -->
                 </div>
                 </div>
-              </form>
-            </div>
-            <!-- The below classes are used when doing drag and drop functionality -->
-            <div class="col-md-8 offset-md-2 btn btn-primary btn-block flow-drop flow-browse"
-                 ondragenter="jQuery(this).addClass('flow-dragover');"
-                 ondragend="jQuery(this).removeClass('flow-dragover');"
-                 ondrop="jQuery(this).removeClass('flow-dragover');">
-               Drag &amp; Drop files here <i class="fas fa-bullseye"/></i> to Upload <br/> or click to select files.
-                 <!-- <a class="flow-browse-folder"><u>select folder</u></a> or
-                 <a class="flow-browse"><u>select from your computer</u></a> or
-                 <a class="flow-browse-image"><u>select images</u></a> -->
+                <div id="upload-old">
+                    <div class="form-group col-md-12">
+                         <input name="file" type="file" multiple="" class="form-control-file" required>
+                         <div class="invalid-feedback">Select files to upload.</div>
+                    </div>
+                    <div class="form-group col-md-12">
+                         <button type="submit" class="btn btn-primary" disabled>Upload</button>
+                    </div>
+                </div>
+                </form>
             </div>
             <div class="col-md-8 offset-md-2 pt-2 flow-progress">
                 <a href="#" onclick="r.upload(); return(false);" class="progress-resume-link">
@@ -66,35 +80,6 @@
         </div>
       </div>
     </section>
-
-    <section id="old">
-      <div class="container">
-        <div class="row">
-          <div class="col-sm-4 offset-md-4 text-left">
-            <h2 class="section-heading text-uppercase">Old Method</h2>
-            <form id="oldUpload" enctype="multipart/form-data" method="POST" action="/upload/">
-              <div class="form-group">
-                  <!-- MAX_FILE_SIZE must precede the file input field -->
-                  <input type="hidden" id="MAX_FILE_SIZE" value="1000000000">
-                  <label for="patient">Patient ID:</label>
-                  <input name="patient" type="number" step=1 min=0 max=1000 class="form-control">
-              </div>
-              <div class="form-group">
-                  <label for="session">Session Number:</label>
-                    <input name="session" type="number" step=1 min=1 max=1000 class="form-control">
-              </div>
-              <div class="form-group">
-                      <input name="file" type="file" multiple="" class="form-control-file">
-              </div>
-              <div class="form-group">
-                      <button type="submit" class="btn btn-primary">Upload</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
-
 {% endblock %}
 {% block scripts %}
     <!-- javascript -->
@@ -102,14 +87,15 @@
 
     <script>
            (function () {
+
           var r = new Flow({
             target: '/upload/',
             chunkSize: 1024*1024,
             testChunks: true,
             query: function (flowFile, flowChunk) {
                if (! flowFile.myParams ) {
-                  patient = $('#flowExtra input[name="patient"]').val()
-                  session = $('#flowExtra input[name="session"]').val()
+                  patient = $('#flow-form input[name="patient"]').val()
+                  session = $('#flow-form input[name="session"]').val()
                   //console.log('patient#%d session#%d', patient, session);
                   flowFile.myParams = {
                      'patient': patient,
@@ -119,21 +105,33 @@
                return flowFile.myParams;
             }
           });
+          var forms = document.getElementsByClassName('needs-validation');
+          validate(forms);
+          $("form").change(function(){
+             if(checkValidity(forms)) {
+               $("button").removeAttr('disabled');
+               $('#flow-submit').removeClass('disabled');
+               r.assignDrop($('#flow-submit')[0]);
+               r.assignBrowse($('#flow-submit')[0]);
+             }
+             else {
+               $("button").attr('disabled',true);
+               $('#flow-submit').addClass('disabled');
+               r.unassignDrop($('#flow-submit')[0]);
+               r.unassignBrowse($('#flow-submit')[0]);
+             }
+          });
           // Flow.js isn't supported, fall back on a different method
           $('.flow-error').hide();
           $('.flow-progress').hide();
           $('.flow-clear').hide();
-          //$('.flow-progress').hide();
           if (!r.support) {
-            $('.flow-error').show();
-            return ;
+            $('#upload-new').remove();
+            $('#flow-form').attr('method','POST')
+            $('#flow-form').attr('target','/upload/')
+            return;
           }
-          // Show a place for dropping/selecting files
-          $('.flow-drop').show();
-          r.assignDrop($('.flow-drop')[0]);
-          r.assignBrowse($('.flow-browse')[0]);
-          r.assignBrowse($('.flow-browse-folder')[0], true);
-          r.assignBrowse($('.flow-browse-image')[0], false, false, {accept: 'image/*'});
+          $('#upload-old').remove();
           // Handle file add event
           r.on('fileAdded', function(file){
             // Show progress bar
@@ -274,6 +272,18 @@
           }
           var seconds = temp % 60;
           return seconds + ' sec' + numberEnding(seconds);
+        }
+        function validate (forms) {
+          Array.prototype.filter.call(forms, function(form) {
+            form.classList.add('was-validated');
+          });
+        }
+        function checkValidity (forms) {
+           var valid = true;
+          Array.prototype.filter.call(forms, function(form) {
+            valid = valid && form.checkValidity();
+          });
+           return valid;
         }
     </script>
 {% endblock %}
