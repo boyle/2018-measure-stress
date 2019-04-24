@@ -2,6 +2,7 @@
 
 import os
 from time import (time, sleep)
+from threading import RLock
 from flask import (
     Blueprint, request,
     render_template, current_app
@@ -11,6 +12,19 @@ from werkzeug.utils import secure_filename
 from bikeshed.auth import login_required
 
 bp = Blueprint('upload', __name__, url_prefix='/upload')
+
+# RLock() assume a single python process. We would need to transition to lock
+# files if lighttpd launches more processes via
+# /etc/lighttpd/*.conf where max-procs > 1 in the lighttpd config:
+#    fastcgi.server += ( "/app.fcgi" =>
+#        ((
+#            "socket" => "/tmp/flaskapp.fastcgi.socket",
+#            "bin-path" => "/var/www/html/app.fcgi",
+#            "max-procs" => 1,
+#            "check-local" => "disable",
+#        ))
+tmpdir_lock = RLock()
+datadir_lock = RLock()
 
 
 @bp.before_request
@@ -27,8 +41,9 @@ def chunk_store(patient, session, data, chunk_num):
         data.filename + '.part' + str(chunk_num)
     )
     save_location = os.path.join(tmppath, chunk_fn)
-    data.save(save_location)
-    size = os.stat(save_location).st_size
+    with tmpdir_lock:
+        data.save(save_location)
+        size = os.stat(save_location).st_size
     return size
 
 
@@ -37,15 +52,13 @@ def chunk_clean():
     N = 7
     tmppath = mk_tmp_dir()
     now = time()
-    for fn in os.listdir(tmppath):
-        f = os.path.join(tmppath, fn)
-        try:
+    with tmpdir_lock:
+        for fn in os.listdir(tmppath):
+            f = os.path.join(tmppath, fn)
             isfile = os.path.isfile(f)
             mtime = os.stat(f).st_mtime
             if isfile and (mtime < now - N * 86400):
                 os.remove(f)
-        except FileNotFoundError:
-            continue  # no worries: file deleted/moved
 
 
 def chunk_coalesce(patient, session, filename, chunk_num, total_size, total_chunks):
@@ -66,18 +79,20 @@ def chunk_coalesce(patient, session, filename, chunk_num, total_size, total_chun
     if size == total_size:  # HAPPY
         path = mk_data_dir(patient, session)
         final_fn = os.path.join(path, secure_filename(filename))
-        shift_file(path, final_fn)
-        open(final_fn, mode='wb').close()  # zero byte file
-        for fn in chunk_fns:
-            f = open(fn, mode='rb')
-            contents = f.read()
-            f.close()
-            f = open(final_fn, mode='ab+')
-            f.write(contents)
-            f.close()
+        with datadir_lock:
+            shift_file(path, final_fn)
+            open(final_fn, mode='wb').close()  # zero byte file
+            with tmpdir_lock:
+                for fn in chunk_fns:
+                    f = open(fn, mode='rb')
+                    contents = f.read()
+                    f.close()
+                    f = open(final_fn, mode='ab+')
+                    f.write(contents)
+                    f.close()
 
-        for fn in chunk_fns:
-            os.remove(fn)
+                for fn in chunk_fns:
+                    os.remove(fn)
 
     return size
 
@@ -90,17 +105,21 @@ def chunk_test(patient, session, filename, chunk_num):
             str(session) + '-' +
             filename + '.part' + str(chunk_num))
         )
-    if not os.path.isfile(chunk_fn):
-        return None
-    return os.stat(chunk_fn).st_size
+    with tmpdir_lock:
+        if not os.path.isfile(chunk_fn):
+            return None
+        size = os.stat(chunk_fn).st_size
+    return size
 
 
 def file_test(patient, session, filename):
     path = mk_data_dir(patient, session)
     fn = os.path.join(path, secure_filename(filename))
-    if not os.path.isfile(fn):
-        return None
-    return os.stat(fn).st_size
+    with datadir_lock:
+        if not os.path.isfile(fn):
+            return None
+        size = os.stat(fn).st_size
+    return size
 
 
 def store_file(patient, session, filelist):
@@ -112,25 +131,28 @@ def store_file(patient, session, filelist):
             s += '{}: skipped<br/>'.format(f.filename)
             continue
         s += fn + ': stored<br/>'
-        shift_file(path, fn)
-        f.save(os.path.join(path, fn))
+        with datadir_lock:
+            shift_file(path, fn)
+            f.save(os.path.join(path, fn))
     return s+'<br/>upload completed'
 
 
 def shift_file(path, fn):
-    if os.path.isfile(os.path.join(path, fn)):  # collision
-        i = 0
-        while os.path.isfile(os.path.join(path, fn + '.' + str(i))):
-            i += 1
-        os.rename(os.path.join(path, fn),
-                  os.path.join(path, fn + '.' + str(i)))
+    with datadir_lock:
+        if os.path.isfile(os.path.join(path, fn)):  # collision
+            i = 0
+            while os.path.isfile(os.path.join(path, fn + '.' + str(i))):
+                i += 1
+            os.rename(os.path.join(path, fn),
+                      os.path.join(path, fn + '.' + str(i)))
 
 
 def mk_data_dir(patient, session):
     base = current_app.config['UPLOAD_FOLDER']
     path = os.path.join(base, str(patient), str(session))
     try:
-        os.makedirs(path)
+        with datadir_lock:
+            os.makedirs(path)
     except OSError:
         pass
     return path
@@ -140,7 +162,8 @@ def mk_tmp_dir():
     base = current_app.config['UPLOAD_FOLDER']
     tmppath = os.path.join(base, 'tmp')
     try:
-        os.makedirs(tmppath)
+        with tmpdir_lock:
+            os.makedirs(tmppath)
     except OSError:
         pass
     return tmppath
@@ -210,8 +233,9 @@ def upload():
             chunk_clean()
             return ('', 200)
 
-        store_file(patient, session, filelist)
-        return ('', 200)
+        else:
+            store_file(patient, session, filelist)
+            return ('', 200)
 
     else: # GET
         flowChunkNumber = int(request.args.get('flowChunkNumber', '1'))

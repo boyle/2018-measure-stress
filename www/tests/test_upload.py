@@ -145,7 +145,7 @@ def test_flowjs_redirect(client, auth):
 def test_flowjs_get(client, auth, chunknum, size, filename, code):
     auth.login()
     for n in range(0, chunknum):
-        test_flowjs_post(client, auth, n+1, 6, 200)
+        test_flowjs_post(client, auth, n+1)
     data = {'patient': 1, 'session': 1,
             'flowFilename': filename,
             'flowTotalChunks': 2,
@@ -157,19 +157,23 @@ def test_flowjs_get(client, auth, chunknum, size, filename, code):
     print(str(response.data))
     assert response.status_code == code
 
-@pytest.mark.parametrize(('chunknum','size','code'), (
-    (2, 6, 400),
-    (1, 1, 400),
-    (1, 6, 200),
-    (2, 1, 400),
-    (2, 6, 200),
+
+@pytest.mark.parametrize(('chunknum','size','total_size','code'), (
+    (2, 6, 12, 400),
+    (1, 1,  2, 400),
+    (1, 6, 12, 200),
+    (2, 1,  2, 400),
+    (2, 6,  2, 400),
+    (2, 6, 12, 200),
 ))
-def test_flowjs_post(client, auth, chunknum, size, code, filename='test.txt'):
+def test_flowjs_post_wrap(client, auth, chunknum, size, total_size, code):
+    test_flowjs_post(client, auth, chunknum, size, total_size, code, filename='test.txt')
+def test_flowjs_post(client, auth, chunknum=1, size=6, total_size=12, code=200, filename='test.txt'):
     auth.login()
     data = {'patient': 1, 'session': 1,
             'flowTotalChunks': 2,
             'flowCurrentChunkSize': size,
-            'flowTotalSize': size*2,
+            'flowTotalSize': total_size,
             'flowChunkNumber': chunknum,
     }
     data = {key: str(value) for key, value in data.items()} # int to str
@@ -177,6 +181,7 @@ def test_flowjs_post(client, auth, chunknum, size, code, filename='test.txt'):
     response = client.post('/upload/', data = data)
     print(str(response.data))
     assert response.status_code == code
+
 
 def test_flowjs_post_inconsistent_filename(client, auth):
     auth.login()
@@ -189,6 +194,7 @@ def test_flowjs_post_inconsistent_filename(client, auth):
     print(str(response.data))
     assert response.status_code == 400
     assert b'error: flowFilename != file' in response.data
+
 
 def test_flowjs_post_too_many_files(client, auth):
     auth.login()
@@ -205,10 +211,10 @@ def test_flowjs_cleanup(client, app, auth):
     base = app.config['UPLOAD_FOLDER']
     tmppath = os.path.join(base, 'tmp')
     shutil.rmtree(tmppath, ignore_errors=True)
-    test_flowjs_post(client, auth, 1, 6, 200, 'test1.txt')
-    test_flowjs_post(client, auth, 1, 6, 200, 'test2.txt')
-    test_flowjs_post(client, auth, 1, 6, 200, 'test3.txt')
-    test_flowjs_post(client, auth, 2, 6, 200, 'test3.txt')
+    test_flowjs_post(client, auth, 1, filename='test1.txt')
+    test_flowjs_post(client, auth, 1, filename='test2.txt')
+    test_flowjs_post(client, auth, 1, filename='test3.txt')
+    test_flowjs_post(client, auth, 2, filename='test3.txt')
     print(tmppath)
     assert os.path.isdir(tmppath)
     assert os.path.isfile(os.path.join(tmppath,'1-1-test1.txt.part1'))
@@ -220,10 +226,8 @@ def test_flowjs_cleanup(client, app, auth):
     atime = mtime
     os.utime(os.path.join(tmppath,'1-1-test1.txt.part1'), (atime, mtime))
 
-    test_flowjs_post(client, auth, 1, 6, 200, 'test3.txt')
-    test_flowjs_post(client, auth, 2, 6, 200, 'test3.txt')
+    test_flowjs_post(client, auth, 1, filename='test3.txt')
+    test_flowjs_post(client, auth, 2, filename='test3.txt')
     assert not os.path.isfile(os.path.join(tmppath,'1-1-test1.txt.part1'))
     assert os.path.isfile(os.path.join(tmppath,'1-1-test2.txt.part1'))
     assert not os.path.isfile(os.path.join(tmppath,'1-1-test3.txt.part1'))
-
-# TODO hitting cleanup exception (file removed by another process) requires mocking using pytest
