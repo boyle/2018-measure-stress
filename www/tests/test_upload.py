@@ -137,10 +137,10 @@ def test_flowjs_redirect(client, auth):
 @pytest.mark.parametrize(('chunknum','size','filename','code'), (
     (1, 6, 'test.txt', 200),
     (1, 1, 'test.txt', 400),
-    (1, 6, 'test123.txt', 404),
+    (1, 6, 'test123.txt', 204),
     (2, 6, 'test.txt', 200),
     (2, 1, 'test.txt', 400),
-    (2, 6, 'test123.txt', 404),
+    (2, 6, 'test123.txt', 204),
 ))
 def test_flowjs_get(client, auth, chunknum, size, filename, code):
     auth.login()

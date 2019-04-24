@@ -243,13 +243,13 @@ def upload_get_flowjs(request):
     if flowTotalChunks != flowChunkNumber:
         size = chunk_test(patient, session, flowFilename, flowChunkNumber)
         if size is None:
-            return ('no such file chunk', 404)
+            return ('no such file chunk', 204)  # No Content
         if size != flowCurrentChunkSize:
             return ('size mismatch #%d: %dB actual != %dB expected'%(flowChunkNumber, size, flowCurrentChunkSize), 400)
     else:
         size = file_test(patient, session, flowFilename)
         if size is None:
-            return ('no such file', 404)
+            return ('no such file', 204)  # No Content
         if size != flowTotalSize:
             return ('file size mismatch: %dB actual != %dB expected'%(size, flowTotalSize), 400)
     return ('', 200)
