@@ -1,5 +1,3 @@
-#from __future__ import print_function
-
 import os
 from time import (time, sleep)
 from threading import RLock
@@ -33,13 +31,20 @@ def before_request():
     pass
 
 
+def secure_filename_default(name, default='blank'):
+    name = secure_filename(name)
+    if not name:
+        name = default
+    return name
+
+
 def chunk_store(patient, session, data, chunk_num):
     tmppath = mk_tmp_dir()
-    chunk_fn = secure_filename(
-        str(patient) + '-' +
-        str(session) + '-' +
-        data.filename + '.part' + str(chunk_num)
-    )
+    chunk_fn = \
+        str(patient) + '-' + \
+        str(session) + '-' + \
+        secure_filename_default(data.filename) + \
+        '.part' + str(chunk_num)
     save_location = os.path.join(tmppath, chunk_fn)
     with tmpdir_lock:
         data.save(save_location)
@@ -61,13 +66,15 @@ def chunk_clean():
                 os.remove(f)
 
 
-def chunk_coalesce(patient, session, filename, chunk_num, total_size, total_chunks):
+def chunk_coalesce(patient, session,
+                   filename, chunk_num, total_size, total_chunks):
     tmppath = mk_tmp_dir()
     chunk_fns = [
-        os.path.join(tmppath, secure_filename(
-            str(patient) + '-' +
-            str(session) + '-' +
-            filename + '.part' + str(chunk_num+1))
+        os.path.join(tmppath,
+                     str(patient) + '-' +
+                     str(session) + '-' +
+                     secure_filename_default(filename) +
+                     '.part' + str(chunk_num+1)
         ) for chunk_num in range(0, total_chunks)
     ]
     size = 0
@@ -78,7 +85,7 @@ def chunk_coalesce(patient, session, filename, chunk_num, total_size, total_chun
 
     if size == total_size:  # HAPPY
         path = mk_data_dir(patient, session)
-        final_fn = os.path.join(path, secure_filename(filename))
+        final_fn = os.path.join(path, secure_filename_default(filename))
         with datadir_lock:
             shift_file(path, final_fn)
             open(final_fn, mode='wb').close()  # zero byte file
@@ -100,10 +107,11 @@ def chunk_coalesce(patient, session, filename, chunk_num, total_size, total_chun
 def chunk_test(patient, session, filename, chunk_num):
     tmppath = mk_tmp_dir()
     chunk_fn = \
-        os.path.join(tmppath, secure_filename(
+        os.path.join(tmppath,
             str(patient) + '-' +
             str(session) + '-' +
-            filename + '.part' + str(chunk_num))
+            secure_filename_default(filename) +
+            '.part' + str(chunk_num)
         )
     with tmpdir_lock:
         if not os.path.isfile(chunk_fn):
@@ -114,7 +122,7 @@ def chunk_test(patient, session, filename, chunk_num):
 
 def file_test(patient, session, filename):
     path = mk_data_dir(patient, session)
-    fn = os.path.join(path, secure_filename(filename))
+    fn = os.path.join(path, secure_filename_default(filename))
     with datadir_lock:
         if not os.path.isfile(fn):
             return None
@@ -124,17 +132,11 @@ def file_test(patient, session, filename):
 
 def store_file(patient, session, filelist):
     path = mk_data_dir(patient, session)
-    s = 'patient {}, session {}<br/><br/>'.format(patient, session)
     for f in filelist:
-        fn = secure_filename(f.filename)
-        if fn == '':
-            s += '{}: skipped<br/>'.format(f.filename)
-            continue
-        s += fn + ': stored<br/>'
+        fn = secure_filename_default(f.filename)
         with datadir_lock:
             shift_file(path, fn)
             f.save(os.path.join(path, fn))
-    return s+'<br/>upload completed'
 
 
 def shift_file(path, fn):
@@ -185,20 +187,13 @@ def upload():
     if request.method == 'POST':
         flowChunkNumber = int(request.form.get('flowChunkNumber', '1'))
         flowTotalChunks = int(request.form.get('flowTotalChunks', '1'))
-        flowCurrentChunkSize = int( request.form.get('flowCurrentChunkSize', '1'))
+        flowCurrentChunkSize = int(request.form.get('flowCurrentChunkSize', '1'))
         flowTotalSize = int(request.form.get('flowTotalSize', '-1'))
         flowFilename = request.form.get('flowFilename')
 
         filelist = request.files.getlist('file')
         patient = str_to_id(request.form.get('patient'), 0, 1000)
         session = str_to_id(request.form.get('session'), 1, 1000)
-
-        #print('POST: chunk#%d/%d, (%dB of %dB total) %s files:%s patient#%s session#%s'%(
-        #    flowChunkNumber, flowTotalChunks,
-        #    flowCurrentChunkSize, flowTotalSize,
-        #    flowFilename,
-        #    str(filelist), str(patient), str(session)
-        #    ))
 
         if (not filelist) or (len(filelist) < 1) or ('' in filelist):
             return ('no files', 400)
@@ -208,11 +203,11 @@ def upload():
             return ('no Session number', 400)
         if flowTotalChunks > 1 and len(filelist) > 1:
             return ('flow.js implementation error: ' +
-                'totalchunks > 1, but len(filelist) > 1 -- one name per file', 400)
+                    'totalchunks > 1, but len(filelist) > 1 -- one name per file', 400)
         if flowFilename and flowFilename != filelist[0].filename:
             return ('flow.js implementation error: flowFilename != file', 400)
 
-        if flowTotalChunks > 1: # is using flow.js
+        if flowTotalChunks > 1:  # is using flow.js
             size = chunk_store(patient, session, filelist[0], flowChunkNumber)
             if size != flowCurrentChunkSize:
                 return ('size mismatch #%d: %dB actual != %dB expected'%(flowChunkNumber, size, flowCurrentChunkSize), 400)
@@ -247,8 +242,7 @@ def upload():
         patient = str_to_id(request.args.get('patient'), 0, 1000)
         session = str_to_id(request.args.get('session'), 1, 1000)
 
-        #print('GET: UUID:%s'%(str(flowIdentifier)))
-        if flowFilename: # flow.js response
+        if flowFilename:  # flow.js response
             if flowTotalChunks != flowChunkNumber:
                 size = chunk_test(patient, session, flowFilename, flowChunkNumber)
                 if size is None:
@@ -263,5 +257,5 @@ def upload():
                     return ('file size mismatch: %dB actual != %dB expected'%(size, flowTotalSize), 400)
             return ('', 200)
 
-        else: # HTML response
+        else:  # HTML response
             return render_template('upload.html')
