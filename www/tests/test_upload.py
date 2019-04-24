@@ -1,9 +1,9 @@
 import io
 import os
 import shutil
+from time import time
 import pytest
-from flask import g, session, url_for
-from bikeshed.db import get_db
+
 
 def test_login_required(client, auth):
     auth.logout()
@@ -45,26 +45,20 @@ def test_get(client, auth):
 def test_bad_post(client, auth, file, patient, session, message):
     auth.login()
     data = {'patient': patient, 'session': session}
-    data = {k: str(v) for k, v in data.items() if v is not None} # int to str
+    data = {k: str(v) for k, v in data.items() if v is not None}  # int to str
     data['file'] = (io.BytesIO(b'a test'), file)
-    response = client.post(
-        '/upload/',
-        content_type='multipart/form-data',
-        data = data
-    )
+    response = client.post('/upload/', content_type='multipart/form-data',
+                           data=data)
     assert message in response.data
 
 
 def test_empty_post(client, auth):
     auth.login()
     data = {'patient': 1, 'session': 1}
-    data = {key: str(value) for key, value in data.items()} # int to str
+    data = {key: str(value) for key, value in data.items()}  # int to str
     data['file'] = list()
-    response = client.post(
-        '/upload/',
-        content_type='multipart/form-data',
-        data = data
-    )
+    response = client.post('/upload/', content_type='multipart/form-data',
+                           data=data)
     assert b'no file' in response.data
 
 
@@ -77,13 +71,10 @@ def test_good_post(client, auth, app):
 
     auth.login()
     data = {'patient': patient, 'session': session}
-    data = {key: str(value) for key, value in data.items()} # int to str
+    data = {key: str(value) for key, value in data.items()}  # int to str
     data['file'] = (io.BytesIO(b'a test'), 'test.txt')
-    response = client.post(
-        '/upload/',
-        content_type='multipart/form-data',
-        data = data
-    )
+    response = client.post('/upload/', content_type='multipart/form-data',
+                           data=data)
     assert response.status_code == 200
     #assert b'test.txt: stored' in response.data
     #assert b'upload completed' in response.data
@@ -91,26 +82,20 @@ def test_good_post(client, auth, app):
     assert os.path.isfile(os.path.join(path, 'test.txt'))
 
     data = {'patient': patient, 'session': session}
-    data = {key: str(value) for key, value in data.items()} # int to str
+    data = {key: str(value) for key, value in data.items()}  # int to str
     data['file'] = (io.BytesIO(b'a test'), 'test.txt')
-    response = client.post(
-        '/upload/',
-        content_type='multipart/form-data',
-        data = data
-    )
+    response = client.post('/upload/', content_type='multipart/form-data',
+                           data=data)
     assert response.status_code == 200
     #assert b'test.txt: stored' in response.data
     #assert b'upload completed' in response.data
     assert os.path.isfile(os.path.join(path, 'test.txt.0'))
 
     data = {'patient': patient, 'session': session}
-    data = {key: str(value) for key, value in data.items()} # int to str
+    data = {key: str(value) for key, value in data.items()}  # int to str
     data['file'] = (io.BytesIO(b'a test'), '../..')
-    response = client.post(
-        '/upload/',
-        content_type='multipart/form-data',
-        data = data
-    )
+    response = client.post('/upload/', content_type='multipart/form-data',
+                           data=data)
     assert response.status_code == 200 # TODO should report 400 (bad filename)
     #assert b'../..: skipped' in response.data
     #assert b'upload completed' in response.data
@@ -121,11 +106,8 @@ def test_good_post(client, auth, app):
     data = {'patient': patient, 'session': session}
     data = {key: str(value) for key, value in data.items()} # int to str
     data['file'] = [(io.BytesIO(b'a test'), 'test.txt'), (io.BytesIO(b'a test 2'), 'test2.txt')]
-    response = client.post(
-        '/upload/',
-        content_type='multipart/form-data',
-        data = data
-    )
+    response = client.post('/upload/', content_type='multipart/form-data',
+                           data=data)
     assert response.status_code == 200
     assert os.path.isfile(os.path.join(path, 'test.txt.1'))
     assert os.path.isfile(os.path.join(path, 'test2.txt'))
@@ -152,18 +134,61 @@ def test_flowjs_redirect(client, auth):
     assert response.headers['Location'] == 'http://localhost/upload/'
 
 
-def test_flowjs_get(client, auth):
+@pytest.mark.parametrize(('chunknum','size','filename','code'), (
+    (1, 6, 'test.txt', 200),
+    (1, 1, 'test.txt', 400),
+    (1, 6, 'test123.txt', 404),
+    (2, 6, 'test.txt', 200),
+    (2, 1, 'test.txt', 400),
+    (2, 6, 'test123.txt', 404),
+))
+def test_flowjs_get(client, auth, chunknum, size, filename, code):
     auth.login()
-    data = {'flowIdentifier': 'test'}
-#    data = {key: str(value) for key, value in data.items()} # int to str
-    assert client.get('/upload/', query_string = data).status_code == 500
+    for n in range(0, chunknum):
+        test_flowjs_post(client, auth, n+1, 6, 200)
+    data = {'patient': 1, 'session': 1,
+            'flowFilename': filename,
+            'flowTotalChunks': 2,
+            'flowCurrentChunkSize': size,
+            'flowTotalSize': size*2,
+            'flowChunkNumber': chunknum,
+    }
+    response = client.get('/upload/', query_string = data)
+    print(str(response.data))
+    assert response.status_code == code
 
-def test_flowjs_post(client, auth):
+@pytest.mark.parametrize(('chunknum','size','code'), (
+    (2, 6, 400),
+    (1, 1, 400),
+    (1, 6, 200),
+    (2, 1, 400),
+    (2, 6, 200),
+))
+def test_flowjs_post(client, auth, chunknum, size, code, filename='test.txt'):
     auth.login()
-    data = {'patient': 1, 'session': 1, 'flowTotalChunks': 2}
+    data = {'patient': 1, 'session': 1,
+            'flowTotalChunks': 2,
+            'flowCurrentChunkSize': size,
+            'flowTotalSize': size*2,
+            'flowChunkNumber': chunknum,
+    }
+    data = {key: str(value) for key, value in data.items()} # int to str
+    data['file'] = (io.BytesIO(b'a test'), filename)
+    response = client.post('/upload/', data = data)
+    print(str(response.data))
+    assert response.status_code == code
+
+def test_flowjs_post_inconsistent_filename(client, auth):
+    auth.login()
+    data = {'patient': 1, 'session': 1,
+            'flowFilename': 'abc.txt',
+    }
     data = {key: str(value) for key, value in data.items()} # int to str
     data['file'] = (io.BytesIO(b'a test'), 'test.txt')
-    assert client.post('/upload/', data = data).status_code == 200
+    response = client.post('/upload/', data=data)
+    print(str(response.data))
+    assert response.status_code == 400
+    assert b'error: flowFilename != file' in response.data
 
 def test_flowjs_post_too_many_files(client, auth):
     auth.login()
@@ -173,3 +198,32 @@ def test_flowjs_post_too_many_files(client, auth):
     assert client.post('/upload/',
                        content_type='multipart/form-data',
                        data = data).status_code == 400
+
+
+def test_flowjs_cleanup(client, app, auth):
+    auth.login()
+    base = app.config['UPLOAD_FOLDER']
+    tmppath = os.path.join(base, 'tmp')
+    shutil.rmtree(tmppath, ignore_errors=True)
+    test_flowjs_post(client, auth, 1, 6, 200, 'test1.txt')
+    test_flowjs_post(client, auth, 1, 6, 200, 'test2.txt')
+    test_flowjs_post(client, auth, 1, 6, 200, 'test3.txt')
+    test_flowjs_post(client, auth, 2, 6, 200, 'test3.txt')
+    print(tmppath)
+    assert os.path.isdir(tmppath)
+    assert os.path.isfile(os.path.join(tmppath,'1-1-test1.txt.part1'))
+    assert os.path.isfile(os.path.join(tmppath,'1-1-test2.txt.part1'))
+    assert not os.path.isfile(os.path.join(tmppath,'1-1-test3.txt.part1'))
+
+    now = time()
+    mtime = now - 10 * 86400;  # - 10 days in the past
+    atime = mtime
+    os.utime(os.path.join(tmppath,'1-1-test1.txt.part1'), (atime, mtime))
+
+    test_flowjs_post(client, auth, 1, 6, 200, 'test3.txt')
+    test_flowjs_post(client, auth, 2, 6, 200, 'test3.txt')
+    assert not os.path.isfile(os.path.join(tmppath,'1-1-test1.txt.part1'))
+    assert os.path.isfile(os.path.join(tmppath,'1-1-test2.txt.part1'))
+    assert not os.path.isfile(os.path.join(tmppath,'1-1-test3.txt.part1'))
+
+# TODO hitting cleanup exception (file removed by another process) requires mocking using pytest

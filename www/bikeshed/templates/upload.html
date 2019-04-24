@@ -105,12 +105,12 @@
           var r = new Flow({
             target: '/upload/',
             chunkSize: 1024*1024,
-            testChunks: false,
+            testChunks: true,
             query: function (flowFile, flowChunk) {
                if (! flowFile.myParams ) {
                   patient = $('#flowExtra input[name="patient"]').val()
                   session = $('#flowExtra input[name="session"]').val()
-                  console.log('patient#%d session#%d', patient, session);
+                  //console.log('patient#%d session#%d', patient, session);
                   flowFile.myParams = {
                      'patient': patient,
                      'session': session
@@ -220,7 +220,7 @@
             $('.flow-progress .progress-pause-link').show();
           });
           r.on('catchAll', function() {
-            console.log.apply(console, arguments);
+            //console.log.apply(console, arguments);
           });
           window.r = {
             pause: function () {
