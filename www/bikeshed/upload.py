@@ -182,80 +182,86 @@ def str_to_id(arg, low, high):
         return None
 
 
+def upload_post(request):
+    flowChunkNumber = int(request.form.get('flowChunkNumber', '1'))
+    flowTotalChunks = int(request.form.get('flowTotalChunks', '1'))
+    flowCurrentChunkSize = int(request.form.get('flowCurrentChunkSize', '1'))
+    flowTotalSize = int(request.form.get('flowTotalSize', '-1'))
+    flowFilename = request.form.get('flowFilename')
+
+    filelist = request.files.getlist('file')
+    patient = str_to_id(request.form.get('patient'), 0, 1000)
+    session = str_to_id(request.form.get('session'), 1, 1000)
+
+    if (not filelist) or (len(filelist) < 1) or ('' in filelist):
+        return ('no files', 400)
+    if not patient:
+        return ('no Patient number', 400)
+    if not session:
+        return ('no Session number', 400)
+    if flowTotalChunks > 1 and len(filelist) > 1:
+        return ('flow.js implementation error: ' +
+                'totalchunks > 1, but len(filelist) > 1 -- one name per file', 400)
+    if flowFilename and flowFilename != filelist[0].filename:
+        return ('flow.js implementation error: flowFilename != file', 400)
+
+    if flowTotalChunks > 1:  # is using flow.js
+        size = chunk_store(patient, session, filelist[0], flowChunkNumber)
+        if size != flowCurrentChunkSize:
+            return ('size mismatch #%d: %dB actual != %dB expected'%(flowChunkNumber, size, flowCurrentChunkSize), 400)
+
+        if flowChunkNumber != flowTotalChunks:
+            return ('', 200)
+
+        wait = 10
+        while wait > 0:
+            wait -= 1
+            size = chunk_coalesce(patient, session, filelist[0].filename, flowChunkNumber, flowTotalSize, flowTotalChunks)
+            if size >= flowTotalSize:
+                break
+            sleep(0.1)
+        if size != flowTotalSize:
+            return ('file size mismatch: %dB actual != %dB expected'%(size, flowTotalSize), 400)
+
+        chunk_clean()
+
+    else:
+        store_file(patient, session, filelist)
+
+    return ('', 200)
+
+
+def upload_get_flowjs(request):
+    flowFilename = request.args.get('flowFilename')
+    flowChunkNumber = int(request.args.get('flowChunkNumber', '1'))
+    flowTotalChunks = int(request.args.get('flowTotalChunks', '1'))
+    flowCurrentChunkSize = int(request.args.get('flowCurrentChunkSize', '1'))
+    flowTotalSize = int(request.args.get('flowTotalSize', '-1'))
+    patient = str_to_id(request.args.get('patient'), 0, 1000)
+    session = str_to_id(request.args.get('session'), 1, 1000)
+
+    if flowTotalChunks != flowChunkNumber:
+        size = chunk_test(patient, session, flowFilename, flowChunkNumber)
+        if size is None:
+            return ('no such file chunk', 404)
+        if size != flowCurrentChunkSize:
+            return ('size mismatch #%d: %dB actual != %dB expected'%(flowChunkNumber, size, flowCurrentChunkSize), 400)
+    else:
+        size = file_test(patient, session, flowFilename)
+        if size is None:
+            return ('no such file', 404)
+        if size != flowTotalSize:
+            return ('file size mismatch: %dB actual != %dB expected'%(size, flowTotalSize), 400)
+    return ('', 200)
+
+
 @bp.route('/', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        flowChunkNumber = int(request.form.get('flowChunkNumber', '1'))
-        flowTotalChunks = int(request.form.get('flowTotalChunks', '1'))
-        flowCurrentChunkSize = int(request.form.get('flowCurrentChunkSize', '1'))
-        flowTotalSize = int(request.form.get('flowTotalSize', '-1'))
-        flowFilename = request.form.get('flowFilename')
-
-        filelist = request.files.getlist('file')
-        patient = str_to_id(request.form.get('patient'), 0, 1000)
-        session = str_to_id(request.form.get('session'), 1, 1000)
-
-        if (not filelist) or (len(filelist) < 1) or ('' in filelist):
-            return ('no files', 400)
-        if not patient:
-            return ('no Patient number', 400)
-        if not session:
-            return ('no Session number', 400)
-        if flowTotalChunks > 1 and len(filelist) > 1:
-            return ('flow.js implementation error: ' +
-                    'totalchunks > 1, but len(filelist) > 1 -- one name per file', 400)
-        if flowFilename and flowFilename != filelist[0].filename:
-            return ('flow.js implementation error: flowFilename != file', 400)
-
-        if flowTotalChunks > 1:  # is using flow.js
-            size = chunk_store(patient, session, filelist[0], flowChunkNumber)
-            if size != flowCurrentChunkSize:
-                return ('size mismatch #%d: %dB actual != %dB expected'%(flowChunkNumber, size, flowCurrentChunkSize), 400)
-
-            if flowChunkNumber != flowTotalChunks:
-                return ('', 200)
-
-            wait = 10
-            while wait > 0:
-                wait -= 1
-                size = chunk_coalesce(patient, session, filelist[0].filename, flowChunkNumber, flowTotalSize, flowTotalChunks)
-                if size >= flowTotalSize:
-                    break
-                sleep(0.1)
-            if size != flowTotalSize:
-                return ('file size mismatch: %dB actual != %dB expected'%(size, flowTotalSize), 400)
-
-            chunk_clean()
-            return ('', 200)
-
-        else:
-            store_file(patient, session, filelist)
-            return ('', 200)
-
+        return upload_post(request)
     else: # GET
-        flowChunkNumber = int(request.args.get('flowChunkNumber', '1'))
-        flowTotalChunks = int(request.args.get('flowTotalChunks', '1'))
-        flowCurrentChunkSize = int(request.args.get('flowCurrentChunkSize', '1'))
-        flowTotalSize = int(request.args.get('flowTotalSize', '-1'))
         flowFilename = request.args.get('flowFilename')
-
-        patient = str_to_id(request.args.get('patient'), 0, 1000)
-        session = str_to_id(request.args.get('session'), 1, 1000)
-
-        if flowFilename:  # flow.js response
-            if flowTotalChunks != flowChunkNumber:
-                size = chunk_test(patient, session, flowFilename, flowChunkNumber)
-                if size is None:
-                    return ('no such file chunk', 404)
-                if size != flowCurrentChunkSize:
-                    return ('size mismatch #%d: %dB actual != %dB expected'%(flowChunkNumber, size, flowCurrentChunkSize), 400)
-            else:
-                size = file_test(patient, session, flowFilename)
-                if size is None:
-                    return ('no such file', 404)
-                if size != flowTotalSize:
-                    return ('file size mismatch: %dB actual != %dB expected'%(size, flowTotalSize), 400)
-            return ('', 200)
-
+        if flowFilename:
+            return upload_get_flowjs(request)
         else:  # HTML response
             return render_template('upload.html')
