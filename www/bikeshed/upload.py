@@ -193,6 +193,10 @@ def upload_post(request):
     patient = str_to_id(request.form.get('patient'), 0, 1000)
     session = str_to_id(request.form.get('session'), 1, 1000)
 
+    # print('POST #%d/%d %dB/%dB %s %s p%d s%d'%(flowChunkNumber,
+    #       flowTotalChunks, flowCurrentChunkSize, flowTotalSize, flowFilename,
+    #       str(filelist), patient, session))
+
     if (not filelist) or (len(filelist) < 1) or ('' in filelist):
         return ('no files', 400)
     if not patient:

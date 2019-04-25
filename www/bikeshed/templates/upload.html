@@ -29,15 +29,12 @@
                 </div>
                 <!-- The below classes are used when doing drag and drop functionality -->
                 <div id="upload-new" class="form-group col-md-12">
-                <div class="btn btn-primary btn-block disabled" id="flow-submit"
-                     ondragenter="jQuery(this).addClass('flow-dragover');"
-                     ondragend="jQuery(this).removeClass('flow-dragover');"
-                     ondrop="jQuery(this).removeClass('flow-dragover');">
+                   <div class="btn btn-primary btn-block disabled" id="flow-submit">
                    Drag &amp; Drop files here <i class="fas fa-bullseye"/></i> to Upload <br/> or click to select files.
                      <!-- <a class="flow-browse-folder"><u>select folder</u></a> or
                      <a class="flow-browse"><u>select from your computer</u></a> or
                      <a class="flow-browse-image"><u>select images</u></a> -->
-                </div>
+                   </div>
                 </div>
                 <div id="upload-old">
                     <div class="form-group col-md-12">
@@ -107,18 +104,24 @@
           });
           var forms = document.getElementsByClassName('needs-validation');
           validate(forms);
+          r.assignBrowse($('#flow-submit')[0]);
+          r.assignDrop($('#flow-submit')[0]);
+
+          // initially disabled
+          $("button").attr('disabled', true);
+          $('#flow-submit').addClass('disabled');
+          $('#flow-submit input').attr('disabled', true);
+
           $("form").change(function(){
              if(checkValidity(forms)) {
-               $("button").removeAttr('disabled');
-               $('#flow-submit').removeClass('disabled');
-               r.assignDrop($('#flow-submit')[0]);
-               r.assignBrowse($('#flow-submit')[0]);
+                $("button").removeAttr('disabled');
+                $('#flow-submit').removeClass('disabled');
+                $('#flow-submit input').removeAttr('disabled');
              }
              else {
-               $("button").attr('disabled',true);
-               $('#flow-submit').addClass('disabled');
-               r.unassignDrop($('#flow-submit')[0]);
-               r.unassignBrowse($('#flow-submit')[0]);
+                $("button").attr('disabled', true);
+                $('#flow-submit').addClass('disabled');
+                $('#flow-submit input').attr('disabled', true);
              }
           });
           // Flow.js isn't supported, fall back on a different method
@@ -128,7 +131,8 @@
           if (!r.support) {
             $('#upload-new').remove();
             $('#flow-form').attr('method','POST')
-            $('#flow-form').attr('target','/upload/')
+            $('#flow-form').attr('action','/upload/')
+            $('#flow-form').attr('enctype','multipart/form-data')
             return;
           }
           $('#upload-old').remove();
