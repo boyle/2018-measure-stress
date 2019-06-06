@@ -40,7 +40,7 @@ echo "--- create users ---"
 $D/create_users.sh $D/authorized_keys
 
 echo "--- create user prime: the nearly root ---"
-sudouser=boyle
+sudouser=${FIRST_USER}
 [ $(grep -c "^${sudouser}" /etc/passwd) -ge 1 ] && usermod -aG sudo ${sudouser}
 echo "${sudouser} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/99-${sudouser}
 chmod 0440 /etc/sudoers.d/99-${sudouser}
