@@ -11,7 +11,7 @@
     "dependencies": {
         "@flowjs/flow.js": "2.13.1",
         "popper.js": "1.15.0",
-        "startbootstrap-agency": "5.0.7"
+        "startbootstrap-agency": "5.2.0"
     },
     "devDependencies": {},
     "scripts": {
