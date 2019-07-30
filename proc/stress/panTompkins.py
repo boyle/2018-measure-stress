@@ -13,10 +13,12 @@ modified (C) 2019 A. Boyle
  2. Use last accepted R-R intervals for RRAVERAGE1 rather than the last
     peak-to-peak time which may contain spurious noise. Disable with
     rravg = 'peaks', enable with rravg = 'qrs' input option (default).
+ 3. Update RR thresholds at each iteration, update RRAVERAGE2 at most once for
+    each new RRAVERAGE1 update.
  Minor changes from original code:
- 3. When looking for integrated waveform peak, fail cleanly if no region is
+ 4. When looking for integrated waveform peak, fail cleanly if no region is
     above THRESHOLDF1 (SBdata_max_loc2)
- 4. Updated to 'plot' filtered and integrated waveforms with noise and signal
+ 5. Updated to 'plot' filtered and integrated waveforms with noise and signal
     estimates.
 
 from https://github.com/pickus91/HRV
@@ -161,12 +163,12 @@ A summary of the algorithm is described below:
 
 """
 import numpy as np
-from matplotlib import style
+#from matplotlib import style
 from scipy import signal
 import matplotlib.pyplot as plt
-style.use('ggplot')
+#style.use('ggplot')
 
-def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs'):
+def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs', offset = None, window = None):
     """
     Inputs:
     - ECG   : [list] | [numpy.ndarray] of ECG samples
@@ -276,34 +278,38 @@ def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs'):
         if c > 0 and c < len(ECG_bp_peaks):
             # if c < 8:
             if len(ECG_bp_signal_peaks) < 8:
+                if c == 1:
+                    RRAVERAGE1 = []
                 RRAVERAGE1_vec = np.diff(peaks[:c + 1]) / fs
                 RRAVERAGE1_mean = np.mean(RRAVERAGE1_vec)
                 RRAVERAGE1.append(RRAVERAGE1_mean)
 
-                RR_LOW_LIMIT = 0.92 * RRAVERAGE1_mean
-                RR_HIGH_LIMIT = 1.16 * RRAVERAGE1_mean
-                RR_MISSED_LIMIT = 1.66 * RRAVERAGE1_mean
+                RRAVERAGE2 = [ RRAVERAGE1_mean ]
             else:
                 if rravg == 'qrs': # AB use accepted qrs rather than any old peak
-                    RRAVERAGE1_vec = np.diff(ECG_bp_signal_peaks[-9:]) / fs
+                    tmp_peaks = np.append(ECG_bp_signal_peaks[-8:], peaks[c])
+                    RRAVERAGE1_vec = np.diff(tmp_peaks) / fs
                 else:
                     RRAVERAGE1_vec = np.diff(peaks[c - 8:c + 1]) / fs
                 RRAVERAGE1_mean = np.mean(RRAVERAGE1_vec)
                 RRAVERAGE1.append(RRAVERAGE1_mean)
 
-                for rr in np.arange(0, len(RRAVERAGE1_vec)):
-                    if (RRAVERAGE1_vec[rr] > RR_LOW_LIMIT and RRAVERAGE1_vec[rr] < RR_HIGH_LIMIT):
-                        RRAVERAGE2.append(RRAVERAGE1_vec[rr])
-                        if len(RRAVERAGE2) > 8:
-                            del RRAVERAGE2[:len(RRAVERAGE2) - 8]
+                rr = len(RRAVERAGE1_vec) - 1
+                if RRAVERAGE1_vec[rr] > RR_LOW_LIMIT and RRAVERAGE1_vec[rr] < RR_HIGH_LIMIT:
+                    RRAVERAGE2.append(RRAVERAGE1_vec[rr])
+                if len(RRAVERAGE2) > 8:
+                    del RRAVERAGE2[:len(RRAVERAGE2) - 8]
 
-                if len(RRAVERAGE2) == 8:
-                    RR_LOW_LIMIT = 0.92 * np.mean(RRAVERAGE2)
-                    RR_HIGH_LIMIT = 1.16 * np.mean(RRAVERAGE2)
-                    RR_MISSED_LIMIT = 1.66 * np.mean(RRAVERAGE2)
+            # print('[%d] %0.1f sec: RRAVERAGE1 = %0.1f bpm, RRAVERAGE2 = %0.1f' % (c, peak/fs, 60/np.mean(RRAVERAGE1), 60/np.mean(RRAVERAGE2)))
+
+            RR_LOW_LIMIT = 0.92 * np.mean(RRAVERAGE2)
+            RR_HIGH_LIMIT = 1.16 * np.mean(RRAVERAGE2)
+            RR_MISSED_LIMIT = 1.66 * np.mean(RRAVERAGE2)
 
             # AB: recover from bad thresholds, "He's dead Jim!" when noise makes the estimates large
-            if decay and len(ECG_bp_signal_peaks) > 8 and peak - ECG_bp_signal_peaks[-1] > 10 * RR_MISSED_LIMIT: # and c % int(fs/10) == 0:
+            last_beat = 0;
+            if len(ECG_bp_signal_peaks) > 0: last_beat = ECG_bp_signal_peaks[-1]
+            if decay and peak - last_beat > 10 * RR_MISSED_LIMIT: # and c % int(fs/10) == 0:
                 # RRAVERAGE2.append(RRAVERAGE1_vec[-1])
                 # if len(RRAVERAGE2) > 8:
                 #     del RRAVERAGE2[:len(RRAVERAGE2) - 8]
@@ -315,6 +321,7 @@ def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs'):
                 THRESHOLDI2 = 0.5 * THRESHOLDI1
                 THRESHOLDF1 = NPKF + 0.25 * (SPKF - NPKF)
                 THRESHOLDF2 = 0.5 * THRESHOLDF1
+
 
             #If irregular heart beat detected in previous 9 beats, lower signal thresholds by half to increase detection sensitivity
             current_RR_movavg = RRAVERAGE1[-1]
@@ -399,7 +406,11 @@ def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs'):
                 NPKI = 0.125 * ECG_movavg[peak]  + 0.875 * NPKI
                 ECG_bp_noise_peaks.append(ECG_bp_peaks[c])
                 NPKF = 0.125 * ECG_bp[c] + 0.875 * NPKF
-        else:
+        else:  # first and last peaks
+            if c == 0:
+                RRAVERAGE1 = [np.nan]
+                RRAVERAGE2 = [np.nan]
+
             if ECG_movavg[peak] >= THRESHOLDI1: #first peak is a signal peak
                 IWF_signal_peaks.append(peak)
                 #update signal  thresholds
@@ -434,14 +445,8 @@ def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs'):
         THRESHOLDF1 = NPKF + 0.25 * (SPKF - NPKF)
         THRESHOLDF2 = 0.5 * THRESHOLDF1
 
-        if len(RRAVERAGE1) == 8:
-            RRAVG1_now = np.mean(RRAVERAGE1)
-        else:
-            RRAVG1_now = np.nan;
-        if len(RRAVERAGE2) == 8:
-            RRAVG2_now = np.mean(RRAVERAGE2)
-        else:
-            RRAVG2_now = np.nan;
+        RRAVG1_now = np.mean(RRAVERAGE1)
+        RRAVG2_now = np.mean(RRAVERAGE2)
         extra.append([NPKI, SPKI, NPKF, SPKF, RRAVG1_now, RRAVG2_now])
 
     #adjust for filter delays
@@ -457,71 +462,13 @@ def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs'):
         final_R_locs.append(np.where(ECG[searchIndices] == max(ECG[searchIndices]))[0][0] + searchIndices[0])
 
     #plot ECG signal with R peaks marked
+    data = {'ECG': ECG, 'extra': extra, 'ECG_bp': ECG_bp, 'ECG_movavg': ECG_movavg, 'fs': fs, 'final_R_locs': final_R_locs, 'peaks': peaks}
     if plot:
-        samples = np.arange(0, len(ECG))
-        print('%d samples in ECG, %d samples in ECG_bp, %d' % (len(ECG), len(ECG_bp), len(ECG_movavg)))
-        plt.clf()
-        #plt.autoscale(enable=True, axis='y', tight=True)
-        offset = 3000
-        window = 12
-        sel = np.arange(int((offset-window/2)*fs),int((offset+window/2)*fs))
-
-        ax1 = plt.subplot(311)
-
-        ax1.plot([i/fs for i in samples], ECG, color = 'b', linewidth = 1.0, label = 'ECG')
-        ax1.scatter([i/fs for i in final_R_locs], ECG[final_R_locs], color = 'r', s = 30, label = 'R')
-        plt.setp(ax1.get_xticklabels(), visible=False)
-        ax1.set_ylabel('ECG')
-        ax1.set_ylim(min(ECG[sel]), max(ECG[sel]))
-
-
-        color = 'g'
-        ECG_R_RRAVERAGE1 = [ n for i,j,k,m,n,p in extra]
-        ECG_R_RRAVERAGE2 = [ p for i,j,k,m,n,p in extra]
-        ax11 = ax1.twinx()
-        ax11.plot([i/fs for i in peaks], [60/j for j in ECG_R_RRAVERAGE2], color = color, linestyle = 'dashed', linewidth = 1.0, label = 'RR2')
-        ax11.plot([i/fs for i in peaks], [60/j for j in ECG_R_RRAVERAGE1], color = [1, 0.5, 1], linestyle = 'dotted', linewidth = 1.0, label = 'RR1')
-        ax11.set_ylabel('RRAVG (bpm)', color = color)
-        ax11.tick_params(axis = 'y', labelcolor = color)
-        # ax11.set_ylim(min(min(ECG_R_RRAVERAGE2[sel]), min(ECG_R_RRAVERAGE1[sel])), max(max(ECG_R_RRAVERAGE2[sel]), max(ECG_R_RRAVERAGE1[sel])))
-
-
-        sel2 = sel + +len(ECG)-len(ECG_bp)
-        samples = np.arange(len(ECG)-len(ECG_bp), len(ECG))
-        NPKF = [ k for i,j,k,m,n,p in extra]
-        SPKF = [ m for i,j,k,m,n,p in extra]
-        ax2 = plt.subplot(312, sharex=ax1)
-        l1 = ax2.plot([i/fs for i in samples], ECG_bp, color = 'b', linewidth = 1.0, label = 'ECG_bp')
-        l2 = ax2.plot([i/fs for i in peaks], NPKF, color = 'r', linestyle = 'dotted', linewidth = 1.0, label = 'NPKF')
-        l3 = ax2.plot([i/fs for i in peaks], SPKF, color = 'g', linestyle = 'dashed', linewidth = 1.0, label = 'SPKF')
-        ax2.set_ylabel('ECG bp')
-        plt.setp(ax2.get_xticklabels(), visible=False)
-        ax2.set_ylim(min(ECG_bp[sel2]), max(ECG_bp[sel2]))
-        #ax2.set_ylim(min((NPKF[sel], SPKF[sel], ECG_bp[sel])), max((NPKF[sel], SPKF[sel], ECG_bp[sel])))
-        #ax2.legend((l1, l2, l3), ('ECG', 'NPKF', 'SPKF'))
-
-        sel3 = sel + +len(ECG)-len(ECG_movavg)
-        samples = np.arange(len(ECG)-len(ECG_movavg), len(ECG))
-        NPKI = [ i for i,j,k,m,n,p in extra]
-        SPKI = [ j for i,j,k,m,n,p in extra]
-        ax3 = plt.subplot(313, sharex=ax1)
-        l1 = ax3.plot([i/fs for i in samples], ECG_movavg, color = 'b', linewidth = 1.0, label = 'ECG_movavg')
-        l2 = ax3.plot([i/fs for i in peaks], NPKI, color = 'r', linestyle = 'dotted', linewidth = 1.0, label = 'NPKI')
-        l3 = ax3.plot([i/fs for i in peaks], SPKI, color = 'g', linestyle = 'dashed', linewidth = 1.0, label = 'SPKI')
-        ax3.set_ylabel('ECG movavg')
-        ax3.set_ylim(min(ECG_movavg[sel3]), max(ECG_movavg[sel3]))
-        #ax2.legend((l1, l2, l3), ('ECG', 'NPKI', 'SPKI'))
-
-
-        ax3.set_xlabel('time (s)')
-        plt.xlim(offset-window/2, offset+window/2)
-
-        plt.draw()
-        plt.pause(0.01)
+        plot_panTompkins(data, offset = offset, window = window)
     else:
         pass
 
-    return final_R_locs
+    return final_R_locs, data
 
 def findPeaks(ECG_movavg):
     """finds peaks in Integration Waveform by smoothing, locating zero crossings, and moving average amplitude thresholding"""
@@ -537,3 +484,69 @@ def findPeaks(ECG_movavg):
             zeroCross.append(c)
 
     return np.array(zeroCross)
+
+def plot_panTompkins(data, ax = None, offset = None, window = None):
+    ECG = data['ECG']
+    ECG_movavg = data['ECG_movavg']
+    ECG_bp = data['ECG_bp']
+    extra = data['extra']
+    fs = data['fs']
+    final_R_locs = data['final_R_locs']
+    peaks = data['peaks']
+
+    samples = np.arange(0, len(ECG))
+    # print('%d samples in ECG, %d samples in ECG_bp, %d' % (len(ECG), len(ECG_bp), len(ECG_movavg)))
+    #plt.autoscale(enable=True, axis='y', tight=True)
+    if offset == None:
+        offset = len(ECG)/fs/2
+    if window == None:
+        window = len(ECG)/fs
+    sel = np.arange(int((offset-window/2)*fs),int((offset+window/2)*fs))
+
+    if not ax:
+       ax = list()
+       ax[0:] = [plt.subplot(311)]
+       ax[1:] = [plt.subplot(312)]
+       ax[2:] = [plt.subplot(313)]
+
+    ax[0].plot([i/fs for i in samples], ECG, color = 'b', linewidth = 1.0, label = 'ECG')
+    ax[0].scatter([i/fs for i in final_R_locs], ECG[final_R_locs], color = 'r', s = 30, label = 'R')
+    ax[0].set_ylabel('ECG')
+    ax[0].set_ylim(min(ECG[sel]), max(ECG[sel]))
+    ax[0].set_xlim(offset-window/2, offset+window/2)
+
+    color = 'g'
+    ECG_R_RRAVERAGE1 = [ n for i,j,k,m,n,p in extra]
+    ECG_R_RRAVERAGE2 = [ p for i,j,k,m,n,p in extra]
+    ax11 = ax[0].twinx()
+    ax11.plot([i/fs for i in peaks], [60/j for j in ECG_R_RRAVERAGE2], color = color, linestyle = 'dashed', linewidth = 1.0, label = 'RR2')
+    ax11.plot([i/fs for i in peaks], [60/j for j in ECG_R_RRAVERAGE1], color = 'r', linestyle = 'dotted', linewidth = 1.0, label = 'RR1')
+    ax11.set_ylabel('RRAVG (bpm)', color = color)
+    ax11.tick_params(axis = 'y', labelcolor = color)
+    ax11.set_ylim(0,200)
+
+    sel2 = sel + len(ECG)-len(ECG_bp)
+    samples = np.arange(len(ECG)-len(ECG_bp), len(ECG))
+    NPKF = [ k for i,j,k,m,n,p in extra]
+    SPKF = [ m for i,j,k,m,n,p in extra]
+    l1 = ax[1].plot([i/fs for i in samples], ECG_bp, color = 'b', linewidth = 1.0, label = 'ECG_bp')
+    l2 = ax[1].plot([i/fs for i in peaks], NPKF, color = 'r', linestyle = 'dotted', linewidth = 1.0, label = 'NPKF')
+    l3 = ax[1].plot([i/fs for i in peaks], SPKF, color = 'g', linestyle = 'dashed', linewidth = 1.0, label = 'SPKF')
+    ax[1].set_ylabel('ECG bp')
+    ax[1].set_ylim(min(ECG_bp[sel2]), max(ECG_bp[sel2]))
+    ax[1].set_xlim(offset-window/2, offset+window/2)
+    #ax2.set_ylim(min((NPKF[sel], SPKF[sel], ECG_bp[sel])), max((NPKF[sel], SPKF[sel], ECG_bp[sel])))
+    #ax2.legend((l1, l2, l3), ('ECG', 'NPKF', 'SPKF'))
+
+    sel3 = sel + len(ECG)-len(ECG_movavg)
+    samples = np.arange(len(ECG)-len(ECG_movavg), len(ECG))
+    NPKI = [ i for i,j,k,m,n,p in extra]
+    SPKI = [ j for i,j,k,m,n,p in extra]
+    l1 = ax[2].plot([i/fs for i in samples], ECG_movavg, color = 'b', linewidth = 1.0, label = 'ECG_movavg')
+    l2 = ax[2].plot([i/fs for i in peaks], NPKI, color = 'r', linestyle = 'dotted', linewidth = 1.0, label = 'NPKI')
+    l3 = ax[2].plot([i/fs for i in peaks], SPKI, color = 'g', linestyle = 'dashed', linewidth = 1.0, label = 'SPKI')
+    ax[2].set_ylabel('ECG movavg')
+    ax[2].set_ylim(min(ECG_movavg[sel3]), max(ECG_movavg[sel3]))
+    ax[2].set_xlim(offset-window/2, offset+window/2)
+    ax[2].set_xlabel('time (s)')
+    #ax2.legend((l1, l2, l3), ('ECG', 'NPKI', 'SPKI'))
