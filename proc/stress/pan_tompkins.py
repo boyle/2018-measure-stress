@@ -168,7 +168,7 @@ from scipy import signal
 import matplotlib.pyplot as plt
 #style.use('ggplot')
 
-def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs', offset = None, window = None):
+def pan_tompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs', offset = None, window = None):
     """
     Inputs:
     - ECG   : [list] | [numpy.ndarray] of ECG samples
@@ -246,7 +246,7 @@ def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs', offset = No
     ECG_movavg = np.convolve(ECG_squared,(1 / N) * np.ones((1, N))[0])
 
     #FUDICIAL MARK ON MOVING INTEGRATION WAVEFORM
-    peaks = findPeaks(ECG_movavg)
+    peaks = find_peaks(ECG_movavg)
 
     #LEARNING PHASE 1
     #2 second initialize phase for MIW, 25% of max amplitude considered signal, 50% of mean signal considered noise
@@ -470,7 +470,7 @@ def panTompkins(ECG, fs, plot = False, decay = 0.999, rravg = 'qrs', offset = No
 
     return final_R_locs, data
 
-def findPeaks(ECG_movavg):
+def find_peaks(ECG_movavg):
     """finds peaks in Integration Waveform by smoothing, locating zero crossings, and moving average amplitude thresholding"""
     #smoothing
     N = 15
@@ -485,7 +485,7 @@ def findPeaks(ECG_movavg):
 
     return np.array(zeroCross)
 
-def plot_panTompkins(data, ax = None, offset = None, window = None):
+def plot_pan_tompkins(data, ax = None, offset = None, window = None):
     ECG = data['ECG']
     ECG_movavg = data['ECG_movavg']
     ECG_bp = data['ECG_bp']
