@@ -57,6 +57,7 @@ SNR in dB.
 
 '''
 
+from scipy import signal
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -71,7 +72,7 @@ def read_ecg(filename):
 
 
 def ecg_to_qrs(ecg, fs=200, decay=0.999):
-    qrs = pan_tompkins(ecg, fs=fs, decay=decay)
+    qrs = pan_tompkins(ecg, fs=fs, decay=decay)[0]
     return qrs
 
 
@@ -139,10 +140,15 @@ def calc_hrv_bpm(bpm):
 
 
 def calc_hr_sqi(ecg, qrs, window=30, fs=200):
-    ecg = np.pad(ecg, fs, mode='constant')  # add fs samples of zero padding
     eps = np.finfo(float).eps
     t_qrs = [i/fs for i in qrs]
     rr_samples = np.diff(qrs)
+    # [2] a 0.67 Hz high-pass "as recommended by the American
+    # Heart Association [31]."; 0-phase 3rd-order butterworth
+    fc = 2/3  # Hz
+    b, a = signal.butter(3, fc, btype='highpass', fs=fs)
+    ecg = signal.filtfilt(b, a, ecg)
+    ecg = np.pad(ecg, fs, mode='constant')  # add fs samples of zero padding
     # find workable 30 second windows
     windows = list()
     for i, r in enumerate(qrs):
@@ -203,8 +209,64 @@ def plot_hr_sqi(t_qrs, sqi, offset=None, window=None, threshold=None):
     else:
         ax.plot(t_qrs, sqi, 'g')
         ax.plot(t_qrs, np.where(sqi < threshold, sqi, np.nan), 'r')
-        ax.set_ylabel('SQI')
-        ax.set_xlabel('time (s)')
+    ax.set_ylabel('SQI')
+    ax.set_xlabel('time (s)')
+    ax.set_xlim(offset-window/2, offset+window/2)
+    sel = np.where(np.abs(np.array(t_qrs)-offset) < window/2)
+    ax.set_ylim(min(sqi[sel])*0.9, max(sqi[sel])*1.1)
+
+
+def calc_br_bpm(ecg, f0=0.001, f1=25/60, fs=200):
+    # print('BR filtered between %0.1f and %0.1f bpm' % (f0*60, f1*60))
+    b, a = signal.butter(2, [f0, f1], btype='bandpass', fs=fs)
+    y = signal.filtfilt(b, a, ecg)
+
+    y_top = signal.find_peaks(+y)[0]
+    y_bot = signal.find_peaks(-y)[0]
+    br_top = np.diff(y_top)
+    br_bot = np.diff(y_top)
+    # merge top and bottom; time is shifted by 1/2 period
+    t_br = np.concatenate((y_top[0:len(br_top)]+br_top/2,
+                           y_bot[0:len(br_bot)]+br_bot/2))
+    br = np.concatenate((br_top, br_bot))
+    t_br = np.array([i/fs for i in t_br])
+    br = np.array([i/fs for i in br])
+    idx = np.argsort(t_br)
+    t_br = t_br[idx]
+    br = br[idx]
+    data = {'y': y, 'y_top': y_top, 'y_bot': y_bot, 'fs': fs, 'f1': f1}
+    return t_br, br, data
+
+
+def plot_br_bpm(t_br, br, data=None, offset=None, window=None):
+    if offset is None:
+        offset = t_br[-1]/2
+    if window is None:
+        window = t_br[-1]
+    ax = plt.gca()
+    if data is not None:
+        y = data['y']
+        y_top = data['y_top']
+        y_bot = data['y_bot']
+        fs = data['fs']
+        f1 = data['f1']
+        t = np.array([i/fs for i in range(len(y))])
+        ax.plot(t, y, 'b')
+        ax.plot(t[y_top], y[y_top], 'g.')
+        ax.plot(t[y_bot], y[y_bot], 'r.')
         ax.set_xlim(offset-window/2, offset+window/2)
-        sel = np.where(np.abs(np.array(t_qrs)-offset) < window/2)
-        ax.set_ylim(min(sqi[sel])*0.9, max(sqi[sel])*1.1)
+        sel = np.where(np.abs(np.array(t)-offset) < window/2)
+        ax.set_ylim(min(y[sel])*0.9, max(y[sel])*1.1)
+        ax.set_ylabel('breathing', color='b')
+        ax.tick_params(axis='y', labelcolor='b')
+
+        ax21 = ax.twinx()
+        ax21.set_ylim(0, f1*60*2)
+    else:
+        ax21 = ax
+    # ax21.plot(t[y_top[:-1]], 60/br_top, 'g', marker='.', linestyle='dashed')
+    # ax21.plot(t[y_bot[:-1]], 60/br_bot, 'r', marker='.', linestyle='dashed')
+    ax21.plot(t_br, 60/br, 'g', marker='.', linestyle='dashed')
+    ax21.set_ylabel('BR (bpm)', color='g')
+    ax21.tick_params(axis='y', labelcolor='g')
+    ax.set_xlim(offset-window/2, offset+window/2)

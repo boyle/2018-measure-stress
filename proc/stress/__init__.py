@@ -8,4 +8,5 @@ SAANS feature extractors
 from .ecg import read_ecg, \
                  ecg_to_qrs, plot_ecg, \
                  calc_hr_bpm, calc_hrv_bpm, plot_hr_bpm, \
-                 calc_hr_sqi, plot_hr_sqi
+                 calc_hr_sqi, plot_hr_sqi, \
+                 calc_br_bpm, plot_br_bpm
