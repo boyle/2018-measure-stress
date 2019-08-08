@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     width: "75%",
     padding: 20,
     borderWidth: 2,
-    stroke: `${Colors.dark}`,
+	  borderColor: `${Colors.dark}`,
     borderRadius: 8
   },
   version: {

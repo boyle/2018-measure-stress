@@ -565,8 +565,8 @@ const styles = StyleSheet.create({
     width: "75%",
     height: 150,
     borderRadius: 8,
-    borderStroke: "black",
-    borderStrokeWidth: 2
+    borderColor: "black",
+    borderWidth: 2
   },
   activitiesView: {
     width: "75%",
