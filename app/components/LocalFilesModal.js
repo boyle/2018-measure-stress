@@ -15,23 +15,23 @@ export default class LocalFilesModal extends Component {
       localFiles: [],
     };
 
-		this.getLocalFiles = this.getLocalFiles.bind(this);
-		this.setClipboard = this.setClipboard.bind(this);
-		this.deviceHasFiles = this.deviceHasFiles.bind(this);
+    this.getLocalFiles = this.getLocalFiles.bind(this);
+    this.setClipboard = this.setClipboard.bind(this);
+    this.deviceHasFiles = this.deviceHasFiles.bind(this);
   }
 
   componentDidMount() {
     this.getLocalFiles();
-	}
+  }
 
-	deviceHasFiles() {
-		return this.state.localFiles.length > 0;
-	}
+  deviceHasFiles() {
+    return this.state.localFiles.length > 0;
+  }
 
-	async getLocalFiles() {
+  async getLocalFiles() {
     const localFiles = await FileSystem.readDirectoryAsync(
       FileSystem.documentDirectory,
-		);
+    );
     for (let i = 0; i < localFiles.length; i++) {
       let fileUrl = `${FileSystem.documentDirectory}/${localFiles[i]}`;
       try {
@@ -50,31 +50,40 @@ export default class LocalFilesModal extends Component {
         console.log(e);
       }
     }
-	}
+  }
 
-	setClipboard() {
-		Clipboard.setString(JSON.stringify(this.state.localFiles));
-		this.props.onClose();
-	}
+  setClipboard() {
+    Clipboard.setString(JSON.stringify(this.state.localFiles));
+    this.props.onClose();
+  }
 
-	render() {
+  render() {
     return (
-			<ModalContainer>
-				<Text style={styles.title}>Sessions on the device</Text>
-				{!this.deviceHasFiles() && <Text style={styles.center}>There are currently no annotation files stored on the device.</Text>}
+      <ModalContainer>
+        <Text style={styles.title}>Sessions on the device</Text>
+        {!this.deviceHasFiles() && (
+          <Text style={styles.center}>
+            There are currently no annotation files stored on the device.
+          </Text>
+        )}
         {this.state.localFiles.map(file => (
-          <Text style={styles.center}>Patient {file.patientId} - Session {file.sessionId}</Text>
+          <Text style={styles.center}>
+            Patient {file.patientId} - Session {file.sessionId}
+          </Text>
         ))}
         <View>
-					<Button
-						onPress={() => {this.props.pushLocalFiles(); this.props.onClose()}}
-						disabled={!this.deviceHasFiles()}
+          <Button
+            onPress={() => {
+              this.props.pushLocalFiles();
+              this.props.onClose();
+            }}
+            disabled={!this.deviceHasFiles()}
             buttonStyle={styles.button}
             title="Upload files"
-					/>
-					<Button
-						onPress={this.setClipboard}
-						disabled={!this.deviceHasFiles()}
+          />
+          <Button
+            onPress={this.setClipboard}
+            disabled={!this.deviceHasFiles()}
             buttonStyle={styles.button}
             title="Copy to clipboard"
           />
@@ -90,9 +99,9 @@ export default class LocalFilesModal extends Component {
 }
 
 const styles = StyleSheet.create({
-	center: {
-	  textAlign: 'center',
-	},
+  center: {
+    textAlign: 'center',
+  },
   title: {
     textAlign: 'center',
     fontWeight: 'bold',

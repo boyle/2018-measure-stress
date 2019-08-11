@@ -38,7 +38,11 @@ function StatsCard({statsName, statsValue, onClick}) {
     <View>
       <Card style={styles.card}>
         {!statsValue && <ActivityIndicator size="large" />}
-        {statsValue && <Text onPress={onClick} style={styles.statsValue}>{statsValue}</Text>}
+        {statsValue && (
+          <Text onPress={onClick} style={styles.statsValue}>
+            {statsValue}
+          </Text>
+        )}
         <Text style={styles.stateName}>{statsName}</Text>
       </Card>
     </View>
@@ -80,8 +84,8 @@ class Home extends React.Component {
       } catch (e) {
         console.log(e);
       }
-		}
-		this.refresh();
+    }
+    this.refresh();
   }
 
   async countLocalFiles() {
@@ -91,9 +95,8 @@ class Home extends React.Component {
     this.setState({numLocalFiles: `${numLocalFiles}`});
   }
 
-	async refresh() {
-
-		await this.countLocalFiles();
+  async refresh() {
+    await this.countLocalFiles();
 
     const patients = await API.getPatientsList();
     let numSessions = 0;
@@ -101,7 +104,7 @@ class Home extends React.Component {
       // need to use explicit for loop because of await
       numSessions += (await API.getSessionsList(patients[i])).length;
     }
-    this.setState({numPatients: patients.length, numSessions });
+    this.setState({numPatients: patients.length, numSessions});
   }
 
   onPatientSelected(patientId, sessionId) {
@@ -151,7 +154,10 @@ class Home extends React.Component {
             />
           )}
           {this.props.ui.modal.modalName === 'LocalFilesModal' && (
-            <LocalFilesModal pushLocalFiles={this.pushLocalFiles} onClose={this.props.hideModal} />
+            <LocalFilesModal
+              pushLocalFiles={this.pushLocalFiles}
+              onClose={this.props.hideModal}
+            />
           )}
           <Text style={styles.title}>Hi, {this.props.user.username}!</Text>
           <View style={styles.statsBox}>
@@ -168,7 +174,9 @@ class Home extends React.Component {
               <StatsCard
                 statsName="Files on device"
                 statsValue={this.state.numLocalFiles}
-								onClick={() => { console.log('click'); this.props.showModal('LocalFilesModal') }}
+                onClick={() => {
+                  this.props.showModal('LocalFilesModal');
+                }}
               />
             </View>
           </View>
