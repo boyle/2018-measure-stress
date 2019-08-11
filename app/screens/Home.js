@@ -1,5 +1,5 @@
-import React from "react";
-import { BackHandler } from "react-native";
+import React from 'react';
+import {BackHandler} from 'react-native';
 import {
   StyleSheet,
   Text,
@@ -7,38 +7,41 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator
-} from "react-native";
-import { Button, Card } from "react-native-elements";
-import { connect } from "react-redux";
-import { withNavigationFocus } from "react-navigation";
+  ActivityIndicator,
+} from 'react-native';
+import {Button, Card} from 'react-native-elements';
+import {connect} from 'react-redux';
+import {withNavigationFocus} from 'react-navigation';
 
-import { FileSystem } from "expo";
-import app from "../app.json";
-import API from "../api.js";
-import { showModal, hideModal } from "../ducks/ui.js";
-import { addPatient } from "../ducks/user.js";
+import {FileSystem} from 'expo';
+import app from '../app.json';
+import API from '../api.js';
+import {showModal, hideModal} from '../ducks/ui.js';
+import {addPatient} from '../ducks/user.js';
 import {
   startSession,
   selectPatient,
   setOffset,
-  setSessionId
-} from "../ducks/session.js";
-import Colors from "../globals/colors.js";
-import PageTemplate from "../components/PageTemplate.js";
-import IconButton from "../components/IconButton.js";
-import NewPatientModal from "../components/NewPatientModal.js";
-import InitializeSessionModal from "../components/InitializeSessionModal.js";
-import SelectPatientModal from "../components/SelectPatientModal.js";
-import SynchronizationModal from "../components/SynchronizationModal.js";
+  setSessionId,
+} from '../ducks/session.js';
+import Colors from '../globals/colors.js';
+import PageTemplate from '../components/PageTemplate.js';
+import IconButton from '../components/IconButton.js';
+import NewPatientModal from '../components/NewPatientModal.js';
+import InitializeSessionModal from '../components/InitializeSessionModal.js';
+import SelectPatientModal from '../components/SelectPatientModal.js';
+import SynchronizationModal from '../components/SynchronizationModal.js';
+import LocalFilesModal from '../components/LocalFilesModal.js';
 
-function StatsCard({ statsName, statsValue }) {
+function StatsCard({statsName, statsValue, onClick}) {
   return (
-    <Card style={styles.card}>
-      {!statsValue && <ActivityIndicator size="large" />}
-      {statsValue && <Text style={styles.statsValue}>{statsValue}</Text>}
-      <Text style={styles.stateName}>{statsName}</Text>
-    </Card>
+    <View>
+      <Card style={styles.card}>
+        {!statsValue && <ActivityIndicator size="large" />}
+        {statsValue && <Text onPress={onClick} style={styles.statsValue}>{statsValue}</Text>}
+        <Text style={styles.stateName}>{statsName}</Text>
+      </Card>
+    </View>
   );
 }
 
@@ -48,7 +51,7 @@ class Home extends React.Component {
     this.state = {
       numPatients: null,
       numSessions: null,
-      numLocalFiles: null
+      numLocalFiles: null,
     };
 
     this.onPatientSelected = this.onPatientSelected.bind(this);
@@ -59,14 +62,14 @@ class Home extends React.Component {
 
   async componentDidMount() {
     this.focusListener = this.props.navigation.addListener(
-      "didFocus",
-      this.refresh
+      'didFocus',
+      this.refresh,
     );
   }
 
   async pushLocalFiles() {
     const localFiles = await FileSystem.readDirectoryAsync(
-      FileSystem.documentDirectory
+      FileSystem.documentDirectory,
     );
     for (let i = 0; i < localFiles.length; i++) {
       let fileUrl = `${FileSystem.documentDirectory}/${localFiles[i]}`;
@@ -77,19 +80,20 @@ class Home extends React.Component {
       } catch (e) {
         console.log(e);
       }
-      this.refresh();
-    }
+		}
+		this.refresh();
   }
 
   async countLocalFiles() {
     const numLocalFiles = (await FileSystem.readDirectoryAsync(
-      FileSystem.documentDirectory
+      FileSystem.documentDirectory,
     )).length;
-    this.setState({ numLocalFiles: `${numLocalFiles}` });
+    this.setState({numLocalFiles: `${numLocalFiles}`});
   }
 
-  async refresh() {
-    this.countLocalFiles();
+	async refresh() {
+
+		await this.countLocalFiles();
 
     const patients = await API.getPatientsList();
     let numSessions = 0;
@@ -97,7 +101,7 @@ class Home extends React.Component {
       // need to use explicit for loop because of await
       numSessions += (await API.getSessionsList(patients[i])).length;
     }
-    this.setState({ numPatients: patients.length, numSessions });
+    this.setState({numPatients: patients.length, numSessions });
   }
 
   onPatientSelected(patientId, sessionId) {
@@ -105,7 +109,7 @@ class Home extends React.Component {
     this.props.selectPatient(patientId);
     this.props.setSessionId(sessionId);
     this.props.startSession(patientId);
-    this.props.navigation.navigate("Activity");
+    this.props.navigation.navigate('Activity');
   }
 
   render() {
@@ -115,36 +119,39 @@ class Home extends React.Component {
     return (
       <PageTemplate>
         <View style={styles.container}>
-          {this.props.ui.modal.modalName === "NewPatientModal" && (
+          {this.props.ui.modal.modalName === 'NewPatientModal' && (
             <NewPatientModal
               onSave={this.refreshStats}
               onClose={this.props.hideModal}
             />
           )}
-          {this.props.ui.modal.modalName === "SynchronizationModal" && (
+          {this.props.ui.modal.modalName === 'SynchronizationModal' && (
             <SynchronizationModal
               onOffsetComputed={offset => {
                 this.props.setOffset(offset);
-                this.props.showModal("InitializeSessionModal");
+                this.props.showModal('InitializeSessionModal');
               }}
-              onSkip={() => this.props.showModal("InitializeSessionModal")}
+              onSkip={() => this.props.showModal('InitializeSessionModal')}
               onClose={this.props.hideModal}
             />
           )}
-          {this.props.ui.modal.modalName === "InitializeSessionModal" && (
+          {this.props.ui.modal.modalName === 'InitializeSessionModal' && (
             <InitializeSessionModal
               onPatientSelected={this.onPatientSelected}
               onClose={this.props.hideModal}
             />
           )}
-          {this.props.ui.modal.modalName === "SelectPatientModal" && (
+          {this.props.ui.modal.modalName === 'SelectPatientModal' && (
             <SelectPatientModal
               onPatientSelected={patientId => {
                 this.props.hideModal();
-                this.props.navigation.navigate("Review", { patientId });
+                this.props.navigation.navigate('Review', {patientId});
               }}
               onClose={this.props.hideModal}
             />
+          )}
+          {this.props.ui.modal.modalName === 'LocalFilesModal' && (
+            <LocalFilesModal pushLocalFiles={this.pushLocalFiles} onClose={this.props.hideModal} />
           )}
           <Text style={styles.title}>Hi, {this.props.user.username}!</Text>
           <View style={styles.statsBox}>
@@ -161,6 +168,7 @@ class Home extends React.Component {
               <StatsCard
                 statsName="Files on device"
                 statsValue={this.state.numLocalFiles}
+								onClick={() => { console.log('click'); this.props.showModal('LocalFilesModal') }}
               />
             </View>
           </View>
@@ -174,7 +182,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.showModal("NewPatientModal")}
+              action={() => this.props.showModal('NewPatientModal')}
             />
             <IconButton
               iconName="plus-circle"
@@ -184,7 +192,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.showModal("SynchronizationModal")}
+              action={() => this.props.showModal('SynchronizationModal')}
             />
             <IconButton
               iconName="search"
@@ -194,7 +202,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.showModal("SelectPatientModal")}
+              action={() => this.props.showModal('SelectPatientModal')}
             />
             {/*
             <IconButton
@@ -238,7 +246,7 @@ class Home extends React.Component {
               iconHeight={iconHeight}
               iconWidth={iconWidth}
               textStyle={styles.buttonTitle}
-              action={() => this.props.navigation.navigate("Login")}
+              action={() => this.props.navigation.navigate('Login')}
             />
           </View>
         </View>
@@ -250,28 +258,28 @@ class Home extends React.Component {
 
 const styles = StyleSheet.create({
   title: {
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 30,
-    fontWeight: "bold",
-    color: `${Colors.dark}`
+    fontWeight: 'bold',
+    color: `${Colors.dark}`,
   },
   container: {
     flex: 1,
     padding: 30,
-    flexDirection: "column",
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "space-around"
+    flexDirection: 'column',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'space-around',
   },
   statsContainer: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-around"
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   card: {
     height: 300,
-    width: 300
+    width: 300,
   },
   button: {
     margin: 10,
@@ -279,51 +287,51 @@ const styles = StyleSheet.create({
     height: 200,
     backgroundColor: `${Colors.dark}`,
     padding: 30,
-    borderRadius: 8
+    borderRadius: 8,
   },
   buttonIcon: {
     width: 150,
-    height: 150
+    height: 150,
   },
   buttonTitle: {
-    textAlign: "center",
-    color: "white",
-    fontSize: 24
+    textAlign: 'center',
+    color: 'white',
+    fontSize: 24,
   },
   buttonsContainer: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    flexWrap: "wrap"
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
   },
   statsValue: {
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 42,
-    fontWeight: "bold",
-    color: `${Colors.dark}`
+    fontWeight: 'bold',
+    color: `${Colors.dark}`,
   },
   statsName: {
-    textAlign: "center",
-    fontSize: 32
+    textAlign: 'center',
+    fontSize: 32,
   },
   statsBox: {
-    width: "75%",
+    width: '75%',
     padding: 20,
     borderWidth: 2,
-	  borderColor: `${Colors.dark}`,
-    borderRadius: 8
+    borderColor: `${Colors.dark}`,
+    borderRadius: 8,
   },
   version: {
-    textAlign: "center",
-    margin: 10
-  }
+    textAlign: 'center',
+    margin: 10,
+  },
 });
 
 function mapStateToProps(state) {
   return {
     user: state.user,
-    ui: state.ui
+    ui: state.ui,
   };
 }
 
@@ -335,11 +343,11 @@ function mapDispatchToProps(dispatch) {
     selectPatient: patientId => dispatch(selectPatient(patientId)),
     startSession: patientId => dispatch(startSession(patientId)),
     setOffset: offset => dispatch(setOffset(offset)),
-    setSessionId: sessionId => dispatch(setSessionId(sessionId))
+    setSessionId: sessionId => dispatch(setSessionId(sessionId)),
   };
 }
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(Home);
