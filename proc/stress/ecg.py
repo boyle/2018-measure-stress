@@ -92,6 +92,7 @@ def plot_ecg(ecg, qrs=None, offset=None, window=None, fs=200):
     ax.set_xlim(offset-window/2, offset+window/2)
     sel = np.arange(int((offset-window/2)*fs), int((offset+window/2)*fs))
     ax.set_ylim(min(ecg[sel]), max(ecg[sel]))
+    return ax
 
 
 def calc_hr_bpm(qrs, fs=200):
@@ -127,6 +128,9 @@ def plot_hr_bpm(t_qrs, bpm, hrv=None, offset=None, window=None, fs=200):
         # plt.xlim(offset_t-window_t/2,offset_t+window_t/2)
         # plt.ylim(min(hrv[sel]),max(hrv[sel]))
         ax2.set_ylim(0, 10)
+    else:
+        ax2 = ax
+    return (ax, ax2)
 
 
 # RMSSD: Root Mean Square of Successive Differences between each heartbeat
@@ -214,6 +218,7 @@ def plot_hr_sqi(t_qrs, sqi, offset=None, window=None, threshold=None):
     ax.set_xlim(offset-window/2, offset+window/2)
     sel = np.where(np.abs(np.array(t_qrs)-offset) < window/2)
     ax.set_ylim(min(sqi[sel])*0.9, max(sqi[sel])*1.1)
+    return ax
 
 
 def calc_br_bpm(ecg, f0=0.001, f1=25/60, fs=200):
@@ -270,3 +275,4 @@ def plot_br_bpm(t_br, br, data=None, offset=None, window=None):
     ax21.set_ylabel('BR (bpm)', color='g')
     ax21.tick_params(axis='y', labelcolor='g')
     ax.set_xlim(offset-window/2, offset+window/2)
+    return (ax, ax21)
